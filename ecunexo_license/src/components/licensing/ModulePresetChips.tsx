@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Button } from 'glubox'
 import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { TENANT_MODULE_OPTIONS } from '@/constants/tenantModules'
 
 const CORE_MODULE_CODES = ['identity', 'catalog', 'warehousing', 'inventory'] as const
+const TALLER_MODULE_CODES = ['identity', 'catalog', 'warehousing', 'inventory', 'facturacion', 'repairs'] as const
 const ALL_MODULE_CODES = TENANT_MODULE_OPTIONS.map((m) => m.code)
 
 function sameSet(a: readonly string[], b: readonly string[]): boolean {
@@ -22,25 +23,23 @@ export type ModulePresetChipsProps = {
 
 export function ModulePresetChips({ selectedModules, onApply }: ModulePresetChipsProps) {
   const theme = useGluComponentTheme()
-  const [activePreset, setActivePreset] = useState<'core' | 'all' | null>(null)
 
-  useEffect(() => {
-    if (sameSet(selectedModules, CORE_MODULE_CODES)) {
-      setActivePreset('core')
-    } else if (sameSet(selectedModules, ALL_MODULE_CODES)) {
-      setActivePreset('all')
-    } else {
-      setActivePreset(null)
-    }
+  const activePreset = useMemo(() => {
+    if (sameSet(selectedModules, CORE_MODULE_CODES)) return 'core'
+    if (sameSet(selectedModules, TALLER_MODULE_CODES)) return 'taller'
+    if (sameSet(selectedModules, ALL_MODULE_CODES)) return 'all'
+    return null
   }, [selectedModules])
 
   const applyCore = useCallback(() => {
-    setActivePreset('core')
     onApply([...CORE_MODULE_CODES])
   }, [onApply])
 
+  const applyTaller = useCallback(() => {
+    onApply([...TALLER_MODULE_CODES])
+  }, [onApply])
+
   const applyAll = useCallback(() => {
-    setActivePreset('all')
     onApply([...ALL_MODULE_CODES])
   }, [onApply])
 
@@ -54,6 +53,15 @@ export function ModulePresetChips({ selectedModules, onApply }: ModulePresetChip
         onClick={applyCore}
       >
         Paquete operativo
+      </Button>
+      <Button
+        type="button"
+        variant={activePreset === 'taller' ? 'primary' : 'outline'}
+        theme={theme}
+        size="sm"
+        onClick={applyTaller}
+      >
+        Taller Mixto
       </Button>
       <Button
         type="button"

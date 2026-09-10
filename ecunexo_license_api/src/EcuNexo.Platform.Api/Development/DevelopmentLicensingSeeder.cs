@@ -74,7 +74,7 @@ public static class DevelopmentLicensingSeeder
                 ],
                 42m, 10),
             ("taller-mixto", "Taller",
-                "Servicio + repuesto. Dos bodegas, traspaso y factura mixta.",
+                "Servicio + repuesto. Taller y reparaciones B2B, dos bodegas, traspaso y factura mixta.",
                 1, 5, 2,
                 [
                     TenantModuleCodes.Identity,
@@ -82,6 +82,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
+                    TenantModuleCodes.Repairs,
                 ],
                 59m, 15),
             ("empresa-pyme", "Empresa",
@@ -152,7 +153,7 @@ public static class DevelopmentLicensingSeeder
                 incoming.MaxUsersDefault,
                 incoming.MaxWarehousesDefault,
                 incoming.EnabledModuleCodesDefault,
-                ModuleTierCatalog.FromModuleCodesWithTier(incoming.EnabledModuleCodesDefault),
+                BuildPlanEntitlements(incoming.EnabledModuleCodesDefault),
                 incoming.SuggestedPriceUsdMonthly,
                 incoming.SortOrder);
             if (!existing.IsActive)
@@ -227,8 +228,34 @@ public static class DevelopmentLicensingSeeder
             users,
             warehouses,
             modules,
-            null,
+            BuildPlanEntitlements(modules),
             sort,
             price,
             description);
+
+    private static List<ModuleEntitlement> BuildPlanEntitlements(IReadOnlyList<string> modules)
+    {
+        var entitlements = new List<ModuleEntitlement>(modules.Count);
+        foreach (var m in modules)
+        {
+            var normalized = m.Trim().ToLowerInvariant();
+            if (normalized == TenantModuleCodes.Repairs)
+            {
+                entitlements.Add(ModuleEntitlement.FromTierWithOverrides(
+                    TenantModuleCodes.Repairs,
+                    ModuleTier.Medium,
+                    new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        [ModuleTierCatalog.LimitMaxActiveBatches] = 50,
+                        [ModuleTierCatalog.LimitMaxEquipmentsPerBatch] = 500,
+                    }));
+            }
+            else
+            {
+                var tier = normalized == TenantModuleCodes.Catalog ? ModuleTier.Big : ModuleTier.Small;
+                entitlements.Add(ModuleEntitlement.FromTier(normalized, tier));
+            }
+        }
+        return entitlements;
+    }
 }

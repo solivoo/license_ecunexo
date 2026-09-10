@@ -4,6 +4,7 @@ export type TenantModuleOption = {
   code: string
   label: string
   description: string
+  category?: string
 }
 
 /** Módulo con límites configurables (sin tiers — valores directos). */
@@ -39,6 +40,16 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
     label: 'Identidad y acceso',
     description: 'Usuarios, roles y permisos.',
     defaultLimits: { max_users: 25 },
+  },
+  {
+    code: 'repairs',
+    label: 'Taller y Reparaciones B2B',
+    description: 'Gestión de lotes y equipos en reacondicionamiento.',
+    defaultLimits: {
+      max_active_batches: 50,
+      max_equipments_per_batch: 500,
+    },
+    category: 'Operaciones',
   },
   {
     code: 'training',
@@ -79,6 +90,7 @@ export const MODULE_DEPENDENCIES: Record<string, readonly string[]> = {
   inventory: ['catalog', 'warehousing'],
   warehousing: ['catalog'],
   facturacion: ['catalog'],
+  repairs: ['identity'],
 }
 
 /** Devuelve los módulos requeridos por el código dado. */
@@ -177,6 +189,12 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
     label: 'Soporte técnico',
     description: 'Asistencia técnica y resolución de incidencias.',
   },
+  {
+    code: 'repairs',
+    label: 'Taller y Reparaciones B2B',
+    description: 'Lotes de reacondicionamiento, tarifas por daño, fotos en custodia S3 y actas con QR.',
+    category: 'Operaciones',
+  },
 ]
 
 export const OPTIONAL_LICENSE_MODULE_OPTIONS = TENANT_MODULE_OPTIONS.filter(
@@ -211,6 +229,8 @@ const LIMIT_KEY_LABELS: Record<string, string> = {
   max_training_sessions_per_year: 'Sesiones / año',
   max_training_hours_per_year: 'Horas capacitación / año',
   max_support_hours_per_year: 'Horas soporte / año',
+  max_active_batches: 'Lotes activos',
+  max_equipments_per_batch: 'Equipos por lote',
 }
 
 export function limitKeyLabel(key: string): string {

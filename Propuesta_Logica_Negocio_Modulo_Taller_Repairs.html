@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>EcuNexo — Propuesta de Negocio: Módulo Taller y Reparaciones B2B</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 15mm 20mm 15mm;
+    @bottom-right {
+      content: counter(page);
+    }
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    background: #ffffff;
+    line-height: 1.55;
+    font-size: 10pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Cover Page */
+  .cover-page {
+    page-break-after: always;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 30mm 15mm 20mm 15mm;
+  }
+
+  .cover-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .cover-logo-badge {
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 14pt;
+    padding: 8px 16px;
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .cover-tagline {
+    font-size: 10pt;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .cover-main {
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+
+  .cover-pill {
+    display: inline-block;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 8.5pt;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 16px;
+  }
+
+  .cover-title {
+    font-size: 28pt;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.15;
+    margin: 0 0 16px 0;
+  }
+
+  .cover-subtitle {
+    font-size: 13pt;
+    color: #475569;
+    line-height: 1.45;
+    max-width: 90%;
+    margin: 0;
+  }
+
+  .cover-footer {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 8.5pt;
+    color: #64748b;
+  }
+
+  /* Content Pages */
+  .page {
+    page-break-after: always;
+  }
+
+  .page:last-child {
+    page-break-after: auto;
+  }
+
+  h1, h2, h3, h4 {
+    color: #0f172a;
+    font-weight: 700;
+  }
+
+  h1 {
+    font-size: 17pt;
+    border-bottom: 2px solid #0284c7;
+    padding-bottom: 6px;
+    margin-top: 0;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  h2 {
+    font-size: 12.5pt;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    color: #0369a1;
+  }
+
+  h3 {
+    font-size: 10.5pt;
+    margin-top: 14px;
+    margin-bottom: 6px;
+  }
+
+  p {
+    margin: 0 0 10px 0;
+    text-align: justify;
+  }
+
+  /* Callouts */
+  .callout {
+    background: #f8fafc;
+    border-left: 4px solid #0284c7;
+    padding: 10px 14px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 9pt;
+  }
+
+  .callout-title {
+    font-weight: 700;
+    color: #0369a1;
+    margin-bottom: 4px;
+  }
+
+  .callout-warning {
+    background: #fffbeb;
+    border-left-color: #d97706;
+  }
+  .callout-warning .callout-title {
+    color: #b45309;
+  }
+
+  .callout-success {
+    background: #f0fdf4;
+    border-left-color: #16a34a;
+  }
+  .callout-success .callout-title {
+    color: #15803d;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 8.5pt;
+  }
+
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 7px 9px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+  }
+
+  tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .badge-blue { background: #e0f2fe; color: #0284c7; }
+  .badge-green { background: #dcfce7; color: #15803d; }
+  .badge-yellow { background: #fef3c7; color: #b45309; }
+  .badge-purple { background: #f3e8ff; color: #7e22ce; }
+  .badge-red { background: #fee2e2; color: #b91c1c; }
+
+  /* Grid Boxes */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  .grid-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px;
+    margin: 12px 0;
+  }
+
+  .card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+
+  .card-header {
+    font-weight: 700;
+    font-size: 9.5pt;
+    color: #0f172a;
+    margin-bottom: 4px;
+  }
+
+  .card-desc {
+    font-size: 8.5pt;
+    color: #64748b;
+    line-height: 1.4;
+  }
+
+  /* Step Flow */
+  .step-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+
+  .step-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .step-num {
+    background: #0284c7;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 9pt;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-content {
+    font-size: 9pt;
+  }
+
+  .step-title {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 2px;
+  }
+
+  /* Code / Pre */
+  pre {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 7.5pt;
+    line-height: 1.4;
+    overflow: hidden;
+    margin: 10px 0;
+  }
+
+  code {
+    font-family: Consolas, "Courier New", monospace;
+  }
+
+  ul, ol {
+    margin: 4px 0 10px 18px;
+    padding: 0;
+    font-size: 9pt;
+  }
+
+  li {
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="cover-page">
+  <div class="cover-brand">
+    <div class="cover-logo-badge">ECUNEXO</div>
+    <div class="cover-tagline">Enterprise Cloud ERP & Tenancy Suite</div>
+  </div>
+
+  <div class="cover-main">
+    <span class="cover-pill">Documento Técnico-Comercial</span>
+    <h1 class="cover-title">Módulo de Taller y Reparaciones B2B</h1>
+    <p class="cover-subtitle">
+      Lógica de Negocio, Trazabilidad Masiva de Lotes, Custodia Digital en AWS S3,
+      Portal Corporativo Whirlpool y Facturación Electrónica SRI.
+    </p>
+  </div>
+
+  <div class="cover-footer">
+    <div><strong>EcuNexo Platform</strong> · Módulo Canónico <code>repairs</code></div>
+    <div>Versión 2.0 · Ecuador, Septiembre 2026</div>
+  </div>
+</div>
+
+<!-- PÁGINA 1: PROPUESTA DE VALOR Y CONTEXTO -->
+<div class="page">
+  <h1>1. Resumen Ejecutivo & Propuesta de Valor</h1>
+  
+  <p>
+    En los modelos de servicios de reacondicionamiento técnico masivo, los fabricantes y distribuidores de electrodomésticos (tales como <strong>Whirlpool, Mabe, Electrolux o LG</strong>) entregan periódicamente lotes de decenas o cientos de equipos averiados durante el transporte, importación o garantía comercial para que sean recuperados y puestos a punto.
+  </p>
+
+  <p>
+    Tradicionalmente, este modelo opera mediante <strong>planillas de Excel aisladas, chats de mensajería instantánea y llamadas telefónicas</strong>. Esto produce pérdida de trazabilidad de series, incertidumbre en los tiempos de entrega, reclamos por golpes preexistentes y facturación mensual desfasada sin respaldo documental fehaciente.
+  </p>
+
+  <div class="callout callout-success">
+    <div class="callout-title">El Objetivo de EcuNexo Taller (<code>repairs</code>)</div>
+    Convertir un taller tradicional en un <strong>Socio Estratégico Certificado</strong> para grandes marcas, reemplazando las planillas informales por un <strong>ecosistema digital integral</strong>: importación asistida, custodia fotográfica en la nube, seguimiento de avance en tiempo real para el cliente y actas de despacho oficiales con código QR vinculadas a la facturación electrónica SRI.
+  </div>
+
+  <h2>Matriz Comparativa: Situación Actual vs. Solución EcuNexo</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Problema del Fabricante (Hoy)</th>
+        <th style="width: 37%;">Solución con EcuNexo Taller</th>
+        <th style="width: 38%;">Impacto Comercial Tangible</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Falta de visibilidad de avance</strong><br>"No sé cuántas lavadoras están listas ni cuándo puedo retirarlas."</td>
+        <td><strong>Portal B2B en Tiempo Real</strong><br>Acceso seguro para el cliente con semáforos de progreso y listado de equipos por estado en vivo.</td>
+        <td>Cero llamadas y correos de seguimiento. Whirlpool planifica la logística de retiro con precisión.</td>
+      </tr>
+      <tr>
+        <td><strong>Pérdida de trazabilidad de series</strong><br>"Se confunden equipos o no sabemos qué lote contenía qué serie."</td>
+        <td><strong>Identificación Unívoca de Serie</strong><br>Buscador global por número de serie y modelo desde el ingreso hasta el despacho final.</td>
+        <td>Garantía de auditoría absoluta; detección inmediata de números de serie repetidos o reingresos.</td>
+      </tr>
+      <tr>
+        <td><strong>Reclamos por daño de transporte</strong><br>"El taller dice que vino roto, el cliente dice que el taller lo golpeó."</td>
+        <td><strong>Custodia Fotográfica en Amazon S3</strong><br>Evidencia fotográfica obligatoria antes de iniciar (daño inicial) y al terminar (control de calidad).</td>
+        <td>Whirlpool usa las fotos para cobrar el seguro de transporte inmediatamente. Se eliminan controversias.</td>
+      </tr>
+      <tr>
+        <td><strong>Facturación mensual ciega</strong><br>"El taller envía una factura global al mes sin desglose por equipo."</td>
+        <td><strong>Pre-liquidación y Factura SRI por Lote</strong><br>Borrador automático agrupado por tarifas pactadas según nivel de daño, vinculado a las actas de entrega.</td>
+        <td>Aprobación expedita de pagos en el departamento financiero del cliente corporativo.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Desacoplamiento de Inventario: Custodia Temporal vs. Stock Propio</h2>
+  <p>
+    Un principio arquitectónico fundamental del módulo es que <strong>los equipos de los lotes NO forman parte del stock propio del taller</strong> (no son inventario comercializable ni aumentan el patrimonio). Constituyen <strong>activos de terceros bajo custodia temporal</strong> para prestación de servicios técnicos.
+  </p>
+</div>
+
+<!-- PÁGINA 2: ARQUITECTURA DE NEGOCIO Y FLUJO OPERATIVO -->
+<div class="page">
+  <h1>2. Arquitectura de Negocio & Ciclo de Vida</h1>
+
+  <p>
+    El ciclo de vida del equipo abarca desde la generación de la planilla de entrega hasta la liquidación tributaria ante el SRI.
+  </p>
+
+  <div class="grid-4">
+    <div class="card">
+      <div class="card-header">1. Recepción</div>
+      <div class="card-desc">Carga del archivo Excel del cliente. El sistema crea el lote y genera el registro individual de cada equipo.</div>
+    </div>
+    <div class="card">
+      <div class="card-header">2. Diagnóstico</div>
+      <div class="card-desc">Asignación a técnico, registro fotográfico inicial en AWS S3 y confirmación del nivel de daño (N1, N2, N3 o Irreparable).</div>
+    </div>
+    <div class="card">
+      <div class="card-header">3. Reparación & QC</div>
+      <div class="card-desc">Desabollado, pintura, piezas y ensayos funcionales. Inspección y aprobación formal de Control de Calidad.</div>
+    </div>
+    <div class="card">
+      <div class="card-header">4. Despacho & SRI</div>
+      <div class="card-desc">Conformación de despacho parcial/total, acta con código QR firmado y emisión automática de la factura electrónica.</div>
+    </div>
+  </div>
+
+  <h2>Clasificación Operativa de Niveles de Daño y Tarifas</h2>
+  <p>
+    Los contratos B2B con fabricantes establecen tarifas diferenciadas según la severidad del reacondicionamiento requerido:
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nivel</th>
+        <th>Nombre Operativo</th>
+        <th>Descripción Técnica del Trabajo</th>
+        <th>Tiempo Estimado</th>
+        <th>Ejemplo de Tarifa Pactada</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-green">N1</span></td>
+        <td><strong>Estético / Cosmético</strong></td>
+        <td>Golpes superficiales en paneles externos sin daño mecánico ni eléctrico. Desabollado en frío, pulido, masillado y retoque de pintura electrostática.</td>
+        <td>1.5 — 3 horas</td>
+        <td>$25.00 — $35.00</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">N2</span></td>
+        <td><strong>Gabinete y Mecánica</strong></td>
+        <td>Deformación con necesidad de desmontaje: cuadratura de chasis, reemplazo de bisagras, manijas, tapas, nivelación de patas y sellos.</td>
+        <td>3 — 6 horas</td>
+        <td>$50.00 — $70.00</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-yellow">N3</span></td>
+        <td><strong>Estructural & Funcional</strong></td>
+        <td>Daño severo en tambor, cuba, motor, arnés eléctrico o tarjetas electrónicas. Requiere pruebas de aislamiento y ensayo de ciclo completo.</td>
+        <td>6 — 16 horas</td>
+        <td>$90.00 — $140.00</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-red">IRRE</span></td>
+        <td><strong>Irreparable</strong></td>
+        <td>Daño total donde el costo de reparación excede el valor comercial. Se documenta fotográficamente para cobro de póliza de seguro o baja contable.</td>
+        <td>—</td>
+        <td>Tarifa de diagnóstico</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Máquina de Estados de un Equipo (Workflow Auditado)</h2>
+  <div class="callout">
+    <div class="callout-title">Trazabilidad Inmutable en <code>repairs.equipment_events</code></div>
+    Cada transición de estado queda registrada con marca de tiempo UTC, usuario responsable, técnico asignado y notas técnicas. Este historial se expone al cliente corporativo en su portal para máxima transparencia.
+  </div>
+
+  <ol class="step-list">
+    <li class="step-item">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Received (Recibido)</div>
+        El equipo ingresa al taller tras la importación masiva del lote. Pendiente de asignación de técnico.
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Diagnosing (En Diagnóstico)</div>
+        El técnico asignado inspecciona el equipo, toma fotos del daño inicial y ratifica o reclasifica el nivel de daño.
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">InRepair (En Reparación)</div>
+        Trabajo activo en chapa, pintura o componentes mecánicos/eléctricos.
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">QualityCheck (Control de Calidad)</div>
+        Supervisión independiente. Si es aprobado pasa a retiro; si es rechazado retorna a reparación con observaciones.
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">ReadyToDispatch &rarr; Dispatched &rarr; Invoiced</div>
+        Embalado y listo para retiro &rarr; Transportista asignado y acta generada &rarr; Factura SRI emitida y cruzada.
+      </div>
+    </li>
+  </ol>
+</div>
+
+<!-- PÁGINA 3: TECNOLOGÍA S3, PORTAL B2B Y ACTAS QR -->
+<div class="page">
+  <h1>3. Custodia Digital, Portal B2B y Actas con QR</h1>
+
+  <h2>Trazabilidad Fotográfica en Amazon S3 (Zero-Blob en BD)</h2>
+  <p>
+    Para evitar la saturación de la base de datos PostgreSQL y asegurar alta velocidad de respuesta, las imágenes nunca se almacenan en la base de datos ni en el servidor local. Se gestionan mediante almacenamiento en la nube con **Amazon S3**:
+  </p>
+
+  <ul>
+    <li><strong>URLs Prefirmadas (Presigned URLs):</strong> El dispositivo móvil del técnico solicita una URL segura temporal de subida (5 minutos de vigencia) y transfiere la fotografía directamente a Amazon S3 sin consumir ancho de banda de la API central.</li>
+    <li><strong>Etapas de Evidencia:</strong>
+      <ul>
+        <li><code>DamageInitial</code>: Fotografía del golpe recibido del transporte. Evidencia legal para que el fabricante justifique reclamos de seguro marítimo/terrestre.</li>
+        <li><code>QualityFinal</code>: Fotografía del electrodoméstico reacondicionado y embalado. Certificación de entrega que previene reclamos infundados posteriores.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h2>Portal B2B en Tiempo Real para el Cliente Corporativo</h2>
+  <p>
+    El personal designado de Whirlpool cuenta con credenciales exclusivas que aíslan su vista únicamente a sus lotes mediante políticas de seguridad <strong>ABAC (Attribute-Based Access Control)</strong>:
+  </p>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">Visión de Lotes y Semáforos</div>
+      <div class="card-desc">Tablero con el porcentaje de avance de cada lote (ej. 75% reparado, 15% en taller, 10% pendiente), alertas de demora y fechas estimadas de culminación.</div>
+    </div>
+    <div class="card">
+      <div class="card-header">Búsqueda Unitaria por Número de Serie</div>
+      <div class="card-desc">Cualquier auditor del fabricante puede escribir el número de serie de una lavadora y ver al instante su estado actual, técnico asignado y galería de fotos.</div>
+    </div>
+  </div>
+
+  <h2>Despachos Parciales y Acta Digital con Código QR</h2>
+  <p>
+    Los fabricantes no esperan que el 100% de un lote termine para retirar equipos; envían camiones cuando acumulan 15 o 30 unidades listas. EcuNexo permite generar <strong>Despachos Parciales</strong> asociados al lote:
+  </p>
+
+  <div class="callout callout-warning">
+    <div class="callout-title">Verificación Pública Criptográfica vía QR</div>
+    Cada acta de despacho PDF incluye un código QR con una URL protegida por un hash criptográfico único (<code>verification_hash</code>). Al escanear el QR en garita o recepción, el guardia o transportista visualiza en su teléfono la autenticidad del documento: placa del camión, chofer autorizado y la lista exacta de series entregadas.
+  </div>
+
+  <h2>Liquidación Automática y Facturación SRI</h2>
+  <p>
+    Al confirmarse el despacho, el sistema genera automáticamente un borrador de factura electrónica SRI agrupando los equipos por nivel de servicio:
+  </p>
+
+  <pre>
+FACTURA ELECTRÓNICA SRI — No. 001-001-000000312
+CLIENTE: Whirlpool del Ecuador S.A. | RUC: 0992345671001
+REFERENCIA: Acta Despacho DSP-2026-WPH-042 (Lote LOT-2026-WPH-001)
+────────────────────────────────────────────────────────────────────────────
+CONCEPTO                                CANT.     V. UNIT.        SUBTOTAL
+────────────────────────────────────────────────────────────────────────────
+Servicio Reacondicionamiento Nivel 1        8       $28.00         $224.00
+Servicio Reacondicionamiento Nivel 2        5       $55.00         $275.00
+Servicio Reacondicionamiento Nivel 3        2      $110.00         $220.00
+────────────────────────────────────────────────────────────────────────────
+                                       SUBTOTAL:                   $719.00
+                                       IVA (15%):                  $107.85
+                                       TOTAL FACTURA:              $826.85
+────────────────────────────────────────────────────────────────────────────
+Series amparadas: SN-WH-10293, SN-WH-10294, SN-WH-10295 ... (Detalle anexo)
+Clave de Acceso SRI: 1009202601099234567100120010010000003121234567814
+  </pre>
+</div>
+
+<!-- PÁGINA 4: LICENCIAMIENTO, PRODUCCIÓN Y CONCLUSIONES -->
+<div class="page">
+  <h1>4. Licenciamiento en EcuNexo & Preparación para Producción</h1>
+
+  <h2>Integración en la Plataforma de Licencias</h2>
+  <p>
+    El módulo se encuentra plenamente integrado en el sistema de licenciamiento central de EcuNexo (<strong>`ecunexo_license_api`</strong> y panel de operadores <strong>`ecunexo_license`</strong>):
+  </p>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-header">Código Canónico</div>
+      <div class="card-desc"><code>TenantModuleCodes.Repairs = "repairs"</code></div>
+    </div>
+    <div class="card">
+      <div class="card-header">Límites Transaccionales</div>
+      <div class="card-desc">50 lotes activos por defecto y 500 equipos por lote (ampliable).</div>
+    </div>
+    <div class="card">
+      <div class="card-header">Firma Criptográfica</div>
+      <div class="card-desc">Token RSA-PSS / SHA-256 verificado en la emisión y canje.</div>
+    </div>
+  </div>
+
+  <h2>Checklist de Despliegue a Producción</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Componente</th>
+        <th style="width: 45%;">Acción Realizada / Requerida</th>
+        <th style="width: 30%;">Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>EcuNexo.Core (.nupkg)</strong></td>
+        <td>Compilado y copiado a <code>nuget-local/EcuNexo.Core.1.0.0.nupkg</code> con dependencias de <code>repairs</code> y catálogo de límites.</td>
+        <td><span class="badge badge-green">Listo / Probado</span></td>
+      </tr>
+      <tr>
+        <td><strong>Backend Licencias API</strong></td>
+        <td>Seeder de planes actualizado (plan <code>taller-mixto</code> incluye <code>repairs</code> con 50 lotes / 500 equipos). Compilación 0 warnings, 0 errores.</td>
+        <td><span class="badge badge-green">Listo / Probado</span></td>
+      </tr>
+      <tr>
+        <td><strong>Frontend Operadores</strong></td>
+        <td>Opciones de módulo, límites configurables y preset "Taller Mixto" añadidos. Build limpio de Vite (0 errores TypeScript).</td>
+        <td><span class="badge badge-green">Listo / Probado</span></td>
+      </tr>
+      <tr>
+        <td><strong>Docker & Portainer</strong></td>
+        <td>Imágenes listas para rebuild en servidor productivo (<code>docker compose build --no-cache</code>).</td>
+        <td><span class="badge badge-blue">Listo para Rebuild</span></td>
+      </tr>
+      <tr>
+        <td><strong>Variables de Entorno</strong></td>
+        <td>Verificar presencia de <code>AWS_S3_BUCKET</code>, <code>AWS_REGION</code> y <code>dev-license-private.pem</code> en host de producción.</td>
+        <td><span class="badge badge-yellow">Verificar en Host</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Conclusión para la Propuesta Comercial</h2>
+  <div class="callout callout-success">
+    <div class="callout-title">Resumen de Valor para Whirlpool</div>
+    Presentar esta solución coloca al taller en una <strong>posición de ventaja competitiva insuperable</strong> frente a cualquier competidor: no solo se les ofrece mano de obra de reparación, sino una <strong>plataforma de gestión tecnológica de clase mundial</strong> con custodia fotográfica en la nube, seguimiento en tiempo real, actas seguras con QR y facturación transparente homologada ante el SRI.
+  </div>
+</div>
+
+</body>
+</html>

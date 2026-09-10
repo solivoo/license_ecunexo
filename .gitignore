@@ -52,9 +52,12 @@ coverage/
 *~
 .cache/
 
-# Markdown: solo README raíz versionado (docs viven fuera del repo)
+# Markdown: solo README raíz, GEMINI.md y skills versionados
 *.md
 !/README.md
+!/GEMINI.md
+!.agents/**
+
 
 # Feed local EcuNexo.Core (build de Platform)
 !nuget-local/
