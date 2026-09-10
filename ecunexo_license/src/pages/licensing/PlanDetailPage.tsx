@@ -200,11 +200,7 @@ export function PlanDetailPage() {
       setDirty(false)
       setSuccess('Plan actualizado correctamente.')
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        setError(readApiError(err, 'Error al actualizar plan.'))
-      }
+      setError(readApiError(err, 'Error al actualizar plan.'))
       setErrorOpen(true)
     } finally {
       setBusy(false)

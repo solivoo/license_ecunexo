@@ -123,8 +123,11 @@ export function CreatePlanPage() {
     setBusy(true)
 
     try {
-      const codeTrimmed = code.trim()
+      const codeTrimmed = code.trim().toLowerCase()
       if (!codeTrimmed) throw new Error('El código es obligatorio.')
+      if (!/^[a-z0-9-]+$/.test(codeTrimmed)) {
+        throw new Error('El código solo permite minúsculas, números y guiones.')
+      }
       if (!displayName.trim()) throw new Error('El nombre visible es obligatorio.')
       if (codeTaken) throw new Error('El código ya existe en otro plan.')
 
@@ -171,11 +174,7 @@ export function CreatePlanPage() {
       setExistingPlans(fresh)
       navigate(`/app/planes/${encodeURIComponent(result.code)}`)
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        showError(err.message)
-      } else {
-        showError(readApiError(err, 'Error al crear plan.'))
-      }
+      showError(readApiError(err, 'Error al crear plan.'))
     } finally {
       setBusy(false)
     }
@@ -241,9 +240,15 @@ export function CreatePlanPage() {
                 labelPosition="outlined"
                 variant="outline"
                 value={code}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setCode(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setCode(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
+                }
                 placeholder="p. ej. enterprise-plus"
-                helperText={codeTaken ? 'Este código ya está en uso.' : undefined}
+                helperText={
+                  codeTaken
+                    ? 'Este código ya está en uso.'
+                    : 'Solo minúsculas, números y guiones.'
+                }
                 required
                 fullWidth
                 size="md"
