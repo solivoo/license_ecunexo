@@ -64,3 +64,8 @@ coverage/
 !nuget-local/**
 !nuget-local/*.nupkg
 !nuget-local/*.snupkg
+
+# Artefactos de licencia y códigos de activación emitidos (no commitear)
+*.ecunexo-license
+activation_code*.txt
+
