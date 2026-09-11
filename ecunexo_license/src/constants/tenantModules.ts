@@ -61,6 +61,15 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
     category: 'Comercial',
   },
   {
+    code: 'ecommerce',
+    label: 'E-commerce',
+    description: 'Ventas web, sincronización de pedidos y pagos.',
+    defaultLimits: {
+      max_orders_per_month: 1000,
+    },
+    category: 'Comercial',
+  },
+  {
     code: 'training',
     label: 'Capacitación',
     description: 'Sesiones de formación al equipo.',
@@ -101,6 +110,7 @@ export const MODULE_DEPENDENCIES: Record<string, readonly string[]> = {
   facturacion: ['catalog'],
   repairs: ['identity'],
   customers: ['identity'],
+  ecommerce: ['catalog', 'warehousing', 'inventory'],
 }
 
 /** Devuelve los módulos requeridos por el código dado. */
@@ -211,6 +221,12 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
     description: 'Directorio de clientes, clasificación B2B/B2C y límites de cartera.',
     category: 'Comercial',
   },
+  {
+    code: 'ecommerce',
+    label: 'E-commerce',
+    description: 'Tienda en línea, catálogo web y gestión de órdenes B2C/B2B.',
+    category: 'Comercial',
+  },
 ]
 
 export const OPTIONAL_LICENSE_MODULE_OPTIONS = TENANT_MODULE_OPTIONS.filter(
@@ -248,6 +264,7 @@ const LIMIT_KEY_LABELS: Record<string, string> = {
   max_active_batches: 'Lotes activos',
   max_equipments_per_batch: 'Equipos por lote',
   max_customers: 'Clientes máximos',
+  max_orders_per_month: 'Órdenes por mes',
 }
 
 export function limitKeyLabel(key: string): string {

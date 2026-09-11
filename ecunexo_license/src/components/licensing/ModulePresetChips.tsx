@@ -5,6 +5,7 @@ import { TENANT_MODULE_OPTIONS } from '@/constants/tenantModules'
 
 const CORE_MODULE_CODES = ['identity', 'catalog', 'warehousing', 'inventory'] as const
 const TALLER_MODULE_CODES = ['identity', 'catalog', 'warehousing', 'inventory', 'facturacion', 'repairs'] as const
+const ECOMMERCE_MODULE_CODES = ['identity', 'catalog', 'warehousing', 'inventory', 'facturacion', 'ecommerce'] as const
 const ALL_MODULE_CODES = TENANT_MODULE_OPTIONS.map((m) => m.code)
 
 function sameSet(a: readonly string[], b: readonly string[]): boolean {
@@ -27,6 +28,7 @@ export function ModulePresetChips({ selectedModules, onApply }: ModulePresetChip
   const activePreset = useMemo(() => {
     if (sameSet(selectedModules, CORE_MODULE_CODES)) return 'core'
     if (sameSet(selectedModules, TALLER_MODULE_CODES)) return 'taller'
+    if (sameSet(selectedModules, ECOMMERCE_MODULE_CODES)) return 'ecommerce'
     if (sameSet(selectedModules, ALL_MODULE_CODES)) return 'all'
     return null
   }, [selectedModules])
@@ -37,6 +39,10 @@ export function ModulePresetChips({ selectedModules, onApply }: ModulePresetChip
 
   const applyTaller = useCallback(() => {
     onApply([...TALLER_MODULE_CODES])
+  }, [onApply])
+
+  const applyEcommerce = useCallback(() => {
+    onApply([...ECOMMERCE_MODULE_CODES])
   }, [onApply])
 
   const applyAll = useCallback(() => {
@@ -62,6 +68,15 @@ export function ModulePresetChips({ selectedModules, onApply }: ModulePresetChip
         onClick={applyTaller}
       >
         Taller Mixto
+      </Button>
+      <Button
+        type="button"
+        variant={activePreset === 'ecommerce' ? 'primary' : 'outline'}
+        theme={theme}
+        size="sm"
+        onClick={applyEcommerce}
+      >
+        E-commerce
       </Button>
       <Button
         type="button"
