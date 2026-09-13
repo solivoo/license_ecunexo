@@ -6,6 +6,7 @@ import { AppSidebar } from '@/shell/AppSidebar'
 import { PlatformUserMenu } from '@/shell/PlatformUserMenu'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { clearCredentials, selectOperatorRole } from '@/store/platformAuthSlice'
+import { APP_VERSION_INFO } from '@/config/appVersion'
 import './platformShell.css'
 
 export function PlatformShellLayout() {
@@ -32,6 +33,17 @@ export function PlatformShellLayout() {
             collapsed={collapsed}
             onCollapsedChange={setCollapsed}
           />
+        </div>
+        <div className="platform-shell__sidebar-footer">
+          <div
+            className="platform-shell__version-btn"
+            title={`EcuNexo Licencias v${APP_VERSION_INFO.version} (${APP_VERSION_INFO.gitCommit})`}
+          >
+            <span className="platform-shell__version-tag">v{APP_VERSION_INFO.version}</span>
+            {!collapsed && (
+              <span className="platform-shell__version-commit">{APP_VERSION_INFO.gitCommit}</span>
+            )}
+          </div>
         </div>
       </aside>
 

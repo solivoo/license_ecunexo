@@ -37,20 +37,96 @@
   overflow: hidden;
 }
 
+.platform-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.platform-sidebar-brand--collapsed {
+  justify-content: center;
+}
+
 .platform-sidebar-brand__logo {
   display: block;
   width: auto;
   height: 1.5rem;
-  max-width: min(11rem, 100%);
+  max-width: min(8.5rem, 100%);
   object-fit: contain;
   object-position: left center;
 }
 
 .platform-sidebar-brand__logo--collapsed {
-  height: 1.15rem;
+  height: 1.25rem;
   max-width: 2.5rem;
   margin: 0 auto;
   object-position: center;
+}
+
+.platform-sidebar-brand__version {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--shell-primary) 12%, transparent);
+  color: var(--shell-primary);
+  border: 1px solid color-mix(in srgb, var(--shell-primary) 24%, transparent);
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+/* --- Pie de Sidebar con Versión del Sistema --- */
+.platform-shell__sidebar-footer {
+  padding: 0.55rem 0.75rem;
+  border-top: 1px solid var(--shell-border);
+  background: var(--shell-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.platform-shell--collapsed .platform-shell__sidebar-footer {
+  padding: 0.55rem 0.35rem;
+}
+
+.platform-shell__version-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.375rem;
+  border: 1px solid color-mix(in srgb, var(--shell-border) 65%, transparent);
+  background: color-mix(in srgb, var(--shell-bg) 45%, var(--shell-surface));
+  color: var(--shell-text);
+  font: inherit;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.platform-shell--collapsed .platform-shell__version-btn {
+  justify-content: center;
+  padding: 0.35rem 0.25rem;
+}
+
+.platform-shell__version-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: inherit;
+}
+
+.platform-shell__version-commit {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.6875rem;
+  color: var(--shell-muted);
+  background: color-mix(in srgb, var(--shell-border) 50%, transparent);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
 }
 
 .platform-shell__nav {
