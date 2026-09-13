@@ -83,14 +83,14 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
   },
   {
     code: 'contabilidad',
-    label: 'Contabilidad y Plan General de Cuentas NIIF Ecuador',
-    description: 'Plan General de Cuentas oficial SCVS y NIIF para PYMES, estructuración de cuentas e imputación transaccional.',
+    label: 'Contabilidad y Plan General de Cuentas NIIF / SCVS',
+    description: 'Catálogo maestro de cuentas contables oficial SCVS (NIIF para PYMES). Árbol jerárquico, imputabilidad y vinculación con compras e inventario.',
     defaultLimits: {
       max_chart_accounts: 500,
-      max_monthly_journal_entries: 1000,
-      allow_custom_subaccounts: 1,
+      max_monthly_journal_entries: 500,
+      enable_custom_subaccounts: 1,
     },
-    category: 'Finanzas',
+    category: 'Contabilidad',
   },
   {
     code: 'training',
@@ -221,9 +221,9 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
   },
   {
     code: 'contabilidad',
-    label: 'Contabilidad y Plan General de Cuentas NIIF Ecuador',
-    description: 'Plan General de Cuentas oficial conforme al marco normativo de la SCVS y NIIF para PYMES. Cuentas de activo, pasivo, patrimonio, ingresos y gastos.',
-    category: 'Finanzas',
+    label: 'Contabilidad y Plan General de Cuentas NIIF / SCVS',
+    description: 'Gestión del catálogo maestro de cuentas contables conforme a SCVS (NIIF para PYMES). Árbol jerárquico, grupos y control de imputabilidad.',
+    category: 'Contabilidad',
   },
   {
     code: 'training',
@@ -303,6 +303,7 @@ const LIMIT_KEY_LABELS: Record<string, string> = {
   max_monthly_withholdings: 'Retenciones / mes',
   max_chart_accounts: 'Cuentas contables',
   max_monthly_journal_entries: 'Asientos / mes',
+  enable_custom_subaccounts: 'Subcuentas personalizadas',
   allow_custom_subaccounts: 'Subcuentas personalizadas',
 }
 
