@@ -71,6 +71,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
+                    TenantModuleCodes.Purchases,
                 ],
                 42m, 10),
             ("taller-mixto", "Taller",
@@ -83,6 +84,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Repairs,
+                    TenantModuleCodes.Purchases,
                 ],
                 59m, 15),
             ("empresa-pyme", "Empresa",
@@ -94,6 +96,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
+                    TenantModuleCodes.Purchases,
                 ],
                 79m, 20),
             ("cadena-retail", "Cadena",
@@ -105,6 +108,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
+                    TenantModuleCodes.Purchases,
                 ],
                 129m, 30),
             ("grupo-multi-ruc", "Grupo",
@@ -116,6 +120,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
+                    TenantModuleCodes.Purchases,
                 ],
                 199m, 40),
         };
@@ -153,7 +158,7 @@ public static class DevelopmentLicensingSeeder
                 incoming.MaxUsersDefault,
                 incoming.MaxWarehousesDefault,
                 incoming.EnabledModuleCodesDefault,
-                BuildPlanEntitlements(incoming.EnabledModuleCodesDefault),
+                BuildPlanEntitlements(incoming.Code, incoming.EnabledModuleCodesDefault),
                 incoming.SuggestedPriceUsdMonthly,
                 incoming.SortOrder);
             if (!existing.IsActive)
@@ -228,12 +233,12 @@ public static class DevelopmentLicensingSeeder
             users,
             warehouses,
             modules,
-            BuildPlanEntitlements(modules),
+            BuildPlanEntitlements(code, modules),
             sort,
             price,
             description);
 
-    private static List<ModuleEntitlement> BuildPlanEntitlements(IReadOnlyList<string> modules)
+    private static List<ModuleEntitlement> BuildPlanEntitlements(string planCode, IReadOnlyList<string> modules)
     {
         var entitlements = new List<ModuleEntitlement>(modules.Count);
         foreach (var m in modules)
@@ -249,6 +254,17 @@ public static class DevelopmentLicensingSeeder
                         [ModuleTierCatalog.LimitMaxActiveBatches] = 50,
                         [ModuleTierCatalog.LimitMaxEquipmentsPerBatch] = 500,
                     }));
+            }
+            else if (normalized == TenantModuleCodes.Purchases)
+            {
+                var purchasesTier = planCode switch
+                {
+                    "empresa-pyme" => ModuleTier.Medium,
+                    "cadena-retail" => ModuleTier.Big,
+                    "grupo-multi-ruc" => ModuleTier.Enterprise,
+                    _ => ModuleTier.Small,
+                };
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Purchases, purchasesTier));
             }
             else
             {

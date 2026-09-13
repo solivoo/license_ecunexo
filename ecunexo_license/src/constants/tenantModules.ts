@@ -70,6 +70,17 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
     category: 'Comercial',
   },
   {
+    code: 'purchases',
+    label: 'Compras y Proveedores',
+    description: 'Gestión de compras, proveedores, gastos ATS y retenciones SRI.',
+    defaultLimits: {
+      max_monthly_purchases: 250,
+      max_suppliers: 100,
+      max_monthly_withholdings: 250,
+    },
+    category: 'Operaciones',
+  },
+  {
     code: 'training',
     label: 'Capacitación',
     description: 'Sesiones de formación al equipo.',
@@ -111,6 +122,7 @@ export const MODULE_DEPENDENCIES: Record<string, readonly string[]> = {
   repairs: ['identity'],
   customers: ['identity'],
   ecommerce: ['catalog', 'warehousing', 'inventory'],
+  purchases: ['identity', 'catalog'],
 }
 
 /** Devuelve los módulos requeridos por el código dado. */
@@ -227,6 +239,12 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
     description: 'Tienda en línea, catálogo web y gestión de órdenes B2C/B2B.',
     category: 'Comercial',
   },
+  {
+    code: 'purchases',
+    label: 'Compras y Proveedores',
+    description: 'Directorio de proveedores, facturas de compra, kárdex, tipos de gasto ATS y retenciones SRI.',
+    category: 'Operaciones',
+  },
 ]
 
 export const OPTIONAL_LICENSE_MODULE_OPTIONS = TENANT_MODULE_OPTIONS.filter(
@@ -265,6 +283,9 @@ const LIMIT_KEY_LABELS: Record<string, string> = {
   max_equipments_per_batch: 'Equipos por lote',
   max_customers: 'Clientes máximos',
   max_orders_per_month: 'Órdenes por mes',
+  max_monthly_purchases: 'Compras / mes',
+  max_suppliers: 'Proveedores máximos',
+  max_monthly_withholdings: 'Retenciones / mes',
 }
 
 export function limitKeyLabel(key: string): string {
