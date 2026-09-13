@@ -259,8 +259,10 @@ public static class DevelopmentLicensingSeeder
             {
                 var purchasesTier = planCode switch
                 {
-                    "empresa-pyme" => ModuleTier.Medium,
-                    "cadena-retail" => ModuleTier.Big,
+                    "local-comercio" => ModuleTier.Medium,
+                    "taller-mixto" => ModuleTier.Medium,
+                    "empresa-pyme" => ModuleTier.Big,
+                    "cadena-retail" => ModuleTier.Enterprise,
                     "grupo-multi-ruc" => ModuleTier.Enterprise,
                     _ => ModuleTier.Small,
                 };
