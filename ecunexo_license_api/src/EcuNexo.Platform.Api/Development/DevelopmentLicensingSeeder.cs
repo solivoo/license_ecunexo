@@ -72,6 +72,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
+                    TenantModuleCodes.Accounting,
                 ],
                 42m, 10),
             ("taller-mixto", "Taller",
@@ -85,6 +86,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Repairs,
                     TenantModuleCodes.Purchases,
+                    TenantModuleCodes.Accounting,
                 ],
                 59m, 15),
             ("empresa-pyme", "Empresa",
@@ -97,6 +99,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
+                    TenantModuleCodes.Accounting,
                 ],
                 79m, 20),
             ("cadena-retail", "Cadena",
@@ -109,6 +112,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
+                    TenantModuleCodes.Accounting,
                 ],
                 129m, 30),
             ("grupo-multi-ruc", "Grupo",
@@ -121,6 +125,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
+                    TenantModuleCodes.Accounting,
                 ],
                 199m, 40),
         };
@@ -267,6 +272,19 @@ public static class DevelopmentLicensingSeeder
                     _ => ModuleTier.Small,
                 };
                 entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Purchases, purchasesTier));
+            }
+            else if (normalized == TenantModuleCodes.Accounting)
+            {
+                var accountingTier = planCode switch
+                {
+                    "local-comercio" => ModuleTier.Small,
+                    "taller-mixto" => ModuleTier.Medium,
+                    "empresa-pyme" => ModuleTier.Big,
+                    "cadena-retail" => ModuleTier.Enterprise,
+                    "grupo-multi-ruc" => ModuleTier.Enterprise,
+                    _ => ModuleTier.Small,
+                };
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Accounting, accountingTier));
             }
             else
             {

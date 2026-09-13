@@ -82,6 +82,17 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
     category: 'Operaciones',
   },
   {
+    code: 'contabilidad',
+    label: 'Contabilidad y Plan General de Cuentas NIIF Ecuador',
+    description: 'Plan General de Cuentas oficial SCVS y NIIF para PYMES, estructuración de cuentas e imputación transaccional.',
+    defaultLimits: {
+      max_chart_accounts: 500,
+      max_monthly_journal_entries: 1000,
+      allow_custom_subaccounts: 1,
+    },
+    category: 'Finanzas',
+  },
+  {
     code: 'training',
     label: 'Capacitación',
     description: 'Sesiones de formación al equipo.',
@@ -124,6 +135,7 @@ export const MODULE_DEPENDENCIES: Record<string, readonly string[]> = {
   customers: ['identity'],
   ecommerce: ['catalog', 'warehousing', 'inventory'],
   purchases: ['identity'],
+  contabilidad: ['identity'],
 }
 
 /** Devuelve los módulos requeridos por el código dado. */
@@ -209,8 +221,9 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
   },
   {
     code: 'contabilidad',
-    label: 'Contabilidad',
-    description: 'Asientos, plan de cuentas y reportes.',
+    label: 'Contabilidad y Plan General de Cuentas NIIF Ecuador',
+    description: 'Plan General de Cuentas oficial conforme al marco normativo de la SCVS y NIIF para PYMES. Cuentas de activo, pasivo, patrimonio, ingresos y gastos.',
+    category: 'Finanzas',
   },
   {
     code: 'training',
@@ -288,6 +301,9 @@ const LIMIT_KEY_LABELS: Record<string, string> = {
   max_monthly_purchases: 'Compras / mes',
   max_suppliers: 'Proveedores máximos',
   max_monthly_withholdings: 'Retenciones / mes',
+  max_chart_accounts: 'Cuentas contables',
+  max_monthly_journal_entries: 'Asientos / mes',
+  allow_custom_subaccounts: 'Subcuentas personalizadas',
 }
 
 export function limitKeyLabel(key: string): string {
