@@ -8,11 +8,12 @@ import {
 } from '@/lib/licenseFile'
 import type { IssueLicenseResult } from '@/lib/platformLicensingApi'
 import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
+import { TENANT_MODULE_OPTIONS } from '@/constants/tenantModules'
 
 export type IssueLicenseResultDialogProps = {
   readonly issued: IssueLicenseResult
   readonly enabledModules: string[]
-  readonly modulesLabel: string
+  readonly modulesLabel?: string
   readonly supersedesGrantId?: string | null
   readonly generation?: number
   readonly reissueKind?: string | null
@@ -28,7 +29,6 @@ async function copyText(text: string): Promise<void> {
 export function IssueLicenseResultDialog({
   issued,
   enabledModules,
-  modulesLabel,
   supersedesGrantId,
   generation,
   reissueKind,
@@ -120,9 +120,18 @@ export function IssueLicenseResultDialog({
             <dt>Expira</dt>
             <dd>{new Date(issued.expiresAtUtc).toLocaleString()}</dd>
           </div>
-          <div className="issue-license-review__span">
-            <dt>Módulos</dt>
-            <dd>{modulesLabel}</dd>
+          <div className="issue-license-review__span-full">
+            <dt>Módulos ({enabledModules.length})</dt>
+            <dd className="issue-license-modules-chips">
+              {enabledModules.map((code) => {
+                const opt = TENANT_MODULE_OPTIONS.find((m) => m.code === code)
+                return (
+                  <span key={code} className="issue-license-module-chip">
+                    {opt?.label ?? code}
+                  </span>
+                )
+              })}
+            </dd>
           </div>
         </dl>
 

@@ -71,7 +71,7 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
   },
   {
     code: 'purchases',
-    label: 'Compras, Gastos & Recepción SRI',
+    label: 'Compras',
     description: 'Recepción, auditoría preventiva y registro de comprobantes electrónicos XML del SRI y facturas físicas, homologación con kárdex/bodegas y control de categorías ATS.',
     defaultLimits: {
       monthly_purchases_processed: 250,
@@ -255,7 +255,7 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
   },
   {
     code: 'purchases',
-    label: 'Compras, Gastos & Recepción SRI',
+    label: 'Compras',
     description: 'Recepción, auditoría preventiva y registro de comprobantes electrónicos XML del SRI y facturas físicas, homologación con kárdex/bodegas y control de categorías ATS.',
     category: 'Operaciones',
   },
