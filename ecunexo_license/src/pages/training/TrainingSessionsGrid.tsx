@@ -122,6 +122,7 @@ export function TrainingSessionsGrid({
         width: 140,
         align: 'center',
         sortable: false,
+        sticky: 'right',
         renderCell: (_value, row) =>
           row.status === 'Scheduled' ? (
             <div className="ecu-licenses-grid__actions">
@@ -145,7 +146,7 @@ export function TrainingSessionsGrid({
 
   return (
     <DataGrid
-      className="ecu-licenses-grid"
+      className="ecu-companies-grid"
       dataSource={dataSource}
       keyExpr="id"
       columns={columns}

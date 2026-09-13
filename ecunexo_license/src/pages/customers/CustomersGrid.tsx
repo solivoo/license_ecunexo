@@ -95,6 +95,7 @@ export function CustomersGrid({
         width: 148,
         align: 'center',
         sortable: false,
+        sticky: 'right',
         renderCell: (_value: unknown, row: CustomerGridRow) => (
           <CustomerActionsCell
             row={row}
@@ -115,7 +116,7 @@ export function CustomersGrid({
 
   return (
     <DataGrid
-      className="ecu-licenses-grid"
+      className="ecu-companies-grid"
       dataSource={dataSource}
       keyExpr="id"
       columns={columns}

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
-import { CheckCircle2, KeyRound, Layers, Zap } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { CheckCircle2, KeyRound, Layers, ShieldCheck, Users, Zap } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from 'glubox'
+import { EmptyState, PageHeader, QuickActionCard, SectionCard, StatCard, StatusBadge } from '@/components/ui'
 import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { listPlans, listLicenses, type PlanListItem } from '@/lib/platformLicensingApi'
 import { readApiError } from '@/lib/readApiError'
@@ -19,36 +20,52 @@ export function DashboardHomePage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
 
-  const loadMetrics = useCallback(async () => {
-    try {
-      const [plans, licenses] = await Promise.all([listPlans(), listLicenses()])
-      setMetrics({
-        activePlans: plans.filter((p) => p.isActive).length,
-        totalLicenses: licenses.length,
-        activeLicenses: licenses.filter((l) => l.status === 'Active').length,
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([listPlans(), listLicenses()])
+      .then(([plans, licenses]) => {
+        if (cancelled) return
+        setMetrics({
+          activePlans: plans.filter((p) => p.isActive).length,
+          totalLicenses: licenses.length,
+          activeLicenses: licenses.filter((l) => l.status === 'Active').length,
+        })
+        setRecentPlans(plans.slice(0, 4))
+        setLoadError(null)
       })
-      setRecentPlans(plans.slice(0, 3))
-    } catch (err: unknown) {
-      setLoadError(readApiError(err, 'Error al cargar métricas. ¿API en 5090?'))
-    } finally {
-      setLoading(false)
+      .catch((err: unknown) => {
+        if (cancelled) return
+        setLoadError(readApiError(err, 'Error al cargar métricas. ¿API en 5090?'))
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
     }
   }, [])
 
-  useEffect(() => {
-    void loadMetrics()
-  }, [loadMetrics])
-
   return (
-    <>
-      <div className="ecu-page-header">
-        <div>
-          <h1 className="platform-shell__page-title">Inicio</h1>
-          <p className="platform-shell__page-lead">
-            Panel de operaciones EcuNexo · Rol: <strong>{role ?? '—'}</strong>
-          </p>
-        </div>
-      </div>
+    <div className="ecu-dashboard-layout">
+      <PageHeader
+        title="Panel de Operaciones"
+        subtitle="Centro de control de licenciamiento, planes comerciales y seguridad corporativa"
+        badge={
+          <StatusBadge tone="primary" withDot>
+            {role ?? 'Operador'}
+          </StatusBadge>
+        }
+        actions={
+          <Button
+            type="button"
+            variant="primary"
+            theme={theme}
+            onClick={() => navigate('/app/licencias/nueva')}
+          >
+            Emitir licencia
+          </Button>
+        }
+      />
 
       {loadError ? (
         <p className="platform-shell__alert platform-shell__alert--error" role="alert">
@@ -56,99 +73,148 @@ export function DashboardHomePage() {
         </p>
       ) : null}
 
-      <div className="ecu-stats-grid">
-        <div className="ecu-stat-card">
-          <Layers className="ecu-stat-card__icon" size={22} strokeWidth={1.75} aria-hidden />
-          <div>
-            <span className="ecu-stat-card__value">{loading ? '—' : metrics.activePlans}</span>
-            <span className="ecu-stat-card__label">Planes activos</span>
-          </div>
-        </div>
-        <div className="ecu-stat-card">
-          <KeyRound className="ecu-stat-card__icon" size={22} strokeWidth={1.75} aria-hidden />
-          <div>
-            <span className="ecu-stat-card__value">{loading ? '—' : metrics.totalLicenses}</span>
-            <span className="ecu-stat-card__label">Licencias emitidas</span>
-          </div>
-        </div>
-        <div className="ecu-stat-card">
-          <CheckCircle2 className="ecu-stat-card__icon" size={22} strokeWidth={1.75} aria-hidden />
-          <div>
-            <span className="ecu-stat-card__value">{loading ? '—' : metrics.activeLicenses}</span>
-            <span className="ecu-stat-card__label">Licencias activas</span>
-          </div>
-        </div>
+      <div className="ecu-stat-grid">
+        <StatCard
+          label="Planes activos"
+          value={loading ? '—' : metrics.activePlans}
+          icon={<Layers size={22} strokeWidth={1.75} />}
+          toneColor="var(--shell-primary)"
+          footerText="Catálogo comercial"
+        />
+        <StatCard
+          label="Licencias emitidas"
+          value={loading ? '—' : metrics.totalLicenses}
+          icon={<KeyRound size={22} strokeWidth={1.75} />}
+          toneColor="#8b5cf6"
+          footerText="Historial acumulado"
+        />
+        <StatCard
+          label="Licencias activas"
+          value={loading ? '—' : metrics.activeLicenses}
+          icon={<CheckCircle2 size={22} strokeWidth={1.75} />}
+          toneColor="#10b981"
+          badge={
+            <StatusBadge tone="success" withDot>
+              Operativas
+            </StatusBadge>
+          }
+        />
       </div>
 
-      <div className="ecu-dashboard-sections">
-        <div className="platform-shell__card ecu-dashboard-card">
-          <h2 className="ecu-dashboard-card__title">
-            <Zap size={20} strokeWidth={1.75} aria-hidden /> Accesos rápidos
-          </h2>
-          <div className="ecu-dashboard-actions">
-            <Button type="button" variant="primary" theme={theme} onClick={() => navigate('/app/licencias/nueva')}>
-              Emitir licencia
-            </Button>
-            <Button type="button" variant="outline" theme={theme} onClick={() => navigate('/app/planes')}>
-              Catálogo de planes
-            </Button>
-            <Button type="button" variant="outline" theme={theme} onClick={() => navigate('/app/licencias/historial')}>
-              Historial
-            </Button>
-            <Button type="button" variant="outline" theme={theme} onClick={() => navigate('/app/clientes')}>
-              Clientes
-            </Button>
-            {canManageOperators ? (
-              <Button type="button" variant="outline" theme={theme} onClick={() => navigate('/app/operadores')}>
-                Operadores
-              </Button>
-            ) : null}
-          </div>
+      <SectionCard
+        title={
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Zap size={18} strokeWidth={2} aria-hidden />
+            Accesos rápidos
+          </span>
+        }
+        subtitle="Acciones y flujos frecuentes de la plataforma"
+      >
+        <div className="ecu-action-grid">
+          <QuickActionCard
+            to="/app/licencias/nueva"
+            icon={<KeyRound size={22} strokeWidth={1.75} />}
+            title="Emitir nueva licencia"
+            description="Genera código de activación y archivo .lic criptográfico firmado"
+            badge={<StatusBadge tone="primary">Emisión</StatusBadge>}
+          />
+          <QuickActionCard
+            to="/app/licencias/historial"
+            icon={<CheckCircle2 size={22} strokeWidth={1.75} />}
+            title="Historial de licencias"
+            description="Supervisa, reemite o amplía licencias activas y revocadas"
+          />
+          <QuickActionCard
+            to="/app/planes"
+            icon={<Layers size={22} strokeWidth={1.75} />}
+            title="Catálogo de planes"
+            description="Configura cupos, tiers y módulos contratables en Ecuador"
+          />
+          <QuickActionCard
+            to="/app/clientes"
+            icon={<Users size={22} strokeWidth={1.75} />}
+            title="Directorio de clientes"
+            description="Administra titulares de suscripción y razones sociales"
+          />
+          {canManageOperators ? (
+            <QuickActionCard
+              to="/app/operadores"
+              icon={<ShieldCheck size={22} strokeWidth={1.75} />}
+              title="Operadores del sistema"
+              description="Gestiona usuarios y credenciales con acceso al panel"
+              badge={<StatusBadge tone="info">Seguridad</StatusBadge>}
+            />
+          ) : null}
         </div>
+      </SectionCard>
 
-        <div className="platform-shell__card ecu-dashboard-card">
-          <h2 className="ecu-dashboard-card__title">
-            <Layers size={20} strokeWidth={1.75} aria-hidden /> Planes recientes
-          </h2>
-          {recentPlans.length === 0 ? (
-            <p className="login-page__muted">
-              No hay planes aún.{' '}
-              <button
+      <SectionCard
+        title={
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Layers size={18} strokeWidth={2} aria-hidden />
+            Planes comerciales
+          </span>
+        }
+        subtitle="Esquemas de licenciamiento configurados en la plataforma"
+        action={
+          <Button
+            type="button"
+            variant="outline"
+            theme={theme}
+            size="sm"
+            onClick={() => navigate('/app/planes/nuevo')}
+          >
+            Nuevo plan
+          </Button>
+        }
+      >
+        {recentPlans.length === 0 ? (
+          <EmptyState
+            icon={<Layers size={28} strokeWidth={1.75} />}
+            title="No hay planes registrados"
+            description="Crea el primer plan comercial para habilitar la emisión de licencias."
+            action={
+              <Button
                 type="button"
-                className="ecu-link-btn"
+                variant="primary"
+                theme={theme}
                 onClick={() => navigate('/app/planes/nuevo')}
               >
                 Crear primer plan
-              </button>
-            </p>
-          ) : (
-            <div className="ecu-dashboard-plan-list">
-              {recentPlans.map((plan) => (
-                <div
-                  key={plan.code}
-                  className="ecu-dashboard-plan-item"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => navigate(`/app/planes/${encodeURIComponent(plan.code)}`)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      navigate(`/app/planes/${encodeURIComponent(plan.code)}`)
-                    }
-                  }}
-                >
+              </Button>
+            }
+          />
+        ) : (
+          <div className="ecu-dashboard-plan-list">
+            {recentPlans.map((plan) => (
+              <div
+                key={plan.code}
+                className="ecu-dashboard-plan-item"
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate(`/app/planes/${encodeURIComponent(plan.code)}`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    navigate(`/app/planes/${encodeURIComponent(plan.code)}`)
+                  }
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                   <span className="ecu-dashboard-plan-item__name">{plan.displayName}</span>
                   <span className="ecu-dashboard-plan-item__code">{plan.code}</span>
-                  {plan.suggestedPriceUsdMonthly != null ? (
-                    <span className="ecu-dashboard-plan-item__price">
-                      ${plan.suggestedPriceUsdMonthly.toFixed(2)}/mes
-                    </span>
-                  ) : null}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </>
+                {plan.suggestedPriceUsdMonthly != null ? (
+                  <span className="ecu-dashboard-plan-item__price">
+                    ${plan.suggestedPriceUsdMonthly.toFixed(2)} / mes
+                  </span>
+                ) : (
+                  <StatusBadge tone="neutral">A cotizar</StatusBadge>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </SectionCard>
+    </div>
   )
 }

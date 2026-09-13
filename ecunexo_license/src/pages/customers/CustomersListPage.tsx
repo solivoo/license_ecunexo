@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, type PageActionItem } from 'glubox'
+import { AlertTriangle, CheckCircle2, KeyRound, Plus, Users } from 'lucide-react'
+import { Button, OptionGroup, type PageActionItem } from 'glubox'
 import { EcuPageActions } from '@/components/ui/EcuPageActions'
 import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
-import { GridOptionFilter } from '@/components/ui/GridOptionFilter'
+import { EmptyState, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
 import { renderSidebarIcon } from '@/config/sidebarIcons'
 import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import {
@@ -17,8 +18,8 @@ import { CustomersGrid } from './CustomersGrid'
 
 const STATUS_FILTERS = [
   { value: 'all', label: 'Todos' },
-  { value: 'Active', label: 'Activo' },
-  { value: 'Suspended', label: 'Suspendido' },
+  { value: 'Active', label: 'Activos' },
+  { value: 'Suspended', label: 'Suspendidos' },
 ] as const
 
 export function CustomersListPage() {
@@ -32,6 +33,7 @@ export function CustomersListPage() {
   const [actionBusyId, setActionBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [errorOpen, setErrorOpen] = useState(false)
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
@@ -46,13 +48,37 @@ export function CustomersListPage() {
   }, [])
 
   useEffect(() => {
-    void load()
-  }, [load])
+    let cancelled = false
+    listLicensingCustomers()
+      .then((data) => {
+        if (cancelled) return
+        setLoadError(null)
+        setRows(data)
+      })
+      .catch((err) => {
+        if (cancelled) return
+        setLoadError(readApiError(err, 'No se pudo cargar clientes.'))
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const visibleRows = useMemo(() => {
     if (statusFilter === 'all') return rows
     return rows.filter((row) => row.status === statusFilter)
   }, [rows, statusFilter])
+
+  const metrics = useMemo(() => {
+    const total = rows.length
+    const active = rows.filter((r) => r.status === 'Active').length
+    const suspended = rows.filter((r) => r.status === 'Suspended').length
+    const totalLicenses = rows.reduce((acc, r) => acc + (r.licensesIssued || 0), 0)
+    return { total, active, suspended, totalLicenses }
+  }, [rows])
 
   const actionItems = useMemo(
     (): PageActionItem[] => [
@@ -85,35 +111,39 @@ export function CustomersListPage() {
   const deletePrompt = confirmDelete ? customerDeletePrompt(confirmDelete) : null
 
   return (
-    <>
-      <div className="ecu-page-header">
-        <div>
-          <h1 className="platform-shell__page-title">Clientes</h1>
-          <p className="platform-shell__page-lead">
-            Directorio comercial. Edita, elimina o genera una licencia desde la fila.
-          </p>
-        </div>
-        <div className="ecu-page-header__actions">
-          <Button
-            type="button"
-            variant="primary"
-            theme={theme}
-            onClick={() => navigate('/app/clientes/nuevo')}
-          >
-            Nuevo cliente
-          </Button>
-          <EcuPageActions
-            items={actionItems}
-            variant="outline"
-            triggerLabel="Acciones"
-            renderIcon={renderSidebarIcon}
-            onNavigate={(route: string) => navigate(route)}
-            onActionSelect={(item) => {
-              if (item.id === 'refresh') void load()
-            }}
-          />
-        </div>
-      </div>
+    <div className="ecu-dashboard-layout">
+      <PageHeader
+        title="Directorio de Clientes"
+        subtitle="Administración de empresas titulares y cuentas de licenciamiento"
+        badge={
+          <StatusBadge tone="primary" withDot>
+            Directorio
+          </StatusBadge>
+        }
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="primary"
+              theme={theme}
+              onClick={() => navigate('/app/clientes/nuevo')}
+            >
+              <Plus size={16} aria-hidden />
+              Nuevo cliente
+            </Button>
+            <EcuPageActions
+              items={actionItems}
+              variant="outline"
+              triggerLabel="Acciones"
+              renderIcon={renderSidebarIcon}
+              onNavigate={(route: string) => navigate(route)}
+              onActionSelect={(item) => {
+                if (item.id === 'refresh') void load()
+              }}
+            />
+          </>
+        }
+      />
 
       {loadError ? (
         <p className="platform-shell__alert platform-shell__alert--error" role="alert">
@@ -121,26 +151,109 @@ export function CustomersListPage() {
         </p>
       ) : null}
 
-      <CustomersGrid
-        rows={visibleRows}
-        loading={loading}
-        actionBusyId={actionBusyId}
-        onEdit={(id) => navigate(`/app/clientes/${id}/editar`)}
-        onDelete={setConfirmDelete}
-        onIssueLicense={(row) =>
-          navigate('/app/licencias/nueva', { state: { customer: row } })
-        }
-        toolbarRight={
-          <GridOptionFilter
-            id="customers-status"
-            ariaLabel="Estado del cliente"
+      <div className="ecu-stat-grid">
+        <StatCard
+          label="Total clientes"
+          value={loading ? '—' : metrics.total}
+          icon={<Users size={22} strokeWidth={1.75} />}
+          toneColor="var(--shell-primary)"
+          footerText="Directorio corporativo"
+        />
+        <StatCard
+          label="Clientes activos"
+          value={loading ? '—' : metrics.active}
+          icon={<CheckCircle2 size={22} strokeWidth={1.75} />}
+          toneColor="#10b981"
+          badge={
+            <StatusBadge tone="success" withDot>
+              Operativos
+            </StatusBadge>
+          }
+        />
+        <StatCard
+          label="Suspendidos"
+          value={loading ? '—' : metrics.suspended}
+          icon={<AlertTriangle size={22} strokeWidth={1.75} />}
+          toneColor="#f59e0b"
+          badge={
+            metrics.suspended > 0 ? (
+              <StatusBadge tone="warning">Revisión</StatusBadge>
+            ) : undefined
+          }
+        />
+        <StatCard
+          label="Licencias asignadas"
+          value={loading ? '—' : metrics.totalLicenses}
+          icon={<KeyRound size={22} strokeWidth={1.75} />}
+          toneColor="#8b5cf6"
+          footerText="Total en clientes"
+        />
+      </div>
+
+      <SectionCard
+        title="Clientes Registrados"
+        subtitle="Directorio comercial y estado de licencias asociadas"
+        action={
+          <OptionGroup
+            id="customers-status-filter"
+            name="customersStatus"
+            layout="segmented"
+            variant="outline"
+            size="sm"
+            theme={theme}
+            options={STATUS_FILTERS.map((f) => ({ value: f.value, label: f.label }))}
             value={statusFilter}
-            options={STATUS_FILTERS}
+            onChange={(val) => setStatusFilter(String(val))}
             disabled={loading}
-            onChange={setStatusFilter}
           />
         }
-      />
+      >
+        {!loading && visibleRows.length === 0 ? (
+          <EmptyState
+            icon={<Users size={32} strokeWidth={1.75} />}
+            title="No se encontraron clientes"
+            description={
+              statusFilter !== 'all'
+                ? 'No existen registros que coincidan con el filtro de estado seleccionado.'
+                : 'Crea el primer cliente comercial para comenzar a emitir licencias.'
+            }
+            action={
+              statusFilter === 'all' ? (
+                <Button
+                  type="button"
+                  variant="primary"
+                  theme={theme}
+                  onClick={() => navigate('/app/clientes/nuevo')}
+                >
+                  <Plus size={16} aria-hidden />
+                  Nuevo cliente
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  theme={theme}
+                  size="sm"
+                  onClick={() => setStatusFilter('all')}
+                >
+                  Ver todos los clientes
+                </Button>
+              )
+            }
+          />
+        ) : (
+          <CustomersGrid
+            rows={visibleRows}
+            loading={loading}
+            actionBusyId={actionBusyId}
+            onEdit={(id) => navigate(`/app/clientes/${id}/editar`)}
+            onDelete={setConfirmDelete}
+            onIssueLicense={(row) =>
+              navigate('/app/licencias/nueva', { state: { customer: row } })
+            }
+          />
+        )}
+      </SectionCard>
 
       <EcuAlertDialog
         open={deletePrompt !== null}
@@ -159,6 +272,7 @@ export function CustomersListPage() {
           setError(null)
         }}
       />
-    </>
+    </div>
   )
 }
+

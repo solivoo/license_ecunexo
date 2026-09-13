@@ -86,7 +86,7 @@ export function OperatorsGrid({ rows, loading = false, toolbarRight }: Operators
 
   return (
     <DataGrid
-      className="ecu-licenses-grid"
+      className="ecu-companies-grid"
       dataSource={dataSource}
       keyExpr="id"
       columns={columns}

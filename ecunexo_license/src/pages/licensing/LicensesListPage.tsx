@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Popup, type PageActionItem } from 'glubox'
+import { AlertTriangle, Ban, CheckCircle2, KeyRound, Plus } from 'lucide-react'
+import { Button, OptionGroup, Popup, type PageActionItem } from 'glubox'
 import { EcuPageActions } from '@/components/ui/EcuPageActions'
-import { GridOptionFilter } from '@/components/ui/GridOptionFilter'
+import { EmptyState, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
 import { ExpandLicenseDialog } from '@/components/licensing/ExpandLicenseDialog'
 import { IssueLicenseResultDialog } from '@/components/licensing/IssueLicenseResultDialog'
 import { renderSidebarIcon } from '@/config/sidebarIcons'
@@ -19,9 +20,9 @@ import { LicensesGrid } from './LicensesGrid'
 
 const STATUS_FILTERS = [
   { value: 'all', label: 'Todas' },
-  { value: 'Active', label: 'Activa' },
-  { value: 'Revoked', label: 'Revocada' },
-  { value: 'Exhausted', label: 'Agotada' },
+  { value: 'Active', label: 'Activas' },
+  { value: 'Revoked', label: 'Revocadas' },
+  { value: 'Exhausted', label: 'Agotadas' },
 ] as const
 
 export function LicensesListPage() {
@@ -84,6 +85,14 @@ export function LicensesListPage() {
     return rows.filter((row) => row.status === statusFilter)
   }, [rows, statusFilter])
 
+  const metrics = useMemo(() => {
+    const total = rows.length
+    const active = rows.filter((r) => r.status === 'Active').length
+    const revoked = rows.filter((r) => r.status === 'Revoked').length
+    const exhausted = rows.filter((r) => r.status === 'Exhausted').length
+    return { total, active, revoked, exhausted }
+  }, [rows])
+
   const actionItems = useMemo(
     (): PageActionItem[] => [
       {
@@ -130,42 +139,149 @@ export function LicensesListPage() {
   )
 
   return (
-    <>
-      <div className="ecu-page-header">
-        <div>
-          <h1 className="platform-shell__page-title">Historial de licencias</h1>
-          <p className="platform-shell__page-lead">
-            Licencias emitidas. Ampliar revoca la anterior y genera un código y archivo con el plan elegido.
-          </p>
-        </div>
-        <div className="ecu-page-header__actions">
-          <Button
-            type="button"
-            variant="primary"
-            theme={theme}
-            disabled={loading || reissueBusy}
-            onClick={() => void navigate('/app/licencias/nueva')}
-          >
-            Emitir licencia
-          </Button>
-          <EcuPageActions
-            items={actionItems}
-            variant="outline"
-            triggerLabel="Acciones"
-            renderIcon={renderSidebarIcon}
-            onNavigate={(route: string) => navigate(route)}
-            onActionSelect={(item) => {
-              if (item.id === 'refresh') void load()
-            }}
-          />
-        </div>
-      </div>
+    <div className="ecu-dashboard-layout">
+      <PageHeader
+        title="Historial de Licencias"
+        subtitle="Licencias emitidas. Ampliar revoca la anterior y genera un código y archivo con el plan elegido."
+        badge={
+          <StatusBadge tone="primary" withDot>
+            Licencias
+          </StatusBadge>
+        }
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="primary"
+              theme={theme}
+              disabled={loading || reissueBusy}
+              onClick={() => void navigate('/app/licencias/nueva')}
+            >
+              <Plus size={16} aria-hidden />
+              Emitir licencia
+            </Button>
+            <EcuPageActions
+              items={actionItems}
+              variant="outline"
+              triggerLabel="Acciones"
+              renderIcon={renderSidebarIcon}
+              onNavigate={(route: string) => navigate(route)}
+              onActionSelect={(item) => {
+                if (item.id === 'refresh') void load()
+              }}
+            />
+          </>
+        }
+      />
 
       {loadError && !errorOpen ? (
         <p className="platform-shell__alert platform-shell__alert--error" role="alert">
           {loadError}
         </p>
       ) : null}
+
+      <div className="ecu-stat-grid">
+        <StatCard
+          label="Total licencias"
+          value={loading ? '—' : metrics.total}
+          icon={<KeyRound size={22} strokeWidth={1.75} />}
+          toneColor="var(--shell-primary)"
+          footerText="Emisiones registradas"
+        />
+        <StatCard
+          label="Licencias activas"
+          value={loading ? '—' : metrics.active}
+          icon={<CheckCircle2 size={22} strokeWidth={1.75} />}
+          toneColor="#10b981"
+          badge={
+            <StatusBadge tone="success" withDot>
+              Operativas
+            </StatusBadge>
+          }
+        />
+        <StatCard
+          label="Revocadas"
+          value={loading ? '—' : metrics.revoked}
+          icon={<Ban size={22} strokeWidth={1.75} />}
+          toneColor="#ef4444"
+          badge={
+            metrics.revoked > 0 ? (
+              <StatusBadge tone="danger">Revocadas</StatusBadge>
+            ) : undefined
+          }
+        />
+        <StatCard
+          label="Agotadas"
+          value={loading ? '—' : metrics.exhausted}
+          icon={<AlertTriangle size={22} strokeWidth={1.75} />}
+          toneColor="#f59e0b"
+          badge={
+            metrics.exhausted > 0 ? (
+              <StatusBadge tone="warning">Sin cupos</StatusBadge>
+            ) : undefined
+          }
+        />
+      </div>
+
+      <SectionCard
+        title="Licencias Emitidas"
+        subtitle="Registro cronológico y trazabilidad criptográfica"
+        action={
+          <OptionGroup
+            id="licenses-status-filter"
+            name="licensesStatus"
+            layout="segmented"
+            variant="outline"
+            size="sm"
+            theme={theme}
+            options={STATUS_FILTERS.map((f) => ({ value: f.value, label: f.label }))}
+            value={statusFilter}
+            onChange={(val) => setStatusFilter(String(val))}
+            disabled={loading || reissueBusy}
+          />
+        }
+      >
+        {!loading && visibleRows.length === 0 ? (
+          <EmptyState
+            icon={<KeyRound size={32} strokeWidth={1.75} />}
+            title="No se encontraron licencias"
+            description={
+              statusFilter !== 'all'
+                ? 'No existen licencias emitidas con el estado seleccionado.'
+                : 'Genera la primera licencia comercial para activar un entorno de cliente.'
+            }
+            action={
+              statusFilter === 'all' ? (
+                <Button
+                  type="button"
+                  variant="primary"
+                  theme={theme}
+                  onClick={() => void navigate('/app/licencias/nueva')}
+                >
+                  <Plus size={16} aria-hidden />
+                  Emitir primera licencia
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  theme={theme}
+                  size="sm"
+                  onClick={() => setStatusFilter('all')}
+                >
+                  Ver todas las licencias
+                </Button>
+              )
+            }
+          />
+        ) : (
+          <LicensesGrid
+            rows={visibleRows}
+            loading={loading}
+            onExpand={handleExpand}
+          />
+        )}
+      </SectionCard>
 
       <Popup
         open={errorOpen}
@@ -190,22 +306,6 @@ export function LicensesListPage() {
       >
         <p className="issue-license-error-popup">{loadError ?? 'Ocurrió un error.'}</p>
       </Popup>
-
-      <LicensesGrid
-        rows={visibleRows}
-        loading={loading}
-        onExpand={handleExpand}
-        toolbarRight={
-          <GridOptionFilter
-            id="licenses-status"
-            ariaLabel="Estado de licencia"
-            value={statusFilter}
-            options={STATUS_FILTERS}
-            disabled={loading}
-            onChange={setStatusFilter}
-          />
-        }
-      />
 
       <ExpandLicenseDialog
         open={expandOpen}
@@ -243,6 +343,7 @@ export function LicensesListPage() {
           }}
         />
       ) : null}
-    </>
+    </div>
   )
 }
+

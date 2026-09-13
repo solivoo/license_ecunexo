@@ -1,0 +1,1145 @@
+/* ==========================================================================
+   EcuNexo Enterprise UI System (Google M3 + Modern SaaS)
+   Complemento de alto nivel para componentes glubox
+   ========================================================================== */
+
+/* --- Contenedor Principal y Layout Base con Espaciado Generoso --- */
+.ecu-dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  padding-bottom: 3rem;
+  box-sizing: border-box;
+}
+
+/* Formularios operativos con tablas/previews anchos (importación de lotes, etc.) */
+.ecu-dashboard-layout--fluid {
+  max-width: min(100%, 1680px);
+}
+
+.ecu-import-batch-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.ecu-dashboard-layout > .ecu-page-header {
+  margin-bottom: 0;
+}
+
+.ecu-dashboard-layout > .ecu-stat-grid {
+  margin-bottom: 0;
+}
+
+.ecu-dashboard-layout > .ecu-section-card {
+  margin-bottom: 0;
+}
+
+/* --- Contenedor de Cabecera de Página (PageHeader) --- */
+.ecu-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--shell-border) 60%, transparent);
+}
+
+@media (min-width: 768px) {
+  .ecu-page-header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+}
+
+.ecu-page-header__main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.ecu-page-header__title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ecu-page-header__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--shell-text);
+  line-height: 1.25;
+}
+
+.ecu-page-header__subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--shell-muted);
+  line-height: 1.45;
+  max-width: 48rem;
+}
+
+.ecu-page-header__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .ecu-page-header__actions {
+    margin-top: 0;
+  }
+}
+
+/* --- Badges Semánticos (StatusBadge) --- */
+.ecu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.ecu-badge--dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ecu-badge--primary {
+  background: color-mix(in srgb, var(--shell-primary) 12%, transparent);
+  color: var(--shell-primary);
+  border-color: color-mix(in srgb, var(--shell-primary) 25%, transparent);
+}
+
+.ecu-badge--success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.ecu-badge--warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.ecu-badge--danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.ecu-badge--info {
+  background: rgba(14, 165, 233, 0.12);
+  color: #0284c7;
+  border-color: rgba(14, 165, 233, 0.25);
+}
+
+.ecu-badge--neutral {
+  background: color-mix(in srgb, var(--shell-muted) 12%, transparent);
+  color: var(--shell-muted);
+  border-color: color-mix(in srgb, var(--shell-muted) 20%, transparent);
+}
+
+/* Modo oscuro para badges */
+html.sf-dark-mode .ecu-badge--success {
+  color: #34d399;
+}
+html.sf-dark-mode .ecu-badge--warning {
+  color: #fbbf24;
+}
+html.sf-dark-mode .ecu-badge--danger {
+  color: #f87171;
+}
+html.sf-dark-mode .ecu-badge--info {
+  color: #38bdf8;
+}
+
+/* --- Cuadrícula de KPIs / Métricas (StatGrid) --- */
+.ecu-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Tarjeta individual de Métrica (StatCard) */
+.ecu-stat-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.15rem;
+  border-radius: 14px;
+  background: var(--shell-surface);
+  border: 1px solid var(--shell-border);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.ecu-stat-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--shell-primary) 40%, var(--shell-border));
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.08);
+}
+
+.ecu-stat-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.ecu-stat-card__icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--stat-tone, var(--shell-primary)) 12%, transparent);
+  color: var(--stat-tone, var(--shell-primary));
+  flex-shrink: 0;
+}
+
+.ecu-stat-card__icon-wrap .material-symbols-outlined {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.ecu-stat-card__icon-wrap svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  stroke-width: 2px;
+}
+
+.ecu-stat-card__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--shell-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.25rem;
+}
+
+.ecu-stat-card__value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--shell-text);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.ecu-stat-card__footer {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--shell-muted);
+}
+
+/* --- Contenedor de Sección (SectionCard) --- */
+.ecu-section-card {
+  background: var(--shell-surface);
+  border: 1px solid var(--shell-border);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.ecu-section-card__header {
+  padding: 1.15rem 1.35rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--shell-border) 60%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ecu-section-card__title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ecu-section-card__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--shell-text);
+  letter-spacing: -0.01em;
+}
+
+.ecu-section-card__subtitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--shell-muted);
+}
+
+.ecu-section-card__body {
+  padding: 1.35rem;
+}
+
+/* --- Tarjetas Interactivas de Acción Rápida (QuickTile) --- */
+.ecu-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.ecu-action-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.15rem;
+  border-radius: 14px;
+  background: var(--shell-surface);
+  border: 1px solid var(--shell-border);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.ecu-action-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--shell-primary);
+  box-shadow: 0 8px 24px -6px color-mix(in srgb, var(--shell-primary) 20%, transparent);
+  background: color-mix(in srgb, var(--shell-primary) 2%, var(--shell-surface));
+}
+
+.ecu-action-card__icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--shell-primary) 10%, transparent);
+  color: var(--shell-primary);
+  flex-shrink: 0;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.ecu-action-card:hover .ecu-action-card__icon-box {
+  transform: scale(1.06);
+  background: color-mix(in srgb, var(--shell-primary) 18%, transparent);
+}
+
+.ecu-action-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.ecu-action-card__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ecu-action-card__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--shell-text);
+  line-height: 1.3;
+}
+
+.ecu-action-card__chevron {
+  color: var(--shell-muted);
+  font-size: 1.15rem;
+  opacity: 0.6;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.ecu-action-card:hover .ecu-action-card__chevron {
+  opacity: 1;
+  transform: translateX(3px);
+  color: var(--shell-primary);
+}
+
+.ecu-action-card__desc {
+  font-size: 0.8125rem;
+  color: var(--shell-muted);
+  line-height: 1.35;
+}
+
+/* --- Stepper / Guía Visual de Flujo --- */
+.ecu-workflow-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ecu-workflow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--shell-muted) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--shell-border) 50%, transparent);
+}
+
+.ecu-workflow-step__num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--shell-primary);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ecu-workflow-step__text {
+  font-size: 0.8125rem;
+  color: var(--shell-text);
+  line-height: 1.4;
+}
+
+.ecu-workflow-step__text strong {
+  color: var(--shell-text);
+  font-weight: 600;
+}
+
+/* --- Modo Oscuro Ajustes Específicos --- */
+html.sf-dark-mode .ecu-stat-card,
+html.sf-dark-mode .ecu-section-card,
+html.sf-dark-mode .ecu-action-card {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+html.sf-dark-mode .ecu-stat-card:hover,
+html.sf-dark-mode .ecu-action-card:hover {
+  border-color: color-mix(in srgb, var(--shell-primary) 60%, rgba(255, 255, 255, 0.15));
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Estados Vacíos (EmptyState) --- */
+.ecu-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  max-width: 30rem;
+  margin: 0 auto;
+}
+
+.ecu-empty-state__icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--shell-primary) 10%, transparent);
+  color: var(--shell-primary);
+  margin-bottom: 1rem;
+}
+
+.ecu-empty-state__icon-box .material-symbols-outlined {
+  font-size: 1.75rem;
+}
+
+.ecu-empty-state__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--shell-text);
+  margin: 0 0 0.5rem 0;
+}
+
+.ecu-empty-state__desc {
+  font-size: 0.875rem;
+  color: var(--shell-muted);
+  line-height: 1.45;
+  margin-bottom: 1.25rem;
+}
+
+.ecu-empty-state__action {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ==========================================================================
+   Iconos consistentes dentro de botones glubox y botones de acción
+   ========================================================================== */
+.glb-btn svg,
+button svg.lucide,
+.glb-btn svg.lucide {
+  width: 1rem !important;
+  height: 1rem !important;
+  max-width: 1rem;
+  max-height: 1rem;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.glb-btn--sm svg,
+button.glb-btn--sm svg.lucide {
+  width: 0.875rem !important;
+  height: 0.875rem !important;
+  max-width: 0.875rem;
+  max-height: 0.875rem;
+}
+
+.glb-btn--lg svg,
+button.glb-btn--lg svg.lucide {
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  max-width: 1.125rem;
+  max-height: 1.125rem;
+}
+
+/* ==========================================================================
+   Utilidades de Formularios y Zonas de Carga (M3 Enterprise)
+   ========================================================================== */
+.ecu-form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.ecu-rates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.ecu-rate-card {
+  padding: 1rem;
+  border-radius: 0.875rem;
+  border: 1px solid var(--shell-border);
+  background: var(--glb-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ecu-rate-card--n1 {
+  border-color: rgba(14, 165, 233, 0.28);
+  background: color-mix(in srgb, #0ea5e9 4%, var(--glb-surface));
+}
+
+.ecu-rate-card--n2 {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: color-mix(in srgb, #f59e0b 4%, var(--glb-surface));
+}
+
+.ecu-rate-card--n3 {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: color-mix(in srgb, #ef4444 4%, var(--glb-surface));
+}
+
+.ecu-rate-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ecu-rate-card__title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--shell-text);
+}
+
+.ecu-rate-card__hint {
+  font-size: 0.6875rem;
+  color: var(--shell-muted);
+  line-height: 1.35;
+}
+
+.ecu-dropzone {
+  border: 2px dashed var(--shell-border);
+  border-radius: 1rem;
+  padding: 2.25rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  background: var(--glb-surface);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ecu-dropzone:hover {
+  border-color: var(--shell-primary);
+  background: color-mix(in srgb, var(--shell-primary) 3%, var(--glb-surface));
+}
+
+.ecu-dropzone--active {
+  border-color: var(--shell-primary);
+  background: color-mix(in srgb, var(--shell-primary) 8%, var(--glb-surface));
+}
+
+.ecu-dropzone__icon-wrap {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  background: color-mix(in srgb, var(--shell-primary) 12%, transparent);
+  color: var(--shell-primary);
+}
+
+.ecu-dropzone__icon-wrap--success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+html.sf-dark-mode .ecu-dropzone__icon-wrap--success {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.2);
+}
+
+.ecu-dropzone__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--shell-text);
+  margin: 0 0 0.25rem 0;
+}
+
+.ecu-dropzone__desc {
+  font-size: 0.8125rem;
+  color: var(--shell-muted);
+  margin: 0;
+}
+
+.ecu-info-banner {
+  margin-top: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  background: color-mix(in srgb, var(--shell-primary) 6%, var(--glb-surface));
+  border: 1px solid color-mix(in srgb, var(--shell-primary) 20%, transparent);
+  color: var(--shell-text);
+}
+
+.ecu-repairs-grid {
+  margin-top: 0.5rem;
+}
+
+.ecu-filter-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.ecu-filter-toolbar__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.ecu-preview-table-container {
+  max-height: min(52vh, 420px);
+  overflow: auto;
+  border: 1px solid var(--shell-border);
+  border-radius: 0.75rem;
+  margin-top: 1rem;
+  background: var(--glb-surface);
+  width: 100%;
+}
+
+.ecu-preview-table {
+  width: 100%;
+  min-width: 52rem;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  text-align: left;
+}
+
+.ecu-preview-table th {
+  padding: 0.625rem 0.875rem;
+  background: color-mix(in srgb, var(--shell-primary) 6%, var(--glb-surface));
+  color: var(--shell-text);
+  font-weight: 600;
+  border-bottom: 1px solid var(--shell-border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.ecu-preview-table td {
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--shell-border) 40%, transparent);
+  color: var(--shell-text);
+}
+
+.ecu-preview-table tr:hover td {
+  background: color-mix(in srgb, var(--shell-primary) 3%, transparent);
+}
+
+.ecu-alert-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  margin-top: 1rem;
+}
+
+.ecu-alert-box--danger {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: #dc2626;
+}
+
+html.sf-dark-mode .ecu-alert-box--danger {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.ecu-alert-box--warning {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  color: #d97706;
+}
+
+html.sf-dark-mode .ecu-alert-box--warning {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.ecu-alert-box--success {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  color: #059669;
+}
+
+html.sf-dark-mode .ecu-alert-box--success {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+}
+
+/* ==========================================================================
+   Modales Popup (glubox) — composición enterprise / M3
+   ========================================================================== */
+
+.ecu-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 0.85rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.ecu-modal-form__field {
+  min-width: 0;
+  width: 100%;
+  /* Aire para labels outlined que flotan sobre el borde */
+  padding-top: 0.45rem;
+}
+
+.ecu-modal-form__field .glb-textbox,
+.ecu-modal-form__field .glb-select,
+.ecu-modal-form__field .glb-textarea {
+  width: 100%;
+}
+
+.ecu-modal-form__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem 1.15rem;
+  align-items: start;
+}
+
+@media (min-width: 560px) {
+  .ecu-modal-form__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.ecu-modal-form__grid--3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem 1.15rem;
+  align-items: start;
+}
+
+@media (min-width: 720px) {
+  .ecu-modal-form__grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.ecu-modal-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  padding: 1.1rem 1.2rem;
+  border-radius: 0.875rem;
+  border: 1px solid var(--shell-border);
+  background: color-mix(in srgb, var(--glb-surface) 94%, var(--shell-primary) 3%);
+  min-width: 0;
+}
+
+.ecu-modal-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ecu-modal-section-title {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--shell-text);
+}
+
+.ecu-modal-section-lead {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--shell-muted);
+}
+
+.ecu-modal-equip-list {
+  max-height: min(42vh, 24rem);
+  overflow: auto;
+  border: 1px solid var(--shell-border);
+  border-radius: 0.875rem;
+  background: var(--glb-surface);
+}
+
+.ecu-modal-equip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--shell-border) 55%, transparent);
+  cursor: pointer;
+  transition: background 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ecu-modal-equip-row:last-child {
+  border-bottom: none;
+}
+
+.ecu-modal-equip-row:hover {
+  background: color-mix(in srgb, var(--shell-primary) 5%, transparent);
+}
+
+.ecu-modal-equip-row--selected {
+  background: color-mix(in srgb, var(--shell-primary) 12%, transparent);
+}
+
+.ecu-modal-equip-row__main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.ecu-modal-equip-row__serial {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  color: var(--shell-text);
+}
+
+.ecu-modal-equip-row__meta {
+  font-size: 0.75rem;
+  color: var(--shell-muted);
+  margin-left: 0.5rem;
+}
+
+.ecu-modal-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.25rem;
+}
+
+.ecu-modal-qr__frame {
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #ffffff;
+  border: 1px solid color-mix(in srgb, var(--shell-border) 70%, transparent);
+}
+
+.ecu-modal-qr__frame img {
+  display: block;
+  width: 11rem;
+  height: 11rem;
+}
+
+.ecu-modal-qr__hash {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.6875rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--shell-border) 45%, transparent);
+  color: var(--shell-muted);
+  word-break: break-all;
+}
+
+.ecu-modal-meta-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.95rem 1.1rem;
+  border-radius: 0.875rem;
+  border: 1px solid var(--shell-border);
+  background: var(--glb-surface);
+  text-align: left;
+}
+
+.ecu-modal-meta-list__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.8125rem;
+}
+
+.ecu-modal-meta-list__label {
+  color: var(--shell-muted);
+}
+
+.ecu-modal-meta-list__value {
+  font-weight: 600;
+  color: var(--shell-text);
+  text-align: right;
+}
+
+.ecu-empty-state--compact {
+  padding: 1.5rem 1rem;
+  max-width: none;
+}
+
+.ecu-empty-state--compact .ecu-empty-state__icon-box {
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.ecu-empty-state--compact .ecu-empty-state__title {
+  font-size: 0.9375rem;
+}
+
+.ecu-empty-state--compact .ecu-empty-state__desc {
+  font-size: 0.8125rem;
+  margin-bottom: 0;
+}
+
+.ecu-empty-state--in-panel {
+  border: 1px dashed color-mix(in srgb, var(--shell-border) 80%, transparent);
+  border-radius: 0.875rem;
+  background: color-mix(in srgb, var(--glb-surface) 70%, transparent);
+}
+
+/* --- Enterprise Property Grid & Tiles (compact key-value pairs) --- */
+.ecu-property-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+}
+
+@media (min-width: 600px) {
+  .ecu-property-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .ecu-property-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .ecu-property-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.ecu-property-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 0.625rem;
+  background: var(--glb-surface-muted, rgba(0, 0, 0, 0.02));
+  border: 1px solid var(--shell-border, rgba(0, 0, 0, 0.08));
+  min-width: 0;
+}
+
+html.sf-dark-mode .ecu-property-tile {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.ecu-property-tile--full {
+  grid-column: 1 / -1;
+}
+
+.ecu-property-tile__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--shell-muted, var(--glb-muted, #64748b));
+}
+
+.ecu-property-tile__value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--shell-text, var(--glb-text, #0f172a));
+  word-break: break-word;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-height: 1.5rem;
+}
+
+.ecu-property-tile__value--mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* --- Catálogo: Miniatura de Ítem en DataGrid --- */
+.catalog-item-thumb {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  min-height: 36px;
+  max-height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  background-color: var(--glb-surface-muted, #f8fafc);
+  border: 1px solid var(--shell-border, #e2e8f0);
+  display: block;
+  box-sizing: border-box;
+}
+
+.catalog-item-thumb--empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--shell-muted, var(--glb-muted, #94a3b8));
+}
+
+/* ==========================================================================
+   Canonical Enterprise DataGrid List Pattern (.ecu-companies-grid)
+   ========================================================================== */
+.ecu-companies-grid {
+  --glb-field-canvas: var(--glb-surface, var(--shell-surface));
+}
+
+.ecu-companies-grid .glb-datagrid__toolbar {
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.ecu-companies-grid .glb-datagrid__toolbar-right {
+  flex-shrink: 0;
+}
+
+.ecu-companies-grid .glb-datagrid__toolbar .glb-optiongroup {
+  width: auto;
+}
+
+.ecu-companies-grid__actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.25rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.ecu-companies-grid__actions .glb-btn {
+  min-width: 2rem;
+  padding-inline: 0.35rem;
+}
+
+.ecu-companies-grid__actions .glb-btn svg {
+  display: block;
+}
+
+.ecu-comprobantes-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.ecu-grid-date-range {
+  flex: 0 0 auto;
+  min-width: 23rem;
+  max-width: none;
+}
+
+.ecu-grid-date-range > * {
+  width: 23rem !important;
+  min-width: 23rem;
+  gap: 0.5rem;
+}
+
+.ecu-grid-date-range .glb-textbox__input {
+  min-width: 8.75rem;
+  padding-inline: 0.65rem 1.9rem;
+}
+

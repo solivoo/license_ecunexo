@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, type PageActionItem } from 'glubox'
+import { Calendar, CheckCircle2, Plus, X } from 'lucide-react'
+import { Button, OptionGroup, type PageActionItem } from 'glubox'
 import { EcuPageActions } from '@/components/ui/EcuPageActions'
 import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
+import { EmptyState, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
 import { GridDateRangeBox } from '@/components/ui/GridDateRangeBox'
-import { GridOptionFilter } from '@/components/ui/GridOptionFilter'
 import { renderSidebarIcon } from '@/config/sidebarIcons'
 import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { DEFAULT_GRID_LOOKBACK, rangeFromLookback, toIsoDate } from '@/lib/gridLookback'
@@ -20,9 +21,9 @@ import { TrainingSessionsGrid } from './TrainingSessionsGrid'
 
 const STATUS_FILTERS = [
   { value: 'all', label: 'Todas' },
-  { value: 'Scheduled', label: 'Agendada' },
-  { value: 'Completed', label: 'Completada' },
-  { value: 'Cancelled', label: 'Cancelada' },
+  { value: 'Scheduled', label: 'Agendadas' },
+  { value: 'Completed', label: 'Completadas' },
+  { value: 'Cancelled', label: 'Canceladas' },
 ] as const
 
 function sessionDate(iso: string): string {
@@ -82,6 +83,14 @@ export function TrainingSessionsListPage() {
     })
   }, [range.from, range.to, sessions, statusFilter])
 
+  const metrics = useMemo(() => {
+    const total = sessions.length
+    const scheduled = sessions.filter((s) => s.status === 'Scheduled').length
+    const completed = sessions.filter((s) => s.status === 'Completed').length
+    const cancelled = sessions.filter((s) => s.status === 'Cancelled').length
+    return { total, scheduled, completed, cancelled }
+  }, [sessions])
+
   const actionItems = useMemo(
     (): PageActionItem[] => [
       {
@@ -132,56 +141,154 @@ export function TrainingSessionsListPage() {
   }
 
   return (
-    <>
-      <div className="ecu-page-header">
-        <div>
-          <h1 className="platform-shell__page-title">Capacitaciones</h1>
-          <p className="platform-shell__page-lead">
-            Gestión de sesiones de capacitación para clientes EcuNexo.
-          </p>
-        </div>
-        <div className="ecu-page-header__actions">
-          <Button
-            type="button"
-            variant="primary"
-            theme={theme}
-            onClick={() => navigate('/app/capacitaciones/nueva')}
-          >
-            Agendar
-          </Button>
-          <EcuPageActions
-            items={actionItems}
-            variant="outline"
-            triggerLabel="Acciones"
-            renderIcon={renderSidebarIcon}
-            onNavigate={(route: string) => navigate(route)}
-            onActionSelect={(item) => {
-              if (item.id === 'refresh') void load()
-            }}
-          />
-        </div>
-      </div>
-
-      <TrainingSessionsGrid
-        rows={visibleRows}
-        loading={loading}
-        onComplete={(id) => void handleComplete(id)}
-        onCancel={(id) => void handleCancel(id)}
-        onDownloadCalendar={(id) => void handleDownloadCalendar(id)}
-        toolbarRight={
-          <div className="ecu-grid-toolbar">
-            <GridDateRangeBox from={range.from} to={range.to} disabled={loading} onChange={setRange} />
-            <GridOptionFilter
-              id="training-status"
-              ariaLabel="Estado de la sesión"
-              value={statusFilter}
-              options={STATUS_FILTERS}
-              disabled={loading}
-              onChange={setStatusFilter}
+    <div className="ecu-dashboard-layout">
+      <PageHeader
+        title="Capacitaciones"
+        subtitle="Gestión de sesiones de inducción, soporte y capacitación para clientes EcuNexo."
+        badge={
+          <StatusBadge tone="primary" withDot>
+            Capacitación
+          </StatusBadge>
+        }
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="primary"
+              theme={theme}
+              onClick={() => navigate('/app/capacitaciones/nueva')}
+            >
+              <Plus size={16} aria-hidden />
+              Agendar sesión
+            </Button>
+            <EcuPageActions
+              items={actionItems}
+              variant="outline"
+              triggerLabel="Acciones"
+              renderIcon={renderSidebarIcon}
+              onNavigate={(route: string) => navigate(route)}
+              onActionSelect={(item) => {
+                if (item.id === 'refresh') void load()
+              }}
             />
-          </div>
+          </>
         }
       />
+
+      <div className="ecu-stat-grid">
+        <StatCard
+          label="Total sesiones"
+          value={loading ? '—' : metrics.total}
+          icon={<Calendar size={22} strokeWidth={1.75} />}
+          toneColor="var(--shell-primary)"
+          footerText="Historial acumulado"
+        />
+        <StatCard
+          label="Agendadas"
+          value={loading ? '—' : metrics.scheduled}
+          icon={<Calendar size={22} strokeWidth={1.75} />}
+          toneColor="#0284c7"
+          badge={
+            <StatusBadge tone="info" withDot>
+              Pendientes
+            </StatusBadge>
+          }
+        />
+        <StatCard
+          label="Completadas"
+          value={loading ? '—' : metrics.completed}
+          icon={<CheckCircle2 size={22} strokeWidth={1.75} />}
+          toneColor="#10b981"
+          badge={
+            <StatusBadge tone="success" withDot>
+              Realizadas
+            </StatusBadge>
+          }
+        />
+        <StatCard
+          label="Canceladas"
+          value={loading ? '—' : metrics.cancelled}
+          icon={<X size={22} strokeWidth={1.75} />}
+          toneColor="#ef4444"
+          badge={
+            metrics.cancelled > 0 ? (
+              <StatusBadge tone="danger">Anuladas</StatusBadge>
+            ) : undefined
+          }
+        />
+      </div>
+
+      <SectionCard
+        title="Sesiones Registradas"
+        subtitle="Cronograma y modalidad de capacitaciones programadas"
+        action={
+          <OptionGroup
+            id="training-status-filter"
+            name="trainingStatus"
+            layout="segmented"
+            variant="outline"
+            size="sm"
+            theme={theme}
+            options={STATUS_FILTERS.map((f) => ({ value: f.value, label: f.label }))}
+            value={statusFilter}
+            onChange={(val) => setStatusFilter(String(val))}
+            disabled={loading}
+          />
+        }
+      >
+        {!loading && visibleRows.length === 0 ? (
+          <EmptyState
+            icon={<Calendar size={32} strokeWidth={1.75} />}
+            title="No se encontraron sesiones"
+            description={
+              statusFilter !== 'all'
+                ? 'No existen capacitaciones en el rango de fechas para el estado seleccionado.'
+                : 'Agenda una nueva sesión de capacitación para comenzar.'
+            }
+            action={
+              statusFilter === 'all' ? (
+                <Button
+                  type="button"
+                  variant="primary"
+                  theme={theme}
+                  onClick={() => navigate('/app/capacitaciones/nueva')}
+                >
+                  <Plus size={16} aria-hidden />
+                  Agendar sesión
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  theme={theme}
+                  size="sm"
+                  onClick={() => setStatusFilter('all')}
+                >
+                  Ver todas las sesiones
+                </Button>
+              )
+            }
+          />
+        ) : (
+          <TrainingSessionsGrid
+            rows={visibleRows}
+            loading={loading}
+            onComplete={(id) => void handleComplete(id)}
+            onCancel={(id) => void handleCancel(id)}
+            onDownloadCalendar={(id) => void handleDownloadCalendar(id)}
+            toolbarRight={
+              <div className="ecu-grid-date-range">
+                <GridDateRangeBox
+                  from={range.from}
+                  to={range.to}
+                  disabled={loading}
+                  onChange={setRange}
+                />
+              </div>
+            }
+          />
+        )}
+      </SectionCard>
 
       <EcuAlertDialog
         open={errorOpen}
@@ -192,6 +299,7 @@ export function TrainingSessionsListPage() {
           setError(null)
         }}
       />
-    </>
+    </div>
   )
 }
+

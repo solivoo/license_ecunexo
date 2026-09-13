@@ -102,6 +102,7 @@ export function LicensesGrid({
         width: 120,
         align: 'center',
         sortable: false,
+        sticky: 'right',
         renderCell: (_value: unknown, row: LicenseGridRow) => (
           <LicenseActionsCell {...row} onExpand={onExpand} />
         ),
@@ -116,7 +117,7 @@ export function LicensesGrid({
 
   return (
     <DataGrid
-      className="ecu-licenses-grid"
+      className="ecu-companies-grid"
       dataSource={dataSource}
       keyExpr="id"
       columns={columns}

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { Button, useToast } from 'glubox'
 import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
+import { PageHeader, SectionCard, StatusBadge } from '@/components/ui'
 import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import {
   createLicensingCustomer,
@@ -136,22 +138,26 @@ export function CustomerEditorPage() {
   ])
 
   return (
-    <>
-      <div className="ecu-page-header">
-        <div>
-          <h1 className="platform-shell__page-title">
-            {isEdit ? 'Editar cliente' : 'Nuevo cliente'}
-          </h1>
-          <p className="platform-shell__page-lead">
-            {isEdit
-              ? 'Actualiza los datos comerciales del cliente. Los cambios no alteran licencias ya emitidas.'
-              : 'Registra el cliente comercial al que se vincularán las licencias emitidas.'}
-          </p>
-        </div>
-        <Button variant="outline" theme={theme} onClick={() => navigate('/app/clientes')}>
-          ← Directorio
-        </Button>
-      </div>
+    <div className="ecu-dashboard-layout">
+      <PageHeader
+        title={isEdit ? 'Editar cliente' : 'Nuevo cliente'}
+        subtitle={
+          isEdit
+            ? 'Actualiza los datos comerciales del cliente. Los cambios no alteran licencias ya emitidas.'
+            : 'Registra el cliente comercial al que se vincularán las licencias emitidas.'
+        }
+        badge={
+          <StatusBadge tone="primary" withDot>
+            {isEdit ? 'Edición' : 'Alta comercial'}
+          </StatusBadge>
+        }
+        actions={
+          <Button variant="outline" theme={theme} onClick={() => navigate('/app/clientes')}>
+            <ArrowLeft size={16} aria-hidden />
+            Directorio
+          </Button>
+        }
+      />
 
       {loading ? (
         <p className="login-page__muted">Cargando cliente…</p>
@@ -164,7 +170,10 @@ export function CustomerEditorPage() {
           }}
           noValidate
         >
-          <div className="issue-license-panel">
+          <SectionCard
+            title="Información de la Cuenta"
+            subtitle="Razón social, identificación fiscal y canales de contacto comercial"
+          >
             <CustomerEditorFields
               theme={theme}
               busy={busy}
@@ -192,7 +201,7 @@ export function CustomerEditorPage() {
                 {busy ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear cliente'}
               </Button>
             </footer>
-          </div>
+          </SectionCard>
         </form>
       )}
 
@@ -205,7 +214,7 @@ export function CustomerEditorPage() {
           setError(null)
         }}
       />
-    </>
+    </div>
   )
 }
 

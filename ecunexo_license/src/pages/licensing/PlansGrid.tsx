@@ -97,6 +97,7 @@ export function PlansGrid({
         width: 120,
         align: 'center',
         sortable: false,
+        sticky: 'right',
         renderCell: (_value, row) => (
           <div className="ecu-licenses-grid__actions">
             <GridIconButton label="Editar plan" icon={Pencil} onClick={() => onEdit(row.code)} />
@@ -123,7 +124,7 @@ export function PlansGrid({
 
   return (
     <DataGrid
-      className="ecu-licenses-grid"
+      className="ecu-companies-grid"
       dataSource={dataSource}
       keyExpr="code"
       columns={columns}

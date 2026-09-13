@@ -1,218 +1,216 @@
 ---
-name: ecunexo-forms-ui
+name: glubox-enterprise-ui
 description: >-
-  Estilo UI de formularios y resúmenes del frontend EcuNexo (SPA tenant, Platform
-  ecunexo_license y template_project_syncfusion): layout tipo login, EcuLabeledInput,
-  cuadrícula friendMobile de 4 columnas, desplegables details, botón primario con texto
-  on-primary (nunca negro sobre azul), pie con enlace partido y mensajes de error.
-  USE WHEN se cree o modifique un formulario, resumen, diálogo o dashboard; emitir
-  licencia; grid de campos; o cuando el usuario pida 4 columnas, friendMobile, o
-  consistencia visual con bienvenida, login o «Resumen para emitir».
+  Use this skill whenever designing, building, or refactoring UI components, pages, dashboards,
+  forms, or tables in the frontend. Combines Google Material Design 3 surface layering,
+  modern enterprise SaaS layout patterns (PageHeader, KPI StatCards, SectionCards, Toolbars),
+  glubox component integration, and the canonical DataGrid list pattern (OptionGroup +
+  ecu-companies-grid toolbar like Inventory Documents).
 ---
 
-# EcuNexo — Formularios UI (SPA)
+# Glubox Enterprise UI & UX Design System
 
-Skill para **no perder el formato** acordado en la pantalla de creación de organización (`/bienvenida`) y alinear **todos los formularios**, resúmenes y diálogos de producto.
-
-**Raíces:** `template_project_syncfusion/` (auth/onboarding), `ecunexo_admin/` (empresas), `ecunexo_license/` (emitir licencia).
-
-Skills relacionados (cuando el trabajo sea mixto):
-
-- `ecunexo-architecture` / `ecunexo-coding-standards` — solo backend .NET
-- Reglas React/TS del usuario — tipado estricto, exports con nombre
+Esta guía define los estándares y patrones de diseño para construir interfaces empresariales modernas, atractivas y consistentes en EcuNexo utilizando la suite **`glubox`**, la jerarquía de superficies de **Google Material Design 3 (M3)** y los patrones de layout de **Enterprise SaaS (Shopify Polaris / Linear)**.
 
 ---
 
-## Principios
+## 1. Filosofía de Diseño
 
-1. **Un solo design system visual** para formularios “de producto”: variables y clases definidas en `src/features/auth/loginPage.css` (prefijo `login-page__*`).
-2. **Etiqueta siempre visible** encima del campo: usar `EcuLabeledInput` / `EcuLabeledTextarea`, no inputs sueltos sin `<label>`, ni Syncfusion `TextBoxComponent` con `floatLabelType="Auto"` si el objetivo es este look (el float usa placeholder como label animado y se ve distinto).
-3. **Scope CSS por pantalla**: las variantes compactas, grid y desplegables de bienvenida están en `src/features/onboarding/welcomeOnboarding.css` bajo el selector **`.welcome-onboarding.login-page`**. En **nuevas pantallas** con el mismo look, o bien reutilizas ese modificador en el `<main>` (solo si tiene sentido semántico), o bien **copias el bloque de reglas** bajo un nuevo modificador (p. ej. `.ecu-settings-form.login-page`) hasta que se extraiga un CSS compartido `ecuFormLayout.css`.
+1. **Jerarquía Visual Clara (No a las UIs "planas")**:
+   - Cada pantalla debe tener un foco evidente.
+   - Las páginas no deben ser un lienzo blanco infinito con una sola tabla o un par de links planos; deben organizarse en capas con **tarjetas de superficie**, **métricas clave** y **secciones temáticas**.
+2. **Elevación y Superficies Tonales (Google M3)**:
+   - Utilizar el sistema de capas tonales:
+     - `surface`: Fondo base de la aplicación (`--glb-app-bg` / `--c-background`).
+     - `surface-container`: Fondo de tarjetas principales y paneles de contenido (`--glb-surface` / `--c-surface`).
+     - `surface-container-high`: Elementos interactivos destacados, popups, toolbars y modales.
+   - Preferir bordes sutiles y limpios (`1px solid var(--glb-border)` con opacidad controlada) en vez de sombras oscuras o pesadas.
+3. **Composición con `glubox`**:
+   - `glubox` provee los átomos funcionales (`Button`, `TextBox`, `Select`, `DataGrid`, `Popup`, `Toast`, `RangeDateBox`, `Sidebar`).
+   - La aplicación debe proveer la **capa de composición** (`PageHeader`, `StatCard`, `SectionCard`, `DataGridToolbar`, `EmptyState`).
 
 ---
 
-## Imports obligatorios en la página
+## 2. Anatomía Estándar de una Página
 
-```tsx
-import '../auth/loginPage.css' // o ruta equivalente hasta loginPage.css
+Toda vista principal de la aplicación debe estructurarse siguiendo esta secuencia:
+
 ```
-
-Si la pantalla debe verse como **bienvenida** (compacta, grid, labels pequeños, footer):
-
-```tsx
-import '../onboarding/welcomeOnboarding.css' // solo si <main> incluye clase welcome-onboarding
-```
-
----
-
-## Shell de layout (página centrada con tarjeta)
-
-Patrón alineado a login y bienvenida:
-
-```tsx
-<main className="login-page welcome-onboarding">
-  <div className="login-page__glow" aria-hidden />
-  <div className="login-page__inner">
-    <div className="login-page__brand">{/* icono + título + subtítulo opcional */}</div>
-    <div className="login-page__card">{/* formulario + mensajes */}</div>
-    <footer className="login-page__footer login-page__footer--welcome">{/* acciones secundarias */}</footer>
-  </div>
-</main>
-```
-
-- Sin `welcome-onboarding` en `<main>`: se aplican solo los estilos base de `loginPage.css` (p. ej. login estándar).
-- Con `welcome-onboarding`: se aplican overrides de `welcomeOnboarding.css` (labels más pequeños, márgenes, grid, etc.).
-
----
-
-## Campos con label
-
-**Componentes:** (exports con nombre)
-
-| Componente            | Ruta |
-|-----------------------|------|
-| `EcuLabeledInput`     | `src/components/form/EcuLabeledInput.tsx` |
-| `EcuLabeledTextarea`  | `src/components/form/EcuLabeledTextarea.tsx` |
-
-Cada uno envuelve `login-page__group` + `login-page__label` + control. Props clave: `id`, `label`, `value`, `onValueChange`, `placeholder`, `type`, `autoComplete`, `required`, opcional `topSlot` (contenido encima del label, p. ej. enlace “Olvidé contraseña”), `groupClassName` (p. ej. `login-page__token-block`).
-
-**Ejemplo mínimo:**
-
-```tsx
-<EcuLabeledInput
-  id="campo-id"
-  name="campoName"
-  label="Texto del label"
-  value={valor}
-  onValueChange={setValor}
-  placeholder="Ejemplo opcional"
-  required
-/>
+┌────────────────────────────────────────────────────────────────────────┐
+│  PAGE HEADER                                                           │
+│  [Breadcrumb]                                      [Acciones / Botones]│
+│  Título Principal + Badge de Estado                (Nuevo, Exportar)   │
+│  Descripción o lead contextual                                         │
+├────────────────────────────────────────────────────────────────────────┤
+│  METRICS / KPI STRIP (Opcional si aplica a la vista)                   │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────────┐ │
+│  │ Stat Card 1  │ │ Stat Card 2  │ │ Stat Card 3  │ │ Stat Card 4    │ │
+│  └──────────────┘ └──────────────┘ └──────────────┘ └────────────────┘ │
+├────────────────────────────────────────────────────────────────────────┤
+│  MAIN CONTENT / DATA SECTION                                           │
+│  ┌───────────────────────────────────────────────────────────────────┐ │
+│  │ SectionCard: título + OptionGroup segmentado (cola/estado)        │ │
+│  │ DataGrid ecu-companies-grid: buscar izq. + fechas/filtros der.    │ │
+│  │ <EmptyState /> si no hay filas                                    │ │
+│  └───────────────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Cuadrícula horizontal (elegante en desktop)
+## 3. Patrones de Componentes
 
-- Contenedor: **`welcome-onboarding__fields-grid`** (1 columna &lt; 560px, 2 columnas ≥ 560px).
-- Ancho del bloque en bienvenida: **`.welcome-onboarding.login-page .login-page__inner`** pasa a `min(94vw, 36rem)` desde **560px** (junto con el grid).
+### 3.1. PageHeader
+Provee orientación instantánea al usuario:
+- **Título**: `h1` claro y conciso (font-weight: 700, 1.35rem a 1.6rem).
+- **Badge**: Indicador de contexto o estado (`StatusBadge`: Activo, Titular, Borrador, etc.).
+- **Descripción**: Subtítulo explicativo en color atenuado (`--glb-muted`).
+- **Acciones**: Botones de acción principal (`<Button variant="primary">`) y secundarias alineadas a la derecha.
 
-Para **grupos opcionales** con 3 campos donde el tercero debe ancho completo en 2 columnas:
+### 3.2. StatCard (KPIs / Métricas)
+Destaca datos cuantitativos o estados clave en una cuadrícula responsiva (`grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))`):
+- **Icono en Contenedor Tonal**: Icono SVG/Material en un contenedor redondeado con color tonal tenue (`background: color-mix(in srgb, var(--primary) 12%, transparent)`).
+- **Valor Principal**: Número o estado en grande (1.5rem, font-weight: 700).
+- **Etiqueta**: Nombre de la métrica (font-size: 0.8125rem, color atenuado).
+- **Tendencia o Detalle**: Badge tipo pill que muestra variación (+12%, Límite alcanzado, etc.).
 
-- Contenedor: **`welcome-onboarding__details-fields welcome-onboarding__fields-grid--adv`**
-- Regla: el **último** `.login-page__group` hijo hace `grid-column: 1 / -1` desde 560px.
+### 3.3. SectionCard (Contenedores M3)
+- Tarjetas con `border-radius: 14px` o `16px`.
+- Fondo `var(--glb-surface)`.
+- Borde sutil `1px solid var(--glb-border)` o `1px solid rgba(0, 0, 0, 0.07)`.
+- En hover para tarjetas clickeables: `transform: translateY(-2px)`, micro-sombra difusa y acento de color en el borde.
 
----
+### 3.4. EmptyState
+Cuando una tabla o lista no contiene registros:
+- NUNCA mostrar una tabla vacía sin explicación.
+- Mostrar contenedor centrado con:
+  1. Icono representativo en círculo suave.
+  2. Título amigable (ej. "No hay empresas registradas aún").
+  3. Texto explicativo de qué debe hacer el usuario.
+  4. Botón de acción principal (`<Button variant="primary">Crear empresa</Button>`).
 
-## 4 columnas y friendMobile (resúmenes, diálogos, dashboards)
+### 3.5. DataGrid / Listas — Patrón Canónico (obligatorio)
 
-**Debe respetarse las 4 columnas y ser friendMobile.** No es opcional en pantallas de producto (emitir licencia, ficha de empresa, diálogos de resultado).
+Todas las pantallas de listado con `DataGrid` deben verse y estructurarse como **Historial de Documentos Logísticos**.
 
-| Ancho | Columnas |
-|-------|----------|
-| &lt; 640px (móvil) | **1** |
-| ≥ 640px (tablet) | **2** |
-| ≥ 960px (desktop) | **4** |
+**Referencia de código:** [`ecunexo_admin/src/pages/inventory/InventoryDocumentsListPage.tsx`](../../ecunexo_admin/src/pages/inventory/InventoryDocumentsListPage.tsx)
 
-Clases de referencia:
+**Regla Cursor:** `.cursor/rules/enterprise-datagrid-lists.mdc` (se aplica al editar `*List*` / `*Grid*` pages).
 
-| Superficie | Contenedor |
-|------------|------------|
-| Emitir licencia (campos) | `issue-license-form-grid` / `issue-license-field-grid--4` |
-| Resumen + diálogo emitida | `issue-license-review--4`, `ecu-plan-summary-grid--4`, `ecu-plan-summary-modules--4` |
-| Empresas Admin | `ecu-companies-form__grid--4` |
+#### Anatomía
 
-Reglas:
-
-- Los cuatro huecos se ocupan. Si hay 3 métricas, la cuarta es un dato real (p. ej. recuento de módulos), no un vacío a la derecha.
-- Módulos y chips van en la misma cuadrícula, **no** en barras a todo el ancho.
-- Un campo ancho usa `span 2` o `span 1 / -1`; no rompe el grid dejando una columna muerta.
-- No uses `repeat(auto-fill, minmax(...))` en estos resúmenes: agrupa tarjetas a la izquierda y deja un hueco.
-
-**Botón primario (dark y light):** fondo `--shell-primary` (o `--c-primary`) y texto **`--shell-on-primary` / blanco**. En dark **nunca** `color: var(--shell-bg)` sobre azul (negro sobre azul no compagina). El enlace «Descargar .ecunexo-license» sigue esa regla.
-
-Referencia: `ecunexo_license/src/pages/licensing/issueLicenseForm.css`, `IssueLicenseReviewStep.tsx`, `IssueLicenseResultDialog.tsx`, `ecunexo_admin/src/styles/ecu-companies-form.css`.
-
----
-
-## Desplegables (no deben parecer inputs)
-
-- `details` con clases: **`welcome-onboarding__details welcome-onboarding__details--disclosure`**
-- `summary`: texto azul (`--c-primary-container`), chevron **▸ / ▾** vía `::before` (tamaños ~0.85rem / 0.95rem abierto), `gap` entre icono y texto.
-- Cuerpo de ayuda: **`welcome-onboarding__details-body`** (borde izquierdo sutil).
-- Espacio entre dos `details` consecutivos: margen superior entre hermanos.
-
----
-
-## Botón primario de envío
-
-- **`login-page__submit`** en un `<button type="submit">`.
-- En bienvenida, márgenes verticales ligeros ya definidos en `welcomeOnboarding.css` (separación respecto a `details` y al footer).
-
----
-
-## Mensajes de error en tarjeta
-
-- **`welcome-onboarding__error`** + `role="alert"`, encima del `<form>` dentro de la card.
-
----
-
-## Pie con dos intenciones (“¿Ya tienes cuenta?” + acción)
-
-Patrón usado en bienvenida (separación visual y semántica):
-
-```tsx
-<footer className="login-page__footer login-page__footer--welcome">
-  <Link className="welcome-onboarding__link welcome-onboarding__link--footer" to="/login">
-    <span className="welcome-onboarding__footer-muted">¿Ya tienes cuenta?</span>
-    <span className="welcome-onboarding__footer-action">Iniciar sesión</span>
-  </Link>
-</footer>
+```
+┌─ SectionCard ─────────────────────────────────────────────────────────┐
+│  Título + subtítulo                    [ OptionGroup segmentado ]     │
+│  (ej. Activos | Todos | Inactivos)     ← cola / estado PRIMARIO       │
+├───────────────────────────────────────────────────────────────────────┤
+│  DataGrid  className="ecu-companies-grid"                             │
+│  [🔍 Buscar……………]              [ Select tipo? ] [ Rango fechas ]     │
+│  ───────────────────────────────────────────────────────────────────  │
+│  | columnas…                                                    |     │
+│  paginación…                                                          │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
-- El enlace usa **`inline-flex`** + **`gap`** (clases en `welcomeOnboarding.css`).
-- Footer con **`margin-top`** y **`padding-top`** para no quedar pegado al botón.
+#### Checklist de implementación
+
+1. **`SectionCard.action`**: filtros de cola/estado primario con `<OptionGroup layout="segmented" variant="outline" size={size} />` (`useGluComponentSize`). **No** usar `Select` con `label` / `labelPosition="outlined"` en el header de la card.
+2. **`DataGrid`**: `className="ecu-companies-grid"` (habilita toolbar horizontal en `src/styles/ecu-companies-form.css`).
+3. **Búsqueda**: `showSearch`, `searchPosition="left"`, `searchWidth={280}` (o similar), placeholder corto.
+4. **`toolbarRight`**:
+   - Ideal: solo `<GridDateRangeBox … />`.
+   - Si hay un filtro secundario (tipo, categoría): `Select` **sin** label flotante (`aria-label=…`) + fechas, envueltos en `<div className="ecu-comprobantes-filters">` para mantener **una sola fila**.
+5. **Columna Acciones** (glubox ≥ **0.1.22**): siempre última, con `sticky: 'right'` en el `ColumnDef`. No se esconde al scroll horizontal.
+6. **EmptyState** dentro del mismo `SectionCard` cuando no hay filas; el `OptionGroup` del header permanece visible.
+
+#### Anti-patrones (evitar errores de UI)
+
+| Incorrecto | Por qué falla | Correcto |
+|---|---|---|
+| `Select` “Mostrar” outlined en `SectionCard.action` | Label flotante + desalineado vs tabs | `OptionGroup` segmentado |
+| Filtros en franja aparte encima del grid | Duplica toolbar; se ve “otro módulo” | Todo en header + `toolbarRight` |
+| Varios `Select` apilados en `toolbarRight` sin `ecu-companies-grid` | Slot derecho estrecho → wrap vertical | `ecu-companies-grid` + `ecu-comprobantes-filters` |
+| Clase inventada (`ecu-customers-grid`) sin CSS de toolbar | Pierde el layout canónico | `ecu-companies-grid` |
+| Acciones sin `sticky: 'right'` | Se ocultan al scroll horizontal | `sticky: 'right'` en ColumnDef |
+
+#### CSS de soporte (no reinventar)
+
+- `.ecu-companies-grid .glb-datagrid__toolbar` / `__toolbar-right` — fila alineada, `flex-shrink: 0` a la derecha.
+- `.ecu-comprobantes-filters` — flex fila + wrap controlado para varios filtros.
+- `.ecu-grid-date-range` — ancho fijo del rango de fechas (~23rem).
+
+### 3.6. Command Palette & Top Bar Global Search (`Ctrl + K` / `Cmd + K`)
+Acceso rápido universal montado en el header del layout principal:
+- Disparador visual en header con atajo `<kbd>Ctrl K</kbd>` (o `<kbd>⌘K</kbd>` en macOS).
+- Modal flotante con fondo difuminado (`backdrop-filter: blur(8px)`).
+- Búsqueda en tiempo real con normalización de acentos y sinónimos.
+- Agrupamiento semántico: *Acciones Rápidas*, *Navegación* y *Sistema y Preferencias*.
+- Navegación completa por teclado (`↑` / `↓` para mover selección, `↵` para ejecutar, `Esc` para salir).
+- Filtrado dinámico por permisos activos de sesión (`selectVisibleNavigation` y `selectPermissions`).
+
+### 3.7. Regla Estricta Anti-Duplicidad de Botones en PageHeader y EcuPageActions
+- **Problema de diseño**: En pantallas de escritorio, `<EcuPageActions items={actionItems} />` renderiza sus ítems como botones visibles en un toolbar horizontal (`.ecu-page-actions__desktop`). Si un componente define un botón primario o destacado directamente en `PageHeader.actions` (por ejemplo: `<Button variant="primary">+ Nuevo...</Button>`, `<Button variant="outline"><Ban /> Anular Lote</Button>`, o `<Button><Download /> Descargar Informe</Button>`) y **al mismo tiempo** incluye esa misma acción dentro de `actionItems` (ej. `{ id: 'create', label: 'Nuevo...' }`, `{ id: 'cancel-batch', label: 'Anular Lote' }`), en escritorio aparecerán **dos botones repetidos e idénticos** uno al lado del otro.
+- **Regla Obligatoria**:
+  1. **Acción Principal o Destacada**: Renderizar como un `<Button>` independiente directamente en `PageHeader.actions` (ej. `+ Nuevo Ítem`, `Importar Lote`, `Anular Lote`, `Descargar Informe`).
+  2. **`actionItems` de `EcuPageActions`**: **NUNCA** debe contener una acción que ya fue renderizada como botón directo. Solo debe incluir acciones complementarias o secundarias (ej. `Actualizar`, `Plantilla Excel`, o accesos a otros submódulos) que no cuenten con botón visible propio.
+  3. Antes de agregar cualquier entrada a `actionItems`, auditar que no duplique ningún botón adyacente en el header.
 
 ---
 
-## Tokens (no inventar colores sueltos en el form)
+## 4. Estándares de Color y Modo Oscuro
 
-Definidos en **`.login-page`** dentro de `loginPage.css`, entre otros:
-
-- `--c-primary`, `--c-primary-container`, `--c-text-muted`, `--c-on-surface`, `--c-border`, `--c-surface-lowest`, `--c-outline-variant`, `--c-code-bg`, `--c-code-text`
-
-Cualquier CSS nuevo para formularios debe preferir estas variables.
-
----
-
-## Breakpoints a respetar
-
-| Ancho      | Comportamiento relevante |
-|------------|---------------------------|
-| &lt; 560px | Login/bienvenida: **1 columna** |
-| ≥ 560px    | Login/bienvenida: **2 columnas**; inner más ancho |
-| &lt; 640px | Producto (licencias, empresas, resúmenes): **1 columna** friendMobile |
-| ≥ 640px    | Producto: **2 columnas** |
-| ≥ 768px    | Padding página y card (bienvenida) |
-| ≥ 960px    | Producto: **4 columnas** |
+1. **Tokens de `glubox` y CSS Variables**:
+   - Siempre usar variables CSS semánticas:
+     - Primario: `var(--shell-primary)` o `var(--glb-primary)`
+     - Superficie: `var(--glb-surface)`
+     - Bordes: `var(--glb-border)`
+     - Texto: `var(--glb-text)` / Texto secundario: `var(--glb-muted)`
+2. **Modo Oscuro (`html.sf-dark-mode`)**:
+   - Todas las sombras deben atenuarse o reemplazarse por bordes luminosos muy sutiles (`border: 1px solid rgba(255, 255, 255, 0.08)`).
+   - No usar negros absolutos `#000000` para fondos principales; preferir tonos profundos (`#12131a`, `#1a1b24`, `#1e1f2a`).
+3. **Microinteracciones**:
+   - Transiciones rápidas y naturales: `transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1)`.
 
 ---
 
-## Anti patrones (evitar regresiones)
+## 5. Historial de Versiones & Features
 
-- No sustituir `EcuLabeledInput` por `<input>` + label manual duplicando clases distintas sin motivo.
-- No mezclar este look con **Syncfusion TextBox float** en la misma tarjeta salvo decisión explícita de producto.
-- No poner lógica de negocio en el JSX del formulario más allá del estado local y envío; la Api sigue en capas/hooks según el proyecto.
-- No dejar métricas o módulos pegados a la izquierda con vacío a la derecha: **4 columnas** en desktop.
-- No pintar el texto del botón primario en negro sobre azul en tema oscuro.
+### v0.3.0 — Global Command Palette & Comprehensive UI Test Suite
+- **Buscador Global & Command Palette (`Ctrl + K` / `Cmd + K`)**:
+  - `CommandPaletteTrigger`: Disparador responsivo en la barra superior con detección inteligente de atajo (`⌘K` en macOS, `Ctrl K` en Linux/Windows).
+  - `CommandPaletteModal`: Modal flotante con desenfoque de fondo (`backdrop-filter: blur(8px)`), auto-enfoque al abrir y navegación total por teclado (`↑↓↵ Esc`).
+  - Motor de búsqueda en memoria con normalización de acentos y sinónimos para acciones rápidas, rutas autorizadas del inquilino y ajustes de apariencia.
+  - Sincronización instantánea de modo claro/oscuro y copia de diagnóstico técnico para soporte.
+- **Iconografía SVG Nativa (Lucide Integration)**:
+  - Registro de glifos SVG nativos (`Sparkles`, `Copy`, `Info`, `LogOut`, `Sun`, `Moon`, `Check`, `FolderTree`) para evitar fallos tipográficos en ligaduras de fuentes.
+  - Contención CSS con `overflow: hidden` y dimensionado estricto `width/height: 1.15rem`.
+- **Suite de Pruebas Automatizadas de UI (`tests-ui/comun/`)**:
+  - 71 pruebas automatizadas estructuradas en 25 archivos Playwright.
+  - Cobertura completa de Enterprise Shell, Command Palette, Dashboard M3, Catálogo, Bodegas e Inventario, y Organización multi-tenant.
 
----
+### v0.2.0 — Modern Enterprise SaaS & Google Material Design 3
+- **Capa de Primitivos Empresariales (`src/components/ui/`)**:
+  - `PageHeader`: Cabecera estandarizada con jerarquía tipográfica, badge contextual y ranura de acciones alineadas.
+  - `StatCard`: Tira de métricas analíticas KPI con soporte híbrido de Google Material Symbols y SVG de Lucide, tono dinámico (`toneColor`) y subtítulo.
+  - `SectionCard`: Tarjetas modulares de superficie tonal (`var(--glb-surface)`) para aislar tablas, formularios y paneles temáticos.
+  - `StatusBadge`: Badges semánticos (activo, inactivo, prueba, borrador) con punto indicador luminoso (`withDot`).
+  - `EmptyState`: Estados vacíos ilustrados con llamado a la acción (`action`) directo.
+  - `QuickActionCard`: Accesos directos operativos para el dashboard y centros de control.
+- **Rediseño Completo de Módulos (100% Cobertura)**:
+  - **Dashboard**: Panel central con KPIs, accesos rápidos y estado del sistema.
+  - **Equipo & RBAC (14 vistas)**: Usuarios, roles, permisos y departamentos reestructurados con layout `.ecu-dashboard-layout`.
+  - **Seguridad**: Catálogo de permisos globales y políticas contextuales ABAC.
+  - **Catálogo**: Productos, servicios y categorías con árbol taxonómico y moldes dinámicos.
+  - **Bodegas e Inventario**: Almacenes, stock en tiempo real, documentos de inventario y Kardex.
+  - **Compras & Facturación SRI**: Emisión de facturas, monitor SRI, comprobantes electrónicos y retenciones.
+  - **Organización & Licenciamiento**: Cupos multi-tenant, alta/baja de empresas y suscripción.
+  - **Ajustes & Preferencias**: Personalización de densidad, temas de interfaz y diagnóstico técnico.
+- **Navegación & Productividad Global**:
+  - **Command Palette (`Ctrl + K` / `Cmd + K`)**: Buscador modal omnipresente en el header con auto-enfoque, navegación por teclado (`↑↓↵`), ejecución instantánea de acciones directas (`+ Factura`, `+ Usuario`, `+ Bodega`), alternancia de tema claro/oscuro y salto entre rutas autorizadas.
+- **Compatibilidad**:
+  - Soporte total para modo oscuro (`html.sf-dark-mode`) con contraste elevado y bordes sutiles.
+  - Sincronización completa con la suite de pruebas automatizadas Playwright E2E (`tests-ui/`).
 
-## Referencia rápida de implementación
-
-**Pantalla de referencia:** `src/features/onboarding/WelcomeOnboardingPage.tsx`  
-**Estilos de referencia:** `src/features/onboarding/welcomeOnboarding.css`  
-**Estilos base:** `src/features/auth/loginPage.css`  
-**Resumen / emitir licencia:** `ecunexo_license/src/pages/licensing/issueLicenseForm.css` (`1 → 2 → 4` columnas)
-
-Antes de dar por cerrada una PR de UI: checklist — labels visibles, **4 columnas** en desktop (friendMobile: 1 / 2 / 4), módulos en grid no barras full-width, botón primario con texto claro, errores accesibles.
+### v0.1.0 — Arquitectura Base
+- Integración de `glubox` básico con componentes atómicos iniciales.
+- Rutas base y esquemas de autenticación y navegación.

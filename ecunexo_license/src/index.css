@@ -3,6 +3,7 @@
  * @see https://solivoo.github.io/gluebox/guide/installation.html
  */
 @import './styles/ecu-form-tokens.css';
+@import './components/ui/enterpriseUi.css';
 
 html,
 body,
@@ -41,6 +42,13 @@ body {
   --c-outline-variant: var(--glb-border);
   --c-code-bg: color-mix(in srgb, var(--glb-muted) 12%, var(--glb-surface));
   --c-code-text: var(--glb-text);
+  --shell-bg: var(--glb-app-bg);
+  --shell-surface: var(--glb-surface);
+  --shell-border: var(--glb-border);
+  --shell-text: var(--glb-text);
+  --shell-muted: var(--glb-muted);
+  --shell-primary: var(--glb-primary);
+  --shell-on-primary: var(--glb-primary-fg, #fff);
 }
 
 /* Primario: texto claro sobre el azul/violeta. En dark, negro sobre azul no compagina. */

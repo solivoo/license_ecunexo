@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { Button, type PageActionItem } from 'glubox'
+import { Ban, CheckCircle2, ShieldCheck, UserPlus } from 'lucide-react'
+import { Button, OptionGroup, type PageActionItem } from 'glubox'
 import { EcuPageActions } from '@/components/ui/EcuPageActions'
-import { GridOptionFilter } from '@/components/ui/GridOptionFilter'
+import { EmptyState, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
 import { renderSidebarIcon } from '@/config/sidebarIcons'
 import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import {
@@ -75,6 +76,13 @@ export function OperatorsListPage() {
     return rows
   }, [rows, statusFilter])
 
+  const metrics = useMemo(() => {
+    const total = rows.length
+    const active = rows.filter((row) => row.isActive).length
+    const inactive = rows.filter((row) => !row.isActive).length
+    return { total, active, inactive }
+  }, [rows])
+
   const actionItems = useMemo(
     (): PageActionItem[] => [
       {
@@ -110,30 +118,39 @@ export function OperatorsListPage() {
   }
 
   return (
-    <>
-      <div className="ecu-page-header">
-        <div>
-          <h1 className="platform-shell__page-title">Operadores</h1>
-          <p className="platform-shell__page-lead">
-            Usuarios autorizados para emitir licencias en la plataforma corporativa EcuNexo.
-          </p>
-        </div>
-        <div className="ecu-page-header__actions">
-          <Button type="button" variant="primary" theme={theme} onClick={() => setDialogOpen(true)}>
-            Nuevo operador
-          </Button>
-          <EcuPageActions
-            items={actionItems}
-            variant="outline"
-            triggerLabel="Acciones"
-            renderIcon={renderSidebarIcon}
-            onNavigate={(route: string) => navigate(route)}
-            onActionSelect={(item) => {
-              if (item.id === 'refresh') void load({ showLoading: true })
-            }}
-          />
-        </div>
-      </div>
+    <div className="ecu-dashboard-layout">
+      <PageHeader
+        title="Operadores del Sistema"
+        subtitle="Usuarios autorizados para emitir licencias y administrar la plataforma corporativa EcuNexo."
+        badge={
+          <StatusBadge tone="info" withDot>
+            Seguridad
+          </StatusBadge>
+        }
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="primary"
+              theme={theme}
+              onClick={() => setDialogOpen(true)}
+            >
+              <UserPlus size={16} aria-hidden />
+              Nuevo operador
+            </Button>
+            <EcuPageActions
+              items={actionItems}
+              variant="outline"
+              triggerLabel="Acciones"
+              renderIcon={renderSidebarIcon}
+              onNavigate={(route: string) => navigate(route)}
+              onActionSelect={(item) => {
+                if (item.id === 'refresh') void load({ showLoading: true })
+              }}
+            />
+          </>
+        }
+      />
 
       {successMessage ? (
         <p className="platform-shell__alert platform-shell__alert--success" role="status">
@@ -147,20 +164,93 @@ export function OperatorsListPage() {
         </p>
       ) : null}
 
-      <OperatorsGrid
-        rows={visibleRows}
-        loading={loading}
-        toolbarRight={
-          <GridOptionFilter
-            id="operators-status"
-            ariaLabel="Estado del operador"
+      <div className="ecu-stat-grid">
+        <StatCard
+          label="Total operadores"
+          value={loading ? '—' : metrics.total}
+          icon={<ShieldCheck size={22} strokeWidth={1.75} />}
+          toneColor="var(--shell-primary)"
+          footerText="Acceso al panel"
+        />
+        <StatCard
+          label="Operadores activos"
+          value={loading ? '—' : metrics.active}
+          icon={<CheckCircle2 size={22} strokeWidth={1.75} />}
+          toneColor="#10b981"
+          badge={
+            <StatusBadge tone="success" withDot>
+              Habilitados
+            </StatusBadge>
+          }
+        />
+        <StatCard
+          label="Inactivos / Bloqueados"
+          value={loading ? '—' : metrics.inactive}
+          icon={<Ban size={22} strokeWidth={1.75} />}
+          toneColor="#f59e0b"
+          badge={
+            metrics.inactive > 0 ? (
+              <StatusBadge tone="warning">Sin acceso</StatusBadge>
+            ) : undefined
+          }
+        />
+      </div>
+
+      <SectionCard
+        title="Operadores Registrados"
+        subtitle="Cuentas de acceso administrativo, roles asignados y actividad reciente"
+        action={
+          <OptionGroup
+            id="operators-status-filter"
+            name="operatorsStatus"
+            layout="segmented"
+            variant="outline"
+            size="sm"
+            theme={theme}
+            options={STATUS_FILTERS.map((f) => ({ value: f.value, label: f.label }))}
             value={statusFilter}
-            options={STATUS_FILTERS}
+            onChange={(val) => setStatusFilter(String(val))}
             disabled={loading}
-            onChange={setStatusFilter}
           />
         }
-      />
+      >
+        {!loading && visibleRows.length === 0 ? (
+          <EmptyState
+            icon={<ShieldCheck size={32} strokeWidth={1.75} />}
+            title="No se encontraron operadores"
+            description={
+              statusFilter !== 'all'
+                ? 'No existen cuentas registradas con el estado seleccionado.'
+                : 'Crea una cuenta de operador para delegar la gestión del licenciamiento.'
+            }
+            action={
+              statusFilter === 'all' ? (
+                <Button
+                  type="button"
+                  variant="primary"
+                  theme={theme}
+                  onClick={() => setDialogOpen(true)}
+                >
+                  <UserPlus size={16} aria-hidden />
+                  Nuevo operador
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  theme={theme}
+                  size="sm"
+                  onClick={() => setStatusFilter('all')}
+                >
+                  Ver todos los operadores
+                </Button>
+              )
+            }
+          />
+        ) : (
+          <OperatorsGrid rows={visibleRows} loading={loading} />
+        )}
+      </SectionCard>
 
       <CreateOperatorDialog
         open={dialogOpen}
@@ -169,6 +259,7 @@ export function OperatorsListPage() {
         onClose={() => setDialogOpen(false)}
         onCreate={handleCreate}
       />
-    </>
+    </div>
   )
 }
+

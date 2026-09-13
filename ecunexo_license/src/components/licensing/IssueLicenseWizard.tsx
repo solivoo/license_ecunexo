@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { Plus } from 'lucide-react'
 import { Button, type PageActionItem } from 'glubox'
 import { EcuPageActions } from '@/components/ui/EcuPageActions'
+import { PageHeader, StatusBadge } from '@/components/ui'
 import { useNavigate } from 'react-router-dom'
 import { IssueLicenseCustomerStep } from '@/components/licensing/IssueLicenseCustomerStep'
 import { IssueLicensePlanStep } from '@/components/licensing/IssueLicensePlanStep'
@@ -60,34 +62,40 @@ export function IssueLicenseWizard({
 
   return (
     <div className="issue-license-wizard">
-      <div className="ecu-page-header">
-        <div>
-          <h1 className="platform-shell__page-title">Emitir licencia</h1>
-          <p className="platform-shell__page-lead">{STEP_LEADS[step]}</p>
-        </div>
-        {step === 0 ? (
-          <div className="ecu-page-header__actions">
-            <Button
-              type="button"
-              variant="primary"
-              theme={theme}
-              onClick={() => navigate('/app/clientes/nuevo')}
-            >
-              Nuevo cliente
-            </Button>
-            <EcuPageActions
-              items={actionItems}
-              variant="outline"
-              triggerLabel="Acciones"
-              renderIcon={renderSidebarIcon}
-              onNavigate={(route: string) => navigate(route)}
-              onActionSelect={(item) => {
-                if (item.id === 'refresh') setReloadToken((token) => token + 1)
-              }}
-            />
-          </div>
-        ) : null}
-      </div>
+      <PageHeader
+        title="Emitir licencia"
+        subtitle={STEP_LEADS[step]}
+        badge={
+          <StatusBadge tone="primary" withDot>
+            Paso {step + 1} de {STEPS.length}
+          </StatusBadge>
+        }
+        actions={
+          step === 0 ? (
+            <>
+              <Button
+                type="button"
+                variant="primary"
+                theme={theme}
+                onClick={() => navigate('/app/clientes/nuevo')}
+              >
+                <Plus size={16} aria-hidden />
+                Nuevo cliente
+              </Button>
+              <EcuPageActions
+                items={actionItems}
+                variant="outline"
+                triggerLabel="Acciones"
+                renderIcon={renderSidebarIcon}
+                onNavigate={(route: string) => navigate(route)}
+                onActionSelect={(item) => {
+                  if (item.id === 'refresh') setReloadToken((token) => token + 1)
+                }}
+              />
+            </>
+          ) : undefined
+        }
+      />
 
       <ol className="issue-license-steps" aria-label="Pasos para emitir">
         {STEPS.map((item, index) => {
