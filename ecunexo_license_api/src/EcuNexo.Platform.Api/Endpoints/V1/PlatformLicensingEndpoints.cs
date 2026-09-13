@@ -29,6 +29,7 @@ using EcuNexo.Platform.Data.Licensing;
 using EcuNexo.Platform.Api.Contracts.V1;
 using EcuNexo.Platform.Api.Extensions;
 using EcuNexo.Platform.Api.Security;
+using EcuNexo.Platform.Business.Licensing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -50,6 +51,7 @@ public static class PlatformLicensingEndpoints
 
         group.MapPost("/auth/login", OperatorLoginAsync).AllowAnonymous();
         group.MapGet("/health", HealthAsync).AllowAnonymous();
+        group.MapGet("/public-key", GetPublicKeyAsync).AllowAnonymous();
         group.MapGet("/licenses/{grantId:guid}/status", GetLicenseStatusAsync).AllowAnonymous();
 
         var secured = group.MapGroup("").RequireAuthorization();
@@ -90,6 +92,25 @@ public static class PlatformLicensingEndpoints
         {
             return Results.Problem(detail: ex.Message, statusCode: 503, title: "BD licensing no disponible");
         }
+    }
+
+    private static IResult GetPublicKeyAsync(
+        ILicenseArtifactIssuer issuer,
+        [FromQuery] string? format)
+    {
+        var result = issuer.GetPublicKeyPem();
+        if (!result.IsSuccess)
+        {
+            return result.ToHttpResult();
+        }
+
+        if (string.Equals(format, "pem", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(format, "raw", StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.Text(result.Value!, "text/plain; charset=utf-8");
+        }
+
+        return Results.Ok(new { publicKeyPem = result.Value });
     }
 
     private static async Task<IResult> OperatorLoginAsync(

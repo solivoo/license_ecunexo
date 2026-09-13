@@ -6,4 +6,5 @@ namespace EcuNexo.Platform.Business.Licensing;
 public interface ILicenseArtifactIssuer
 {
     Result<string> Sign(LicenseArtifactPayload payload);
+    Result<string> GetPublicKeyPem();
 }
