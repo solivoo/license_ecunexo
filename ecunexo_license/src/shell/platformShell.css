@@ -516,11 +516,6 @@ html[data-mode='light'] .platform-shell__alert--success {
   --glb-field-canvas: var(--glb-surface);
 }
 
-.ecu-stat-card__icon {
-  flex-shrink: 0;
-  color: var(--glb-primary);
-}
-
 .ecu-dashboard-card__title {
   display: flex;
   align-items: center;
