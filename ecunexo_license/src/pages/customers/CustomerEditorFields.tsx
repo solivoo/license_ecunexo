@@ -13,7 +13,6 @@ export type CustomerEditorFieldsProps = {
   readonly busy: boolean
   readonly legalName: string
   readonly tradeName: string
-  readonly taxId: string
   readonly countryCode: string
   readonly deploymentMode: string
   readonly contactName: string
@@ -22,7 +21,6 @@ export type CustomerEditorFieldsProps = {
   readonly notes: string
   readonly onLegalName: (value: string) => void
   readonly onTradeName: (value: string) => void
-  readonly onTaxId: (value: string) => void
   readonly onCountryCode: (value: string) => void
   readonly onDeploymentMode: (value: string) => void
   readonly onContactName: (value: string) => void
@@ -36,7 +34,6 @@ export function CustomerEditorFields({
   busy,
   legalName,
   tradeName,
-  taxId,
   countryCode,
   deploymentMode,
   contactName,
@@ -45,7 +42,6 @@ export function CustomerEditorFields({
   notes,
   onLegalName,
   onTradeName,
-  onTaxId,
   onCountryCode,
   onDeploymentMode,
   onContactName,
@@ -58,17 +54,20 @@ export function CustomerEditorFields({
       <section className="issue-license-subpanel">
         <h3 className="issue-license-subpanel__title">
           <Building2 size={18} strokeWidth={1.75} aria-hidden />
-          Identidad comercial
+          Datos comerciales y facturación
         </h3>
-        <div className="issue-license-form-grid">
+        <p className="issue-license-subpanel__hint">
+          Razón social o persona a quien se facturará. Las empresas con su respectivo RUC se crean posteriormente dentro del sistema.
+        </p>
+        <div className="issue-license-field-grid issue-license-field-grid--2">
           <TextBox
             id="customer-legal-name"
-            label="Razón social"
+            label="Razón social o Persona a facturar"
             labelPosition="outlined"
             variant="outline"
             value={legalName}
             onChange={(e: ChangeEvent<HTMLInputElement>) => onLegalName(e.target.value)}
-            placeholder="Empresa S.A."
+            placeholder="Persona o Razón social"
             required
             disabled={busy}
             fullWidth
@@ -77,25 +76,12 @@ export function CustomerEditorFields({
           />
           <TextBox
             id="customer-trade-name"
-            label="Nombre comercial"
+            label="Nombre comercial / Alias"
             labelPosition="outlined"
             variant="outline"
             value={tradeName}
             onChange={(e: ChangeEvent<HTMLInputElement>) => onTradeName(e.target.value)}
             placeholder="Opcional"
-            disabled={busy}
-            fullWidth
-            size="md"
-            theme={theme}
-          />
-          <TextBox
-            id="customer-tax-id"
-            label="RUC / identificación fiscal"
-            labelPosition="outlined"
-            variant="outline"
-            value={taxId}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => onTaxId(e.target.value)}
-            placeholder="1799999999001"
             disabled={busy}
             fullWidth
             size="md"
@@ -109,7 +95,7 @@ export function CustomerEditorFields({
           <MapPin size={18} strokeWidth={1.75} aria-hidden />
           País y despliegue
         </h3>
-        <div className="issue-license-form-grid">
+        <div className="issue-license-field-grid issue-license-field-grid--2">
           <TextBox
             id="customer-country"
             label="País"
@@ -143,9 +129,9 @@ export function CustomerEditorFields({
       <section className="issue-license-subpanel">
         <h3 className="issue-license-subpanel__title">
           <UserRound size={18} strokeWidth={1.75} aria-hidden />
-          Contacto
+          Contacto a quien facturar
         </h3>
-        <div className="issue-license-form-grid">
+        <div className="issue-license-field-grid issue-license-field-grid--3">
           <TextBox
             id="customer-contact-name"
             label="Nombre del contacto"
@@ -161,7 +147,7 @@ export function CustomerEditorFields({
           />
           <TextBox
             id="customer-contact-email"
-            label="Correo de contacto"
+            label="Correo de contacto / facturación"
             labelPosition="outlined"
             variant="outline"
             type="email"

@@ -143,8 +143,8 @@ export function CustomerEditorPage() {
         title={isEdit ? 'Editar cliente' : 'Nuevo cliente'}
         subtitle={
           isEdit
-            ? 'Actualiza los datos comerciales del cliente. Los cambios no alteran licencias ya emitidas.'
-            : 'Registra el cliente comercial al que se vincularán las licencias emitidas.'
+            ? 'Actualiza los datos del contacto o cuenta comercial a quien se factura. Los cambios no alteran licencias ya emitidas.'
+            : 'Registra los datos del contacto o cuenta comercial a quien se va a facturar y asociar licencias.'
         }
         badge={
           <StatusBadge tone="primary" withDot>
@@ -172,14 +172,13 @@ export function CustomerEditorPage() {
         >
           <SectionCard
             title="Información de la Cuenta"
-            subtitle="Razón social, identificación fiscal y canales de contacto comercial"
+            subtitle="Razón social o nombre a facturar y canales de contacto comercial"
           >
             <CustomerEditorFields
               theme={theme}
               busy={busy}
               legalName={legalName}
               tradeName={tradeName}
-              taxId={taxId}
               countryCode={countryCode}
               deploymentMode={deploymentMode}
               contactName={contactName}
@@ -188,7 +187,6 @@ export function CustomerEditorPage() {
               notes={notes}
               onLegalName={setLegalName}
               onTradeName={setTradeName}
-              onTaxId={setTaxId}
               onCountryCode={setCountryCode}
               onDeploymentMode={setDeploymentMode}
               onContactName={setContactName}

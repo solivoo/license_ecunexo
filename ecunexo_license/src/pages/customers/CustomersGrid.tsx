@@ -55,7 +55,13 @@ export function CustomersGrid({
           <CustomerLegalNameCell legalName={row.legalName} tradeName={row.tradeName} />
         ),
       },
-      { key: 'taxId', header: 'RUC', width: 130, sortable: true },
+      {
+        key: 'taxId',
+        header: 'RUC',
+        width: 130,
+        sortable: true,
+        renderCell: (value: unknown) => (value ? String(value) : '—'),
+      },
       { key: 'contactEmail', header: 'Contacto', width: 220, sortable: true },
       {
         key: 'status',
