@@ -72,7 +72,6 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
-                    TenantModuleCodes.Accounting,
                 ],
                 42m, 10),
             ("taller-mixto", "Taller",
@@ -86,7 +85,6 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Repairs,
                     TenantModuleCodes.Purchases,
-                    TenantModuleCodes.Accounting,
                 ],
                 59m, 15),
             ("empresa-pyme", "Empresa",
@@ -277,10 +275,11 @@ public static class DevelopmentLicensingSeeder
             {
                 var accountingTier = planCode switch
                 {
+                    "pro-independiente" => ModuleTier.Small,
                     "local-comercio" => ModuleTier.Small,
-                    "taller-mixto" => ModuleTier.Medium,
-                    "empresa-pyme" => ModuleTier.Big,
-                    "cadena-retail" => ModuleTier.Enterprise,
+                    "taller-mixto" => ModuleTier.Small,
+                    "empresa-pyme" => ModuleTier.Medium,
+                    "cadena-retail" => ModuleTier.Big,
                     "grupo-multi-ruc" => ModuleTier.Enterprise,
                     _ => ModuleTier.Small,
                 };

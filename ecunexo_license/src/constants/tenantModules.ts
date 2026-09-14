@@ -83,11 +83,13 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
   },
   {
     code: 'contabilidad',
-    label: 'Contabilidad y Plan General de Cuentas NIIF / SCVS',
-    description: 'Catálogo maestro de cuentas contables oficial SCVS (NIIF para PYMES). Árbol jerárquico, imputabilidad y vinculación con compras e inventario.',
+    label: 'Contabilidad NIIF, Pre-declaración SRI & Balances SCVS',
+    description: 'Plan general de cuentas oficial SCVS Ecuador, libro diario con validación estricta de partida doble, contabilización automática de compras/liquidaciones, pre-declaración mensual SRI F104/F103 con conciliación SAS y estados financieros consolidados (Balance General y P&G).',
     defaultLimits: {
-      max_chart_accounts: 500,
       max_monthly_journal_entries: 500,
+      max_accounts_in_chart: 250,
+      max_chart_accounts: 250,
+      allow_financial_statements_export: 1,
       enable_custom_subaccounts: 1,
     },
     category: 'Contabilidad',
@@ -221,8 +223,8 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
   },
   {
     code: 'contabilidad',
-    label: 'Contabilidad y Plan General de Cuentas NIIF / SCVS',
-    description: 'Gestión del catálogo maestro de cuentas contables conforme a SCVS (NIIF para PYMES). Árbol jerárquico, grupos y control de imputabilidad.',
+    label: 'Contabilidad NIIF, Pre-declaración SRI & Balances SCVS',
+    description: 'Plan general de cuentas oficial SCVS Ecuador, libro diario con validación estricta de partida doble, contabilización automática de compras/liquidaciones, pre-declaración mensual SRI F104/F103 con conciliación SAS y estados financieros consolidados (Balance General y P&G).',
     category: 'Contabilidad',
   },
   {
@@ -302,7 +304,9 @@ const LIMIT_KEY_LABELS: Record<string, string> = {
   max_suppliers: 'Proveedores máximos',
   max_monthly_withholdings: 'Retenciones / mes',
   max_chart_accounts: 'Cuentas contables',
+  max_accounts_in_chart: 'Cuentas contables',
   max_monthly_journal_entries: 'Asientos / mes',
+  allow_financial_statements_export: 'Exportación de balances',
   enable_custom_subaccounts: 'Subcuentas personalizadas',
   allow_custom_subaccounts: 'Subcuentas personalizadas',
 }
