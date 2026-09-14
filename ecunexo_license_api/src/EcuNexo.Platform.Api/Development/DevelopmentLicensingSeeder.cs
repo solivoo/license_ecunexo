@@ -72,6 +72,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
+                    TenantModuleCodes.RemisionGuides,
                 ],
                 42m, 10),
             ("taller-mixto", "Taller",
@@ -98,6 +99,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
                     TenantModuleCodes.Accounting,
+                    TenantModuleCodes.RemisionGuides,
                 ],
                 79m, 20),
             ("cadena-retail", "Cadena",
@@ -111,6 +113,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
                     TenantModuleCodes.Accounting,
+                    TenantModuleCodes.RemisionGuides,
                 ],
                 129m, 30),
             ("grupo-multi-ruc", "Grupo",
@@ -124,6 +127,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
                     TenantModuleCodes.Accounting,
+                    TenantModuleCodes.RemisionGuides,
                 ],
                 199m, 40),
         };
@@ -284,6 +288,18 @@ public static class DevelopmentLicensingSeeder
                     _ => ModuleTier.Small,
                 };
                 entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Accounting, accountingTier));
+            }
+            else if (normalized == TenantModuleCodes.RemisionGuides)
+            {
+                var remisionTier = planCode switch
+                {
+                    "local-comercio" => ModuleTier.Medium,
+                    "empresa-pyme" => ModuleTier.Enterprise,
+                    "cadena-retail" => ModuleTier.Enterprise,
+                    "grupo-multi-ruc" => ModuleTier.Enterprise,
+                    _ => ModuleTier.Small,
+                };
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.RemisionGuides, remisionTier));
             }
             else
             {

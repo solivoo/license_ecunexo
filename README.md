@@ -2,7 +2,7 @@
 
 Plataforma de licenciamiento EcuNexo: API de emisión (`ecunexo_license_api`) y panel de operadores (`ecunexo_license`).
 
-Host y base de datos separados del producto cliente. Versión: `VERSION` / tag `v1.7.1`.
+Host y base de datos separados del producto cliente. Versión: `VERSION` / tag `v1.8.0`.
 
 ```
 ecunexo_license_api/   # API .NET — 5090, BD licensing_ecunexo

@@ -95,6 +95,16 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
     category: 'Contabilidad',
   },
   {
+    code: 'billing.remision_guides',
+    label: 'Guías de Remisión Electrónicas SRI (Tipo 06) & Logística',
+    description: 'Emisión, firma digital XAdES-BES, Clave de Acceso SRI de 49 dígitos y seguimiento en carretera de Guías de Remisión para el transporte legal de mercaderías.',
+    defaultLimits: {
+      max_monthly_remision_guides: 250,
+      max_active_carriers: 20,
+    },
+    category: 'Logística / Facturación',
+  },
+  {
     code: 'training',
     label: 'Capacitación',
     description: 'Sesiones de formación al equipo.',
@@ -138,6 +148,7 @@ export const MODULE_DEPENDENCIES: Record<string, readonly string[]> = {
   ecommerce: ['catalog', 'warehousing', 'inventory'],
   purchases: ['identity'],
   contabilidad: ['identity'],
+  'billing.remision_guides': ['identity', 'facturacion'],
 }
 
 /** Devuelve los módulos requeridos por el código dado. */
@@ -261,6 +272,12 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
     description: 'Recepción, auditoría preventiva y registro de comprobantes electrónicos XML del SRI y facturas físicas, homologación con kárdex/bodegas y control de categorías ATS.',
     category: 'Operaciones',
   },
+  {
+    code: 'billing.remision_guides',
+    label: 'Guías de Remisión Electrónicas SRI (Tipo 06) & Logística',
+    description: 'Emisión, firma digital XAdES-BES, Clave de Acceso SRI de 49 dígitos y seguimiento en carretera de Guías de Remisión para el transporte legal de mercaderías.',
+    category: 'Logística / Facturación',
+  },
 ]
 
 export const OPTIONAL_LICENSE_MODULE_OPTIONS = TENANT_MODULE_OPTIONS.filter(
@@ -309,6 +326,8 @@ const LIMIT_KEY_LABELS: Record<string, string> = {
   allow_financial_statements_export: 'Exportación de balances',
   enable_custom_subaccounts: 'Subcuentas personalizadas',
   allow_custom_subaccounts: 'Subcuentas personalizadas',
+  max_monthly_remision_guides: 'Guías de remisión / mes',
+  max_active_carriers: 'Transportistas activos',
 }
 
 export function limitKeyLabel(key: string): string {
