@@ -33,7 +33,7 @@ function getBuildTime(): string {
 const gitCommit = getGitCommit()
 const gitBranch = getGitBranch()
 const buildTime = getBuildTime()
-const appVersion = pkg.version || '1.8.0'
+const appVersion = pkg.version || '1.9.0'
 
 export default defineConfig({
   plugins: [react()],

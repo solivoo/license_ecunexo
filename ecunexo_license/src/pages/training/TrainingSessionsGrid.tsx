@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from 'react'
 import { DataGrid, type ColumnDef } from 'glubox'
-import { Calendar, Check, X } from 'lucide-react'
+import { Calendar, Check, Mail, X } from 'lucide-react'
 import { GridIconButton } from '@/components/ui/GridIconButton'
 import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { useGluDataGridPaging } from '@/hooks/useGluDataGridPaging'
@@ -18,6 +18,7 @@ export type TrainingSessionsGridProps = {
   readonly onComplete: (id: string) => void
   readonly onCancel: (id: string) => void
   readonly onDownloadCalendar: (id: string) => void
+  readonly onSendInvite?: (id: string) => void
   readonly toolbarRight?: ReactNode
 }
 
@@ -49,6 +50,7 @@ export function TrainingSessionsGrid({
   onComplete,
   onCancel,
   onDownloadCalendar,
+  onSendInvite,
   toolbarRight,
 }: TrainingSessionsGridProps) {
   const theme = useGluComponentTheme()
@@ -131,13 +133,20 @@ export function TrainingSessionsGrid({
                 icon={Calendar}
                 onClick={() => onDownloadCalendar(row.id)}
               />
+              {onSendInvite && row.attendeeEmails && row.attendeeEmails.length > 0 ? (
+                <GridIconButton
+                  label="Enviar invitación por correo a los asistentes"
+                  icon={Mail}
+                  onClick={() => onSendInvite(row.id)}
+                />
+              ) : null}
               <GridIconButton label="Completar" icon={Check} onClick={() => onComplete(row.id)} />
               <GridIconButton label="Cancelar" icon={X} danger onClick={() => onCancel(row.id)} />
             </div>
           ) : null,
       },
     ]
-  }, [onCancel, onComplete, onDownloadCalendar])
+  }, [onCancel, onComplete, onDownloadCalendar, onSendInvite])
 
   const dataSource = useMemo(
     () => (Array.isArray(rows) ? rows : []) as TrainingGridRow[],

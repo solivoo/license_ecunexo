@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Calendar, CheckCircle2, Plus, X } from 'lucide-react'
-import { Button, OptionGroup, type PageActionItem } from 'glubox'
+import { Button, OptionGroup, Toast, type PageActionItem } from 'glubox'
 import { EcuPageActions } from '@/components/ui/EcuPageActions'
 import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
 import { EmptyState, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
@@ -16,6 +16,7 @@ import {
   listTrainingSessions,
   type TrainingSessionItem,
 } from '@/lib/platformLicensingApi'
+import { sendTrainingInviteEmail } from '@/lib/platformEmailApi'
 import { readApiError } from '@/lib/readApiError'
 import { TrainingSessionsGrid } from './TrainingSessionsGrid'
 
@@ -39,6 +40,17 @@ export function TrainingSessionsListPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [errorOpen, setErrorOpen] = useState(false)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
+
+  const handleSendInvite = async (id: string) => {
+    try {
+      const res = await sendTrainingInviteEmail({ sessionId: id })
+      setSuccessMsg(res.message)
+    } catch (err: unknown) {
+      setError(readApiError(err, 'Error al enviar invitación por correo.'))
+      setErrorOpen(true)
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -276,6 +288,7 @@ export function TrainingSessionsListPage() {
             onComplete={(id) => void handleComplete(id)}
             onCancel={(id) => void handleCancel(id)}
             onDownloadCalendar={(id) => void handleDownloadCalendar(id)}
+            onSendInvite={(id) => void handleSendInvite(id)}
             toolbarRight={
               <div className="ecu-grid-date-range">
                 <GridDateRangeBox
@@ -299,6 +312,14 @@ export function TrainingSessionsListPage() {
           setError(null)
         }}
       />
+
+      {successMsg && (
+        <Toast
+          title={successMsg}
+          variant="success"
+          onClose={() => setSuccessMsg(null)}
+        />
+      )}
     </div>
   )
 }

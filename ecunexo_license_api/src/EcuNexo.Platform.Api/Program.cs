@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using EcuNexo.Platform.Api.Configuration;
 using EcuNexo.Platform.Api.Development;
+using EcuNexo.Platform.Api.Email;
 using EcuNexo.Platform.Api.Endpoints.V1;
 using EcuNexo.Platform.Api.Licensing;
 using EcuNexo.Platform.Api.Security;
@@ -46,6 +47,9 @@ builder.Services.Configure<LicensingOptions>(
 builder.Services.AddScoped<IActivationCodePepperProvider, ActivationCodePepperProvider>();
 builder.Services.AddScoped<ILicenseValidationPepperProvider, LicenseValidationPepperProvider>();
 builder.Services.AddScoped<ILicenseArtifactIssuer, LicenseArtifactIssuer>();
+
+builder.Services.AddScoped<MailKitPlatformEmailSender>();
+builder.Services.AddScoped<IPlatformEmailSender>(sp => sp.GetRequiredService<MailKitPlatformEmailSender>());
 
 builder.Services.AddSingleton<IPasswordHasher, EcuPasswordHasher>();
 builder.Services.AddSingleton<IPlatformJwtAccessTokenFactory, PlatformJwtAccessTokenFactory>();

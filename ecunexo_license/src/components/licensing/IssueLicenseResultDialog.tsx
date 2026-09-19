@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Button, Popup } from 'glubox'
-import { Check, Copy } from 'lucide-react'
+import { Check, CheckCircle2, Copy, Mail, Send } from 'lucide-react'
 import {
   buildLicenseFileContent,
   createLicenseFileDownload,
   suggestLicenseFileName,
 } from '@/lib/licenseFile'
 import type { IssueLicenseResult } from '@/lib/platformLicensingApi'
+import { sendLicenseDeliveryEmail } from '@/lib/platformEmailApi'
+import { readApiError } from '@/lib/readApiError'
 import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { TENANT_MODULE_OPTIONS } from '@/constants/tenantModules'
 
@@ -40,12 +42,45 @@ export function IssueLicenseResultDialog({
   const [download, setDownload] = useState<{ url: string; fileName: string } | null>(null)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [codeCopied, setCodeCopied] = useState(false)
+  const [emailSending, setEmailSending] = useState(false)
+  const [emailSuccess, setEmailSuccess] = useState<string | null>(null)
+  const [emailError, setEmailError] = useState<string | null>(null)
+  const [customEmail, setCustomEmail] = useState('')
+  const [showEmailInput, setShowEmailInput] = useState(false)
+
+  const handleSendEmail = async () => {
+    setEmailSending(true)
+    setEmailError(null)
+    setEmailSuccess(null)
+    try {
+      const artifactStr =
+        typeof issued.licenseArtifact === 'string'
+          ? issued.licenseArtifact
+          : JSON.stringify(issued.licenseArtifact)
+      const res = await sendLicenseDeliveryEmail({
+        grantId: issued.licenseId,
+        recipientEmail: customEmail.trim() || undefined,
+        activationCodePlaintext: issued.activationCodePlaintext,
+        licenseArtifact: artifactStr,
+      })
+      setEmailSuccess(res.message)
+    } catch (err) {
+      setEmailError(readApiError(err, 'No se pudo enviar la licencia por correo.'))
+    } finally {
+      setEmailSending(false)
+    }
+  }
 
   useEffect(() => {
     if (!open) {
       setDownload(null)
       setDownloadError(null)
       setCodeCopied(false)
+      setEmailSending(false)
+      setEmailSuccess(null)
+      setEmailError(null)
+      setCustomEmail('')
+      setShowEmailInput(false)
       return
     }
 
@@ -203,6 +238,66 @@ export function IssueLicenseResultDialog({
             >
               Copiar artefacto (JSON)
             </Button>
+          </div>
+        </div>
+
+        <div className="issue-license-result__block" style={{ marginTop: 16 }}>
+          <span className="issue-license-result__label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Mail size={16} />
+            Entrega al Correo del Cliente
+          </span>
+          <p className="issue-license-result__hint">
+            Envía directamente la suscripción, código de activación e instructivo con el archivo adjunto <code>.ecunexo-license</code> al correo del cliente.
+          </p>
+          {emailSuccess && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#166534', background: '#dcfce7', padding: '8px 12px', borderRadius: 6, fontSize: 13, marginBottom: 8 }}>
+              <CheckCircle2 size={16} />
+              <span>{emailSuccess}</span>
+            </div>
+          )}
+          {emailError && (
+            <p className="issue-license-result__download-error" role="alert" style={{ marginBottom: 8 }}>
+              {emailError}
+            </p>
+          )}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            {showEmailInput ? (
+              <input
+                type="email"
+                placeholder="correo-alternativo@cliente.com"
+                value={customEmail}
+                onChange={(e) => setCustomEmail(e.target.value)}
+                style={{
+                  padding: '6px 10px',
+                  fontSize: 13,
+                  borderRadius: 6,
+                  border: '1px solid #cbd5e1',
+                  minWidth: 240,
+                }}
+              />
+            ) : null}
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              theme={theme}
+              onClick={handleSendEmail}
+              disabled={emailSending}
+            >
+              <Send size={14} className={`mr-1.5 ${emailSending ? 'animate-pulse' : ''}`} />
+              {emailSending ? 'Enviando correo...' : 'Enviar por Correo al Cliente'}
+            </Button>
+            {!showEmailInput ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                theme={theme}
+                onClick={() => setShowEmailInput(true)}
+              >
+                Otro destinatario
+              </Button>
+            ) : null}
           </div>
         </div>
       </div>

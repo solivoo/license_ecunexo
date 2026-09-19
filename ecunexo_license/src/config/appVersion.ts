@@ -9,7 +9,7 @@ export interface AppVersionInfo {
 }
 
 export const APP_VERSION_INFO: AppVersionInfo = {
-  version: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.8.0',
+  version: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.9.0',
   gitCommit: typeof __GIT_COMMIT__ !== 'undefined' ? __GIT_COMMIT__ : 'dev',
   gitBranch: typeof __GIT_BRANCH__ !== 'undefined' ? __GIT_BRANCH__ : 'main',
   buildTime: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '',

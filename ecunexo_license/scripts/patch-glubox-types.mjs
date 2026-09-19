@@ -6,10 +6,12 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const distSrc = path.join(root, 'node_modules', 'glubox', 'dist', 'src')
+const distSrc = fs.existsSync(path.join(root, 'node_modules', 'glubox', 'dist', 'src'))
+  ? path.join(root, 'node_modules', 'glubox', 'dist', 'src')
+  : path.join(root, 'node_modules', 'glubox', 'dist')
 
 if (!fs.existsSync(distSrc)) {
-  console.warn('[patch-glubox-types] glubox dist/src not found — skip')
+  console.warn('[patch-glubox-types] glubox dist not found — skip')
   process.exit(0)
 }
 

@@ -301,6 +301,19 @@ public static class DevelopmentLicensingSeeder
                 };
                 entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.RemisionGuides, remisionTier));
             }
+            else if (normalized == TenantModuleCodes.CreditNotes)
+            {
+                var creditNotesTier = planCode switch
+                {
+                    "local-comercio" => ModuleTier.Medium,
+                    "taller-mixto" => ModuleTier.Medium,
+                    "empresa-pyme" => ModuleTier.Big,
+                    "cadena-retail" => ModuleTier.Enterprise,
+                    "grupo-multi-ruc" => ModuleTier.Enterprise,
+                    _ => ModuleTier.Small,
+                };
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.CreditNotes, creditNotesTier));
+            }
             else
             {
                 var tier = normalized == TenantModuleCodes.Catalog ? ModuleTier.Big : ModuleTier.Small;

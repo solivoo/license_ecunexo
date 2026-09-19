@@ -15,6 +15,7 @@ import { CreatePlanPage } from '@/pages/licensing/CreatePlanPage'
 import { PlanDetailPage } from '@/pages/licensing/PlanDetailPage'
 import { TrainingSessionsListPage } from '@/pages/training/TrainingSessionsListPage'
 import { ScheduleTrainingPage } from '@/pages/training/ScheduleTrainingPage'
+import { PlatformEmailSettingsPage } from '@/pages/settings/PlatformEmailSettingsPage'
 import { PlatformShellLayout } from '@/shell/PlatformShellLayout'
 import { RoadmapPlaceholderPage } from '@/pages/RoadmapPlaceholderPage'
 
@@ -44,6 +45,7 @@ export const routes: RouteObject[] = [
           { path: 'planes/:code', element: <PlanDetailPage /> },
           { path: 'capacitaciones', element: <TrainingSessionsListPage /> },
           { path: 'capacitaciones/nueva', element: <ScheduleTrainingPage /> },
+          { path: 'configuracion/correo', element: <PlatformEmailSettingsPage /> },
           { path: 'soporte', element: <RoadmapPlaceholderPage /> },
         ],
       },

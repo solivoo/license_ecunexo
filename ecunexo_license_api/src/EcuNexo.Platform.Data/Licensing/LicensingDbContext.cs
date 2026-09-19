@@ -1,4 +1,5 @@
 using EcuNexo.Platform.Core.Licensing;
+using EcuNexo.Platform.Core.Settings;
 using EcuNexo.Platform.Core.Training;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +21,8 @@ public sealed class LicensingDbContext : DbContext
     public DbSet<LicenseGrant> LicenseGrants => Set<LicenseGrant>();
 
     public DbSet<TrainingSession> TrainingSessions => Set<TrainingSession>();
+
+    public DbSet<PlatformSetting> Settings => Set<PlatformSetting>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

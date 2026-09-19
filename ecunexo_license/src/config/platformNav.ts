@@ -115,6 +115,12 @@ export const platformNavItems: PlatformNavItem[] = [
         icon: 'user-cog',
         path: '/app/operadores',
       },
+      {
+        id: 'servidor-correo',
+        label: 'Servidor de Correo',
+        icon: 'mail',
+        path: '/app/configuracion/correo',
+      },
     ],
   },
 ]

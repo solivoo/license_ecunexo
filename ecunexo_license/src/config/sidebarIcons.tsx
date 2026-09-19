@@ -9,6 +9,7 @@ import {
   Key,
   Layers,
   LifeBuoy,
+  Mail,
   RefreshCw,
   Settings,
   Shield,
@@ -33,6 +34,7 @@ const iconMap: Record<string, LucideIcon> = {
   'graduation-cap': GraduationCap,
   calendar: Calendar,
   'life-buoy': LifeBuoy,
+  mail: Mail,
 }
 
 export function renderSidebarIcon(name: string, className?: string): ReactElement | null {

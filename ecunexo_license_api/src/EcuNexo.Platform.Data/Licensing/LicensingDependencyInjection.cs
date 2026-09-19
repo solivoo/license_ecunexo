@@ -1,6 +1,7 @@
 using EcuNexo.Core.Abstractions;
 using EcuNexo.Platform.Business.Abstractions;
 using EcuNexo.Platform.Business.Licensing;
+using EcuNexo.Platform.Business.Settings;
 using EcuNexo.Platform.Business.Training;
 using EcuNexo.Platform.Data;
 using EcuNexo.Platform.Data.Licensing.Repositories;
@@ -26,6 +27,7 @@ public static class LicensingDependencyInjection
         services.AddScoped<ILicenseGrantRepository, LicenseGrantRepository>();
         services.AddScoped<ILicensingUnitOfWork, LicensingUnitOfWork>();
         services.AddScoped<ITrainingSessionRepository, TrainingSessionRepository>();
+        services.AddScoped<IPlatformSettingRepository, PlatformSettingRepository>();
         services.AddSingleton<IProvisioningPayloadProtector, ProvisioningPayloadProtector>();
 
         return services;
