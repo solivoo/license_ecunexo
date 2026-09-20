@@ -24,7 +24,7 @@ services:
     build:
       context: ..
       dockerfile: ecunexo_license_api/Dockerfile
-    image: ${LICENSE_API_IMAGE:-ecunexo-license-api:1.10.0}
+    image: ${LICENSE_API_IMAGE:-ecunexo-license-api:1.10.1}
     pull_policy: build
     restart: unless-stopped
     depends_on:
@@ -64,7 +64,7 @@ services:
         VITE_LICENSE_SYNCFUSION: ${VITE_LICENSE_SYNCFUSION:-}
         VITE_LOGNERD_ENABLE_CONSOLE: ${VITE_LOGNERD_ENABLE_CONSOLE:-false}
         VITE_LOGNERD_LEVEL: ${VITE_LOGNERD_LEVEL:-WARN}
-    image: ${LICENSE_SPA_IMAGE:-ecunexo-license-spa:1.10.0}
+    image: ${LICENSE_SPA_IMAGE:-ecunexo-license-spa:1.10.1}
     pull_policy: build
     restart: unless-stopped
     depends_on:

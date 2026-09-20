@@ -31,9 +31,15 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
   },
   {
     code: 'facturacion',
-    label: 'Facturación',
-    description: 'Documentos de venta.',
-    defaultLimits: { max_invoices_per_month: 500 },
+    label: 'Facturación Electrónica SRI',
+    description: 'Comprobantes electrónicos SRI: Facturas (01), Notas de Crédito (04) y Guías de Remisión (06).',
+    defaultLimits: {
+      max_invoices_per_month: 500,
+      max_monthly_credit_notes: 100,
+      max_monthly_remision_guides: 250,
+      max_active_carriers: 20,
+    },
+    category: 'Fiscal / Facturación SRI',
   },
   {
     code: 'identity',
@@ -95,25 +101,6 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
     category: 'Contabilidad',
   },
   {
-    code: 'billing.remision_guides',
-    label: 'Guías de Remisión Electrónicas SRI (Tipo 06) & Logística',
-    description: 'Emisión, firma digital XAdES-BES, Clave de Acceso SRI de 49 dígitos y seguimiento en carretera de Guías de Remisión para el transporte legal de mercaderías.',
-    defaultLimits: {
-      max_monthly_remision_guides: 250,
-      max_active_carriers: 20,
-    },
-    category: 'Logística / Facturación',
-  },
-  {
-    code: 'credit_notes',
-    label: 'Notas de Crédito y Anulaciones SRI (Comprobante 04)',
-    description: 'Emisión de notas de crédito electrónicas v1.1.0 para anulación de facturas, devoluciones parciales/totales de mercadería en Kárdex y corrección de montos con afectación a Cuentas por Cobrar NIIF.',
-    defaultLimits: {
-      max_monthly_credit_notes: 100,
-    },
-    category: 'Fiscal / Facturación SRI / Devoluciones',
-  },
-  {
     code: 'catalog.matrix',
     label: 'Matriz de Tallas, Colores y Variantes Multidimensionales',
     description: 'Soporte para productos agrupadores (Parent-Child) que generan variantes físicas con SKU propio, precios independientes, códigos de barras EAN y saldos de stock por bodega, junto con un catálogo reutilizable de escalas de tallas (medias, calzado, ropa, pantalones) y producto cartesiano multidimensional.',
@@ -166,8 +153,6 @@ export const MODULE_DEPENDENCIES: Record<string, readonly string[]> = {
   ecommerce: ['catalog', 'warehousing', 'inventory'],
   purchases: ['identity'],
   contabilidad: ['identity'],
-  'billing.remision_guides': ['identity', 'facturacion'],
-  credit_notes: ['identity', 'facturacion'],
   'catalog.matrix': ['identity', 'catalog'],
 }
 
@@ -249,8 +234,9 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
   },
   {
     code: 'facturacion',
-    label: 'Facturación',
-    description: 'Documentos de venta.',
+    label: 'Facturación Electrónica SRI',
+    description: 'Documentos de venta, Facturas (01), Notas de Crédito (04) para anulaciones/devoluciones y Guías de Remisión (06) para logística.',
+    category: 'Fiscal / Facturación SRI',
   },
   {
     code: 'contabilidad',
@@ -291,18 +277,6 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
     label: 'Compras',
     description: 'Recepción, auditoría preventiva y registro de comprobantes electrónicos XML del SRI y facturas físicas, homologación con kárdex/bodegas y control de categorías ATS.',
     category: 'Operaciones',
-  },
-  {
-    code: 'billing.remision_guides',
-    label: 'Guías de Remisión Electrónicas SRI (Tipo 06) & Logística',
-    description: 'Emisión, firma digital XAdES-BES, Clave de Acceso SRI de 49 dígitos y seguimiento en carretera de Guías de Remisión para el transporte legal de mercaderías.',
-    category: 'Logística / Facturación',
-  },
-  {
-    code: 'credit_notes',
-    label: 'Notas de Crédito y Anulaciones SRI (Comprobante 04)',
-    description: 'Emisión de notas de crédito electrónicas v1.1.0 para anulación de facturas, devoluciones parciales/totales de mercadería en Kárdex y corrección de montos con afectación a Cuentas por Cobrar NIIF.',
-    category: 'Fiscal / Facturación SRI / Devoluciones',
   },
   {
     code: 'catalog.matrix',
