@@ -103,9 +103,10 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
   {
     code: 'catalog',
     label: 'Catálogo',
-    description: 'Productos, servicios, producto matriz y variantes multidimensionales (tallas y colores).',
+    description: 'Productos, servicios, producto matriz, variantes multidimensionales (tallas/colores) y plantillas jerárquicas.',
     defaultLimits: {
       max_active_variants: 1000,
+      max_product_templates: 50,
     },
     category: 'Comercial',
   },
@@ -220,7 +221,7 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
   {
     code: 'catalog',
     label: 'Catálogo',
-    description: 'Productos, servicios, producto matriz y variantes multidimensionales (tallas y colores).',
+    description: 'Productos, servicios, producto matriz, variantes multidimensionales (tallas y colores) y plantillas jerárquicas.',
     category: 'Comercial',
   },
   {
@@ -336,6 +337,7 @@ const LIMIT_KEY_LABELS: Record<string, string> = {
   max_monthly_credit_notes: 'Notas de crédito / mes',
   max_active_variants: 'Variantes activas',
   max_variants: 'Variantes máximas',
+  max_product_templates: 'Plantillas de producto',
 }
 
 export function limitKeyLabel(key: string): string {
