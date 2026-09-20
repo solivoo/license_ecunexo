@@ -60,7 +60,7 @@ public static class DevelopmentLicensingSeeder
             ("pro-independiente", "Independiente",
                 "Persona natural / profesional. Catálogo de servicios + factura o nota de venta. Sin bodega.",
                 1, 2, 0,
-                [TenantModuleCodes.Identity, TenantModuleCodes.Catalog, TenantModuleCodes.CatalogMatrix, TenantModuleCodes.Invoicing],
+                [TenantModuleCodes.Identity, TenantModuleCodes.Catalog, TenantModuleCodes.Invoicing],
                 27m, 5),
             ("local-comercio", "Local",
                 "Tienda de un punto. Catálogo, 1 bodega, recepción y factura.",
@@ -68,7 +68,6 @@ public static class DevelopmentLicensingSeeder
                 [
                     TenantModuleCodes.Identity,
                     TenantModuleCodes.Catalog,
-                    TenantModuleCodes.CatalogMatrix,
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
@@ -81,7 +80,6 @@ public static class DevelopmentLicensingSeeder
                 [
                     TenantModuleCodes.Identity,
                     TenantModuleCodes.Catalog,
-                    TenantModuleCodes.CatalogMatrix,
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
@@ -95,7 +93,6 @@ public static class DevelopmentLicensingSeeder
                 [
                     TenantModuleCodes.Identity,
                     TenantModuleCodes.Catalog,
-                    TenantModuleCodes.CatalogMatrix,
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
@@ -109,7 +106,6 @@ public static class DevelopmentLicensingSeeder
                 [
                     TenantModuleCodes.Identity,
                     TenantModuleCodes.Catalog,
-                    TenantModuleCodes.CatalogMatrix,
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
@@ -123,7 +119,6 @@ public static class DevelopmentLicensingSeeder
                 [
                     TenantModuleCodes.Identity,
                     TenantModuleCodes.Catalog,
-                    TenantModuleCodes.CatalogMatrix,
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
@@ -304,34 +299,9 @@ public static class DevelopmentLicensingSeeder
                 };
                 entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Invoicing, invoicingTier));
             }
-            else if (normalized == TenantModuleCodes.RemisionGuides)
+            else if (normalized == TenantModuleCodes.Catalog)
             {
-                var remisionTier = planCode switch
-                {
-                    "local-comercio" => ModuleTier.Medium,
-                    "empresa-pyme" => ModuleTier.Enterprise,
-                    "cadena-retail" => ModuleTier.Enterprise,
-                    "grupo-multi-ruc" => ModuleTier.Enterprise,
-                    _ => ModuleTier.Small,
-                };
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.RemisionGuides, remisionTier));
-            }
-            else if (normalized == TenantModuleCodes.CreditNotes)
-            {
-                var creditNotesTier = planCode switch
-                {
-                    "local-comercio" => ModuleTier.Medium,
-                    "taller-mixto" => ModuleTier.Medium,
-                    "empresa-pyme" => ModuleTier.Big,
-                    "cadena-retail" => ModuleTier.Enterprise,
-                    "grupo-multi-ruc" => ModuleTier.Enterprise,
-                    _ => ModuleTier.Small,
-                };
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.CreditNotes, creditNotesTier));
-            }
-            else if (normalized == TenantModuleCodes.CatalogMatrix)
-            {
-                var matrixTier = planCode switch
+                var catalogTier = planCode switch
                 {
                     "pro-independiente" => ModuleTier.Small,
                     "local-comercio" => ModuleTier.Medium,
@@ -341,12 +311,11 @@ public static class DevelopmentLicensingSeeder
                     "grupo-multi-ruc" => ModuleTier.Enterprise,
                     _ => ModuleTier.Small,
                 };
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.CatalogMatrix, matrixTier));
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Catalog, catalogTier));
             }
             else
             {
-                var tier = normalized == TenantModuleCodes.Catalog ? ModuleTier.Big : ModuleTier.Small;
-                entitlements.Add(ModuleEntitlement.FromTier(normalized, tier));
+                entitlements.Add(ModuleEntitlement.FromTier(normalized, ModuleTier.Small));
             }
         }
         return entitlements;
