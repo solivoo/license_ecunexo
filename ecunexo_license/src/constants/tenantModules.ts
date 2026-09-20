@@ -114,6 +114,15 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
     category: 'Fiscal / Facturación SRI / Devoluciones',
   },
   {
+    code: 'catalog.matrix',
+    label: 'Matriz de Tallas, Colores y Variantes Multidimensionales',
+    description: 'Soporte para productos agrupadores (Parent-Child) que generan variantes físicas con SKU propio, precios independientes, códigos de barras EAN y saldos de stock por bodega, junto con un catálogo reutilizable de escalas de tallas (medias, calzado, ropa, pantalones) y producto cartesiano multidimensional.',
+    defaultLimits: {
+      max_active_variants: 1000,
+    },
+    category: 'Comercial / Catálogo & Retail',
+  },
+  {
     code: 'training',
     label: 'Capacitación',
     description: 'Sesiones de formación al equipo.',
@@ -159,6 +168,7 @@ export const MODULE_DEPENDENCIES: Record<string, readonly string[]> = {
   contabilidad: ['identity'],
   'billing.remision_guides': ['identity', 'facturacion'],
   credit_notes: ['identity', 'facturacion'],
+  'catalog.matrix': ['identity', 'catalog'],
 }
 
 /** Devuelve los módulos requeridos por el código dado. */
@@ -294,6 +304,12 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
     description: 'Emisión de notas de crédito electrónicas v1.1.0 para anulación de facturas, devoluciones parciales/totales de mercadería en Kárdex y corrección de montos con afectación a Cuentas por Cobrar NIIF.',
     category: 'Fiscal / Facturación SRI / Devoluciones',
   },
+  {
+    code: 'catalog.matrix',
+    label: 'Matriz de Tallas, Colores y Variantes Multidimensionales',
+    description: 'Soporte para productos agrupadores (Parent-Child) que generan variantes físicas con SKU propio, precios independientes, códigos de barras EAN y saldos de stock por bodega, junto con un catálogo reutilizable de escalas de tallas (medias, calzado, ropa, pantalones) y producto cartesiano multidimensional.',
+    category: 'Comercial / Catálogo & Retail',
+  },
 ]
 
 export const OPTIONAL_LICENSE_MODULE_OPTIONS = TENANT_MODULE_OPTIONS.filter(
@@ -345,6 +361,8 @@ const LIMIT_KEY_LABELS: Record<string, string> = {
   max_monthly_remision_guides: 'Guías de remisión / mes',
   max_active_carriers: 'Transportistas activos',
   max_monthly_credit_notes: 'Notas de crédito / mes',
+  max_active_variants: 'Variantes activas',
+  max_variants: 'Variantes máximas',
 }
 
 export function limitKeyLabel(key: string): string {

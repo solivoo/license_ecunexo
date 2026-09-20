@@ -60,7 +60,7 @@ public static class DevelopmentLicensingSeeder
             ("pro-independiente", "Independiente",
                 "Persona natural / profesional. Catálogo de servicios + factura o nota de venta. Sin bodega.",
                 1, 2, 0,
-                [TenantModuleCodes.Identity, TenantModuleCodes.Catalog, TenantModuleCodes.Invoicing],
+                [TenantModuleCodes.Identity, TenantModuleCodes.Catalog, TenantModuleCodes.CatalogMatrix, TenantModuleCodes.Invoicing],
                 27m, 5),
             ("local-comercio", "Local",
                 "Tienda de un punto. Catálogo, 1 bodega, recepción y factura.",
@@ -68,6 +68,7 @@ public static class DevelopmentLicensingSeeder
                 [
                     TenantModuleCodes.Identity,
                     TenantModuleCodes.Catalog,
+                    TenantModuleCodes.CatalogMatrix,
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
@@ -81,6 +82,7 @@ public static class DevelopmentLicensingSeeder
                 [
                     TenantModuleCodes.Identity,
                     TenantModuleCodes.Catalog,
+                    TenantModuleCodes.CatalogMatrix,
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
@@ -94,6 +96,7 @@ public static class DevelopmentLicensingSeeder
                 [
                     TenantModuleCodes.Identity,
                     TenantModuleCodes.Catalog,
+                    TenantModuleCodes.CatalogMatrix,
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
@@ -108,6 +111,7 @@ public static class DevelopmentLicensingSeeder
                 [
                     TenantModuleCodes.Identity,
                     TenantModuleCodes.Catalog,
+                    TenantModuleCodes.CatalogMatrix,
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
@@ -122,6 +126,7 @@ public static class DevelopmentLicensingSeeder
                 [
                     TenantModuleCodes.Identity,
                     TenantModuleCodes.Catalog,
+                    TenantModuleCodes.CatalogMatrix,
                     TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
@@ -313,6 +318,20 @@ public static class DevelopmentLicensingSeeder
                     _ => ModuleTier.Small,
                 };
                 entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.CreditNotes, creditNotesTier));
+            }
+            else if (normalized == TenantModuleCodes.CatalogMatrix)
+            {
+                var matrixTier = planCode switch
+                {
+                    "pro-independiente" => ModuleTier.Small,
+                    "local-comercio" => ModuleTier.Medium,
+                    "taller-mixto" => ModuleTier.Medium,
+                    "empresa-pyme" => ModuleTier.Big,
+                    "cadena-retail" => ModuleTier.Enterprise,
+                    "grupo-multi-ruc" => ModuleTier.Enterprise,
+                    _ => ModuleTier.Small,
+                };
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.CatalogMatrix, matrixTier));
             }
             else
             {
