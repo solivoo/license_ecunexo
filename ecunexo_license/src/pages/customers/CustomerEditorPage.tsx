@@ -136,7 +136,7 @@ export function CustomerEditorPage() {
   ])
 
   return (
-    <div className="ecu-dashboard-layout">
+    <div className="ecu-dashboard-layout ecu-section-page">
       <PageHeader
         title={isEdit ? 'Editar cliente' : 'Nuevo cliente'}
         subtitle={

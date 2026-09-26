@@ -142,7 +142,7 @@ export function PlatformEmailSettingsPage() {
   }, [settings.host])
 
   return (
-    <div className="ecu-dashboard-layout" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
+    <div className="ecu-dashboard-layout ecu-section-page">
       <PageHeader
         title="Servidor de Correo Institucional"
         badge={

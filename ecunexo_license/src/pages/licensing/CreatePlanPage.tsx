@@ -8,7 +8,7 @@ import {
   LayoutGrid,
   SlidersHorizontal,
 } from 'lucide-react'
-import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
+import { EcuAlertDialog, PageHeader } from '@/components/ui'
 import { ModuleChipList } from '@/components/licensing/ModuleChipList'
 import {
   MODULES_WITH_LIMITS,
@@ -182,17 +182,16 @@ export function CreatePlanPage() {
 
   return (
     <>
-      <div className="ecu-page-header">
-        <div>
-          <h1 className="platform-shell__page-title">Crear plan</h1>
-          <p className="platform-shell__page-lead">
-            Define un plan comercial que los operadores elegirán al emitir licencias.
-          </p>
-        </div>
-        <Button variant="outline" onClick={() => navigate('/app/planes')}>
-          ← Catálogo
-        </Button>
-      </div>
+      <div className="ecu-dashboard-layout ecu-section-page">
+        <PageHeader
+          title="Crear plan"
+          subtitle="Define un plan comercial que los operadores elegirán al emitir licencias."
+          actions={
+            <Button variant="outline" onClick={() => navigate('/app/planes')}>
+              ← Catálogo
+            </Button>
+          }
+        />
 
       {loadError ? (
         <p className="welcome-onboarding__error" role="alert">
@@ -449,6 +448,7 @@ export function CreatePlanPage() {
           </footer>
         </div>
       </form>
+      </div>
 
       <EcuAlertDialog
         open={errorOpen}

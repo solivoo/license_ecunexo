@@ -1,13 +1,11 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
-import { Button, type PageActionItem } from 'glubox'
-import { EcuPageActions } from '@/components/ui/EcuPageActions'
-import { PageHeader, StatusBadge } from '@/components/ui'
+import { Button } from 'glubox'
+import { GridToolbarRefresh, PageHeader, StatusBadge } from '@/components/ui'
 import { useNavigate } from 'react-router-dom'
 import { IssueLicenseCustomerStep } from '@/components/licensing/IssueLicenseCustomerStep'
 import { IssueLicensePlanStep } from '@/components/licensing/IssueLicensePlanStep'
 import { IssueLicenseReviewStep } from '@/components/licensing/IssueLicenseReviewStep'
-import { renderSidebarIcon } from '@/config/sidebarIcons'
 import type { useIssueLicenseForm } from '@/hooks/useIssueLicenseForm'
 import type { LicensingCustomerListItem } from '@/lib/platformLicensingApi'
 
@@ -47,15 +45,6 @@ export function IssueLicenseWizard({
   const navigate = useNavigate()
   const [reloadToken, setReloadToken] = useState(0)
 
-  const actionItems: PageActionItem[] = [
-    {
-      id: 'refresh',
-      label: 'Actualizar',
-      icon: 'refresh-cw',
-      route: null,
-    },
-  ]
-
   const canNext = step === 1 && form.planCode.length > 0
 
   return (
@@ -71,25 +60,18 @@ export function IssueLicenseWizard({
         actions={
           step === 0 ? (
             <>
+              <GridToolbarRefresh
+                onRefresh={() => setReloadToken((token) => token + 1)}
+                label="Actualizar clientes"
+              />
               <Button
                 type="button"
                 variant="primary"
-                
                 onClick={() => navigate('/app/clientes/nuevo')}
               >
                 <Plus size={16} aria-hidden />
                 Nuevo cliente
               </Button>
-              <EcuPageActions
-                items={actionItems}
-                variant="outline"
-                triggerLabel="Acciones"
-                renderIcon={renderSidebarIcon}
-                onNavigate={(route: string) => navigate(route)}
-                onActionSelect={(item) => {
-                  if (item.id === 'refresh') setReloadToken((token) => token + 1)
-                }}
-              />
             </>
           ) : undefined
         }

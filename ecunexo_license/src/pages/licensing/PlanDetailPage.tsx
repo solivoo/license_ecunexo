@@ -8,7 +8,7 @@ import {
   LayoutGrid,
   SlidersHorizontal,
 } from 'lucide-react'
-import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
+import { EcuAlertDialog, PageHeader, StatusBadge } from '@/components/ui'
 import { ModuleChipList } from '@/components/licensing/ModuleChipList'
 import {
   MODULES_WITH_LIMITS,
@@ -227,34 +227,33 @@ export function PlanDetailPage() {
 
   return (
     <>
-      <div className="ecu-page-header">
-        <div>
-          <h1 className="platform-shell__page-title">
-            {plan.displayName}
-            {dirty ? (
-              <span className="ecu-dirty-indicator" title="Cambios sin guardar"> *</span>
-            ) : null}
-          </h1>
-          <p className="platform-shell__page-lead">
-            <code>{plan.code}</code> · Creado {formatDate(plan.createdAt)}
-            {plan.updatedAt && !dirty ? ` · Actualizado ${formatDate(plan.updatedAt)}` : null}
-            {' · '}
-            <span className={plan.isActive ? 'ecu-status-badge ecu-status-badge--active' : 'ecu-status-badge ecu-status-badge--inactive'}>
+      <div className="ecu-dashboard-layout ecu-section-page">
+        <PageHeader
+          title={`${plan.displayName}${dirty ? ' *' : ''}`}
+          subtitle={
+            <>
+              <code>{plan.code}</code> · Creado {formatDate(plan.createdAt)}
+              {plan.updatedAt && !dirty ? ` · Actualizado ${formatDate(plan.updatedAt)}` : null}
+            </>
+          }
+          badge={
+            <StatusBadge tone={plan.isActive ? 'success' : 'neutral'} withDot>
               {plan.isActive ? 'Activo' : 'Inactivo'}
-            </span>
-          </p>
-        </div>
-        <div className="ecu-page-header__actions">
-          <Button variant="outline" onClick={() => navigate('/app/planes')}>
-            ← Catálogo
-          </Button>
-          {plan.isActive ? (
-            <Button variant="secondary" disabled={busy} onClick={() => setConfirmDeactivate(true)}>
-              Desactivar
-            </Button>
-          ) : null}
-        </div>
-      </div>
+            </StatusBadge>
+          }
+          actions={
+            <>
+              <Button variant="outline" onClick={() => navigate('/app/planes')}>
+                ← Catálogo
+              </Button>
+              {plan.isActive ? (
+                <Button variant="secondary" disabled={busy} onClick={() => setConfirmDeactivate(true)}>
+                  Desactivar
+                </Button>
+              ) : null}
+            </>
+          }
+        />
 
       {success ? (
         <p className="ecu-success-message" role="status">{success}</p>
@@ -505,6 +504,7 @@ export function PlanDetailPage() {
           </footer>
         </div>
       </form>
+      </div>
 
       <EcuAlertDialog
         open={errorOpen}

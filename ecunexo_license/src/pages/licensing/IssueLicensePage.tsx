@@ -118,7 +118,7 @@ export function IssueLicensePage() {
         <p className="login-page__muted">Cargando planes…</p>
       ) : (
         <form
-          className="issue-license-form"
+          className="issue-license-form ecu-dashboard-layout ecu-section-page"
           onSubmit={(e) => {
             e.preventDefault()
           }}

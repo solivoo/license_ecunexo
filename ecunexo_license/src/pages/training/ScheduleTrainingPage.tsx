@@ -8,7 +8,7 @@ import {
   Users,
   UsersRound,
 } from 'lucide-react'
-import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
+import { EcuAlertDialog, PageHeader } from '@/components/ui'
 import {
   scheduleTraining,
   listLicensingCustomers,
@@ -140,17 +140,16 @@ export function ScheduleTrainingPage() {
 
   return (
     <>
-      <div className="ecu-page-header">
-        <div>
-          <h1 className="platform-shell__page-title">Agendar capacitación</h1>
-          <p className="platform-shell__page-lead">
-            Programa una sesión de formación para un cliente con licencia activa.
-          </p>
-        </div>
-        <Button variant="outline" onClick={() => navigate('/app/capacitaciones')}>
-          ← Capacitaciones
-        </Button>
-      </div>
+      <div className="ecu-dashboard-layout ecu-section-page">
+        <PageHeader
+          title="Agendar capacitación"
+          subtitle="Programa una sesión de formación para un cliente con licencia activa."
+          actions={
+            <Button variant="outline" onClick={() => navigate('/app/capacitaciones')}>
+              ← Capacitaciones
+            </Button>
+          }
+        />
 
       {loadError ? (
         <p className="platform-shell__alert platform-shell__alert--error" role="alert">
@@ -390,6 +389,7 @@ export function ScheduleTrainingPage() {
           </footer>
         </div>
       </form>
+      </div>
 
       <EcuAlertDialog
         open={errorOpen}
