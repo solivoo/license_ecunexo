@@ -35,6 +35,13 @@ public sealed class LicenseGrantConfiguration : IEntityTypeConfiguration<License
         builder.Property(x => x.OwnerEmailNormalized).HasMaxLength(LicenseGrant.OwnerEmailMaxLength);
         builder.Property(x => x.SupersedesGrantId).HasColumnType("uuid");
         builder.Property(x => x.Generation).IsRequired().HasDefaultValue(1);
+        builder.Property(x => x.EntitlementsVersion).IsRequired().HasDefaultValue(1);
+        builder.Property(x => x.EntitlementsUpdatedAtUtc)
+            .HasColumnName("entitlements_updated_at_utc")
+            .HasColumnType("timestamptz");
+        builder.Property(x => x.EntitlementsUpdatedByOperatorId)
+            .HasColumnName("entitlements_updated_by_operator_id")
+            .HasColumnType("uuid");
         builder.Property(x => x.ReissueKind).HasColumnType("smallint");
         builder.Property(x => x.PreviousPlanCode).HasMaxLength(LicenseGrant.PlanCodeMaxLength);
         builder.Property(x => x.PreviousPlanLabel).HasMaxLength(LicenseGrant.PlanLabelMaxLength);

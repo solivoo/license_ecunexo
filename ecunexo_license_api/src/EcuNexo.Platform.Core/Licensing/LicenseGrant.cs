@@ -70,6 +70,89 @@ public sealed class LicenseGrant : AggregateRoot<Guid>
     /// <summary>1 = emisión original; cada renovación o ampliación suma 1.</summary>
     public int Generation { get; private set; } = 1;
 
+    /// <summary>Versión de entitlements editables en caliente (cloud). 1 = emisión; +1 por cambio.</summary>
+    public int EntitlementsVersion { get; private set; } = 1;
+
+    public DateTimeOffset? EntitlementsUpdatedAtUtc { get; private set; }
+
+    public Guid? EntitlementsUpdatedByOperatorId { get; private set; }
+
+    /// <summary>
+    /// Actualiza módulos y entitlements de una licencia cloud activa sin reemitir el artefacto.
+    /// Los tenants sincronizan el cambio en su próxima validación online.
+    /// </summary>
+    public Result<Unit> UpdateEntitlements(
+        IReadOnlyList<string> enabledModuleCodes,
+        IReadOnlyList<ModuleEntitlement>? moduleEntitlements,
+        Guid operatorId,
+        DateTimeOffset utcNow)
+    {
+        if (Status != LicenseGrantStatus.Active)
+        {
+            return Result.Failure<Unit>(
+                new Error(
+                    "license.entitlements.status",
+                    "Solo una licencia activa admite cambios de módulos.",
+                    ErrorType.Conflict));
+        }
+
+        if (DeploymentMode != LicensingDeploymentMode.CloudShared)
+        {
+            return Result.Failure<Unit>(
+                new Error(
+                    "license.entitlements.offline_mode",
+                    "En despliegues on-premise los módulos se aplican reemitiendo la licencia.",
+                    ErrorType.Validation));
+        }
+
+        if (operatorId == Guid.Empty)
+        {
+            return Result.Failure<Unit>(
+                new Error("license.entitlements.operator", "El operador es obligatorio.", ErrorType.Validation));
+        }
+
+        var modulesResult = LicensingPlan.NormalizeModules(enabledModuleCodes);
+        if (modulesResult.IsFailure)
+        {
+            return Result.Failure<Unit>(modulesResult.Error!);
+        }
+
+        var modules = modulesResult.Value!;
+        if (!modules.Contains(TenantModuleCodes.Identity, StringComparer.Ordinal))
+        {
+            return Result.Failure<Unit>(
+                new Error("license.entitlements.identity_required", "El módulo identity es obligatorio.", ErrorType.Validation));
+        }
+
+        var dependencyErrors = ModuleDependencyGraph.Validate(modules);
+        if (dependencyErrors.Count > 0)
+        {
+            return Result.Failure<Unit>(
+                new Error("license.entitlements.dependencies", string.Join(' ', dependencyErrors), ErrorType.Validation));
+        }
+
+        if (moduleEntitlements is not null)
+        {
+            var tierErrors = ModuleDependencyGraph.ValidateTierConsistency(moduleEntitlements);
+            if (tierErrors.Count > 0)
+            {
+                return Result.Failure<Unit>(
+                    new Error("license.entitlements.tier", string.Join(' ', tierErrors), ErrorType.Validation));
+            }
+        }
+
+        var aligned = moduleEntitlements?
+            .Where(e => modules.Contains(e.ModuleCode, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+
+        EnabledModuleCodes = modules;
+        ModuleEntitlements = aligned is { Count: > 0 } ? aligned : null;
+        EntitlementsVersion++;
+        EntitlementsUpdatedAtUtc = utcNow;
+        EntitlementsUpdatedByOperatorId = operatorId;
+        return Unit.Value;
+    }
+
     /// <summary>Null en la emisión original. Renew = mismo plan; Expand = cambio de plan.</summary>
     public LicenseReissueKind? ReissueKind { get; private set; }
 

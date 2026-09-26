@@ -8,8 +8,10 @@ using EcuNexo.Platform.Business.Licensing.Commands.IssueLicense;
 using EcuNexo.Platform.Business.Licensing.Commands.ReissueLicense;
 using EcuNexo.Platform.Business.Licensing.Commands.OperatorLogin;
 using EcuNexo.Platform.Business.Licensing.Commands.UpdateCustomer;
+using EcuNexo.Platform.Business.Licensing.Commands.UpdateGrantEntitlements;
 using EcuNexo.Platform.Business.Licensing.Commands.UpdatePlan;
 using EcuNexo.Platform.Business.Licensing.Queries.GetCustomer;
+using EcuNexo.Platform.Business.Licensing.Queries.GetGrantEntitlements;
 using EcuNexo.Platform.Business.Licensing.Queries.GetLicenseStatus;
 using EcuNexo.Platform.Business.Licensing.Queries.GetPlanDetail;
 using EcuNexo.Platform.Business.Licensing.Queries.ListLicenses;
@@ -35,6 +37,8 @@ public static class PlatformLicensingDependencyInjection
 
         services.AddScoped<ICommandHandler<IssueLicenseCommand, IssueLicenseResponse>, IssueLicenseHandler>();
         services.AddScoped<ICommandHandler<ReissueLicenseCommand, ReissueLicenseResponse>, ReissueLicenseHandler>();
+        services.AddScoped<ICommandHandler<UpdateGrantEntitlementsCommand, GrantEntitlementsResponse>, UpdateGrantEntitlementsHandler>();
+        services.AddScoped<IQueryHandler<GetGrantEntitlementsQuery, GrantEntitlementsResponse>, GetGrantEntitlementsHandler>();
         services.AddScoped<ICommandHandler<PlatformOperatorLoginCommand, PlatformOperatorLoginResponse>, PlatformOperatorLoginHandler>();
         services.AddScoped<ICommandHandler<CreateOperatorCommand, CreateOperatorResponse>, CreateOperatorHandler>();
         services.AddScoped<ICommandHandler<CreateCustomerCommand, CreateCustomerResponse>, CreateCustomerHandler>();

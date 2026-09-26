@@ -20,6 +20,9 @@ public sealed class LicensingDbContext : DbContext
 
     public DbSet<LicenseGrant> LicenseGrants => Set<LicenseGrant>();
 
+    public DbSet<LicenseGrantEntitlementChange> LicenseGrantEntitlementChanges =>
+        Set<LicenseGrantEntitlementChange>();
+
     public DbSet<TrainingSession> TrainingSessions => Set<TrainingSession>();
 
     public DbSet<PlatformSetting> Settings => Set<PlatformSetting>();

@@ -16,6 +16,12 @@ public sealed class LicenseGrantRepository : ILicenseGrantRepository
         return Task.CompletedTask;
     }
 
+    public Task AddEntitlementChangeAsync(LicenseGrantEntitlementChange change, CancellationToken ct)
+    {
+        _db.LicenseGrantEntitlementChanges.Add(change);
+        return Task.CompletedTask;
+    }
+
     public Task<LicenseGrant?> GetActiveByCodeHashForUpdateAsync(
         string codeHash,
         DateTimeOffset utcNow,

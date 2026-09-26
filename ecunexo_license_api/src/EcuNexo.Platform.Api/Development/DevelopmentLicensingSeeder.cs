@@ -63,7 +63,7 @@ public static class DevelopmentLicensingSeeder
                 [TenantModuleCodes.Identity, TenantModuleCodes.Catalog, TenantModuleCodes.Invoicing],
                 27m, 5),
             ("local-comercio", "Local",
-                "Tienda de un punto. Catálogo, 1 bodega, recepción y factura.",
+                "Tienda de un punto. Catálogo, 1 bodega, recepción, factura y vitrina web.",
                 1, 3, 1,
                 [
                     TenantModuleCodes.Identity,
@@ -72,6 +72,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
+                    TenantModuleCodes.Ecommerce,
                 ],
                 42m, 10),
             ("taller-mixto", "Taller",
@@ -88,7 +89,7 @@ public static class DevelopmentLicensingSeeder
                 ],
                 59m, 15),
             ("empresa-pyme", "Empresa",
-                "PyME / sociedad. Completo + equipo (vendedor vs admin). 3 bodegas.",
+                "PyME / sociedad. Completo + equipo (vendedor vs admin) y tienda en línea. 3 bodegas.",
                 1, 10, 3,
                 [
                     TenantModuleCodes.Identity,
@@ -98,6 +99,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
                     TenantModuleCodes.Accounting,
+                    TenantModuleCodes.Ecommerce,
                 ],
                 79m, 20),
             ("cadena-retail", "Cadena",
@@ -111,6 +113,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
                     TenantModuleCodes.Accounting,
+                    TenantModuleCodes.Ecommerce,
                 ],
                 129m, 30),
             ("grupo-multi-ruc", "Grupo",
@@ -124,6 +127,7 @@ public static class DevelopmentLicensingSeeder
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
                     TenantModuleCodes.Accounting,
+                    TenantModuleCodes.Ecommerce,
                 ],
                 199m, 40),
         };
@@ -243,6 +247,7 @@ public static class DevelopmentLicensingSeeder
 
     private static List<ModuleEntitlement> BuildPlanEntitlements(string planCode, IReadOnlyList<string> modules)
     {
+        var planTier = PlanTier(planCode);
         var entitlements = new List<ModuleEntitlement>(modules.Count);
         foreach (var m in modules)
         {
@@ -260,16 +265,7 @@ public static class DevelopmentLicensingSeeder
             }
             else if (normalized == TenantModuleCodes.Purchases)
             {
-                var purchasesTier = planCode switch
-                {
-                    "local-comercio" => ModuleTier.Medium,
-                    "taller-mixto" => ModuleTier.Medium,
-                    "empresa-pyme" => ModuleTier.Big,
-                    "cadena-retail" => ModuleTier.Enterprise,
-                    "grupo-multi-ruc" => ModuleTier.Enterprise,
-                    _ => ModuleTier.Small,
-                };
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Purchases, purchasesTier));
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Purchases, planTier));
             }
             else if (normalized == TenantModuleCodes.Accounting)
             {
@@ -287,31 +283,27 @@ public static class DevelopmentLicensingSeeder
             }
             else if (normalized == TenantModuleCodes.Invoicing)
             {
-                var invoicingTier = planCode switch
-                {
-                    "pro-independiente" => ModuleTier.Small,
-                    "local-comercio" => ModuleTier.Medium,
-                    "taller-mixto" => ModuleTier.Medium,
-                    "empresa-pyme" => ModuleTier.Big,
-                    "cadena-retail" => ModuleTier.Enterprise,
-                    "grupo-multi-ruc" => ModuleTier.Enterprise,
-                    _ => ModuleTier.Small,
-                };
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Invoicing, invoicingTier));
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Invoicing, planTier));
             }
             else if (normalized == TenantModuleCodes.Catalog)
             {
-                var catalogTier = planCode switch
-                {
-                    "pro-independiente" => ModuleTier.Small,
-                    "local-comercio" => ModuleTier.Medium,
-                    "taller-mixto" => ModuleTier.Medium,
-                    "empresa-pyme" => ModuleTier.Big,
-                    "cadena-retail" => ModuleTier.Enterprise,
-                    "grupo-multi-ruc" => ModuleTier.Enterprise,
-                    _ => ModuleTier.Small,
-                };
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Catalog, catalogTier));
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Catalog, planTier));
+            }
+            else if (normalized == TenantModuleCodes.Inventory)
+            {
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Inventory, planTier));
+            }
+            else if (normalized == TenantModuleCodes.Warehousing)
+            {
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Warehousing, planTier));
+            }
+            else if (normalized == TenantModuleCodes.Ecommerce)
+            {
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Ecommerce, planTier));
+            }
+            else if (normalized == TenantModuleCodes.Identity)
+            {
+                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Identity, planTier));
             }
             else
             {
@@ -320,4 +312,15 @@ public static class DevelopmentLicensingSeeder
         }
         return entitlements;
     }
+
+    private static ModuleTier PlanTier(string planCode) => planCode switch
+    {
+        "pro-independiente" => ModuleTier.Small,
+        "local-comercio" => ModuleTier.Medium,
+        "taller-mixto" => ModuleTier.Medium,
+        "empresa-pyme" => ModuleTier.Big,
+        "cadena-retail" => ModuleTier.Enterprise,
+        "grupo-multi-ruc" => ModuleTier.Enterprise,
+        _ => ModuleTier.Small,
+    };
 }

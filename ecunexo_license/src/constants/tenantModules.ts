@@ -69,7 +69,7 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
   {
     code: 'ecommerce',
     label: 'E-commerce',
-    description: 'Ventas web, sincronización de pedidos y pagos.',
+    description: 'Ventas web, vitrina pública de catálogo, sincronización de pedidos y pagos.',
     defaultLimits: {
       max_orders_per_month: 1000,
     },
@@ -263,7 +263,7 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
   {
     code: 'ecommerce',
     label: 'E-commerce',
-    description: 'Ventas web, sincronización omnicanal de catálogo, pedidos y pagos.',
+    description: 'Ventas web con vitrina pública de catálogo (precio y disponibilidad), pedidos y pagos.',
     category: 'Comercial',
   },
   {

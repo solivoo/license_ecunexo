@@ -10,10 +10,12 @@ using EcuNexo.Platform.Business.Licensing.Commands.UpdateCustomer;
 using EcuNexo.Platform.Business.Licensing.Commands.CreateOperator;
 using EcuNexo.Platform.Business.Licensing.Commands.OperatorLogin;
 using EcuNexo.Platform.Business.Licensing.Commands.ReissueLicense;
+using EcuNexo.Platform.Business.Licensing.Commands.UpdateGrantEntitlements;
 using EcuNexo.Platform.Business.Licensing.Commands.CreatePlan;
 using EcuNexo.Platform.Business.Licensing.Commands.UpdatePlan;
 using EcuNexo.Platform.Business.Licensing.Commands.DeactivatePlan;
 using EcuNexo.Platform.Business.Licensing.Queries.GetLicenseStatus;
+using EcuNexo.Platform.Business.Licensing.Queries.GetGrantEntitlements;
 using EcuNexo.Platform.Business.Licensing.Queries.ListLicenses;
 using EcuNexo.Platform.Business.Licensing.Queries.GetCustomer;
 using EcuNexo.Platform.Business.Licensing.Queries.ListLicensingCustomers;
@@ -90,6 +92,13 @@ public static class PlatformLicensingEndpoints
         secured.MapPut("/settings/email", UpdateEmailSettingsAsync);
         secured.MapPost("/settings/email/test", TestEmailSettingsAsync);
         secured.MapPost("/licenses/{grantId:guid}/send-email", SendLicenseDeliveryEmailAsync);
+        secured.MapPut("/licenses/{grantId:guid}/entitlements", UpdateGrantEntitlementsAsync);
+
+        // Sincronización máquina-a-máquina del tenant (clave en X-Platform-Validation-Key)
+        var tenantCredentials = group.MapGroup("").AllowAnonymous();
+        tenantCredentials
+            .MapGet("/licenses/{grantId:guid}/entitlements", GetGrantEntitlementsAsync)
+            .AddEndpointFilter<TenantApiKeyEndpointFilter>();
 
         return app;
     }
@@ -438,6 +447,42 @@ public static class PlatformLicensingEndpoints
         var raw = user.FindFirstValue(PlatformJwtClaimTypes.OperatorId)
             ?? user.FindFirstValue(ClaimTypes.NameIdentifier);
         return Guid.TryParse(raw, out var id) ? id : null;
+    }
+
+    private static async Task<IResult> UpdateGrantEntitlementsAsync(
+        Guid grantId,
+        UpdateGrantEntitlementsRequest body,
+        ClaimsPrincipal user,
+        ISender sender,
+        CancellationToken ct)
+    {
+        var operatorId = ResolveOperatorId(user);
+        if (operatorId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await sender
+            .SendAsync<UpdateGrantEntitlementsCommand, GrantEntitlementsResponse>(
+                body.ToCommand(grantId, operatorId.Value),
+                ct)
+            .ConfigureAwait(false);
+
+        return result.ToHttpResult();
+    }
+
+    private static async Task<IResult> GetGrantEntitlementsAsync(
+        Guid grantId,
+        ISender sender,
+        CancellationToken ct)
+    {
+        var result = await sender
+            .AskAsync<GetGrantEntitlementsQuery, GrantEntitlementsResponse>(
+                new GetGrantEntitlementsQuery(grantId),
+                ct)
+            .ConfigureAwait(false);
+
+        return result.ToHttpResult();
     }
 
     private static string? ResolveOperatorRole(ClaimsPrincipal user) =>
