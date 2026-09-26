@@ -9,7 +9,6 @@ export const CUSTOMER_DEPLOYMENT_OPTIONS = [
 ] as const
 
 export type CustomerEditorFieldsProps = {
-  readonly theme: 'light' | 'dark'
   readonly busy: boolean
   readonly legalName: string
   readonly tradeName: string
@@ -30,7 +29,6 @@ export type CustomerEditorFieldsProps = {
 }
 
 export function CustomerEditorFields({
-  theme,
   busy,
   legalName,
   tradeName,
@@ -72,7 +70,6 @@ export function CustomerEditorFields({
             disabled={busy}
             fullWidth
             size="md"
-            theme={theme}
           />
           <TextBox
             id="customer-trade-name"
@@ -85,7 +82,6 @@ export function CustomerEditorFields({
             disabled={busy}
             fullWidth
             size="md"
-            theme={theme}
           />
         </div>
       </section>
@@ -107,7 +103,6 @@ export function CustomerEditorFields({
             disabled={busy}
             fullWidth
             size="md"
-            theme={theme}
           />
           <Select
             id="customer-deployment"
@@ -121,7 +116,6 @@ export function CustomerEditorFields({
             disabled={busy}
             fullWidth
             size="md"
-            theme={theme}
           />
         </div>
       </section>
@@ -143,7 +137,6 @@ export function CustomerEditorFields({
             disabled={busy}
             fullWidth
             size="md"
-            theme={theme}
           />
           <TextBox
             id="customer-contact-email"
@@ -157,7 +150,6 @@ export function CustomerEditorFields({
             disabled={busy}
             fullWidth
             size="md"
-            theme={theme}
           />
           <TextBox
             id="customer-contact-phone"
@@ -170,7 +162,6 @@ export function CustomerEditorFields({
             disabled={busy}
             fullWidth
             size="md"
-            theme={theme}
           />
         </div>
       </section>
@@ -193,7 +184,6 @@ export function CustomerEditorFields({
           disabled={busy}
           fullWidth
           size="md"
-          theme={theme}
         />
       </section>
     </>

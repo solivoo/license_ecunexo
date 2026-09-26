@@ -8,7 +8,6 @@ import { IssueLicenseCustomerStep } from '@/components/licensing/IssueLicenseCus
 import { IssueLicensePlanStep } from '@/components/licensing/IssueLicensePlanStep'
 import { IssueLicenseReviewStep } from '@/components/licensing/IssueLicenseReviewStep'
 import { renderSidebarIcon } from '@/config/sidebarIcons'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import type { useIssueLicenseForm } from '@/hooks/useIssueLicenseForm'
 import type { LicensingCustomerListItem } from '@/lib/platformLicensingApi'
 
@@ -45,7 +44,6 @@ export function IssueLicenseWizard({
   onCustomerIssue,
   onIssue,
 }: IssueLicenseWizardProps) {
-  const theme = useGluComponentTheme()
   const navigate = useNavigate()
   const [reloadToken, setReloadToken] = useState(0)
 
@@ -76,7 +74,7 @@ export function IssueLicenseWizard({
               <Button
                 type="button"
                 variant="primary"
-                theme={theme}
+                
                 onClick={() => navigate('/app/clientes/nuevo')}
               >
                 <Plus size={16} aria-hidden />
@@ -128,14 +126,14 @@ export function IssueLicenseWizard({
 
       {step > 0 ? (
         <footer className="issue-license-form-footer issue-license-form-footer--end">
-          <Button type="button" variant="outline" theme={theme} onClick={() => onStepChange(step - 1)}>
+          <Button type="button" variant="outline" onClick={() => onStepChange(step - 1)}>
             Atrás
           </Button>
           {step < 2 ? (
             <Button
               type="button"
               variant="primary"
-              theme={theme}
+              
               disabled={!canNext}
               onClick={() => onStepChange(step + 1)}
             >
@@ -147,7 +145,7 @@ export function IssueLicenseWizard({
               variant="primary"
               size="lg"
               loading={busy}
-              theme={theme}
+              
               onClick={() => onIssue?.()}
             >
               {busy ? 'Emitiendo…' : 'Emitir licencia'}

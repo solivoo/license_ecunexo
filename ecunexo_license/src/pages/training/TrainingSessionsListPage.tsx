@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Calendar, CheckCircle2, Plus, X } from 'lucide-react'
-import { Button, OptionGroup, Toast, type PageActionItem } from 'glubox'
-import { EcuPageActions } from '@/components/ui/EcuPageActions'
+import { Button, OptionGroup, Toast } from 'glubox'
 import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
-import { EmptyState, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
+import { EmptyState, GridToolbarRefresh, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
 import { GridDateRangeBox } from '@/components/ui/GridDateRangeBox'
-import { renderSidebarIcon } from '@/config/sidebarIcons'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { DEFAULT_GRID_LOOKBACK, rangeFromLookback, toIsoDate } from '@/lib/gridLookback'
 import {
   cancelTraining,
@@ -32,7 +29,6 @@ function sessionDate(iso: string): string {
 }
 
 export function TrainingSessionsListPage() {
-  const theme = useGluComponentTheme()
   const navigate = useNavigate()
   const [sessions, setSessions] = useState<TrainingSessionItem[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
@@ -103,19 +99,6 @@ export function TrainingSessionsListPage() {
     return { total, scheduled, completed, cancelled }
   }, [sessions])
 
-  const actionItems = useMemo(
-    (): PageActionItem[] => [
-      {
-        id: 'refresh',
-        label: 'Actualizar',
-        icon: 'refresh-cw',
-        route: null,
-        disabled: loading,
-      },
-    ],
-    [loading],
-  )
-
   const handleComplete = async (id: string) => {
     try {
       await completeTraining(id)
@@ -153,7 +136,7 @@ export function TrainingSessionsListPage() {
   }
 
   return (
-    <div className="ecu-dashboard-layout">
+    <div className="ecu-dashboard-layout ecu-section-page">
       <PageHeader
         title="Capacitaciones"
         subtitle="Gestión de sesiones de inducción, soporte y capacitación para clientes EcuNexo."
@@ -167,22 +150,12 @@ export function TrainingSessionsListPage() {
             <Button
               type="button"
               variant="primary"
-              theme={theme}
+              
               onClick={() => navigate('/app/capacitaciones/nueva')}
             >
               <Plus size={16} aria-hidden />
               Agendar sesión
             </Button>
-            <EcuPageActions
-              items={actionItems}
-              variant="outline"
-              triggerLabel="Acciones"
-              renderIcon={renderSidebarIcon}
-              onNavigate={(route: string) => navigate(route)}
-              onActionSelect={(item) => {
-                if (item.id === 'refresh') void load()
-              }}
-            />
           </>
         }
       />
@@ -240,7 +213,7 @@ export function TrainingSessionsListPage() {
             layout="segmented"
             variant="outline"
             size="sm"
-            theme={theme}
+            
             options={STATUS_FILTERS.map((f) => ({ value: f.value, label: f.label }))}
             value={statusFilter}
             onChange={(val) => setStatusFilter(String(val))}
@@ -262,7 +235,7 @@ export function TrainingSessionsListPage() {
                 <Button
                   type="button"
                   variant="primary"
-                  theme={theme}
+                  
                   onClick={() => navigate('/app/capacitaciones/nueva')}
                 >
                   <Plus size={16} aria-hidden />
@@ -272,7 +245,7 @@ export function TrainingSessionsListPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  theme={theme}
+                  
                   size="sm"
                   onClick={() => setStatusFilter('all')}
                 >
@@ -290,13 +263,16 @@ export function TrainingSessionsListPage() {
             onDownloadCalendar={(id) => void handleDownloadCalendar(id)}
             onSendInvite={(id) => void handleSendInvite(id)}
             toolbarRight={
-              <div className="ecu-grid-date-range">
-                <GridDateRangeBox
-                  from={range.from}
-                  to={range.to}
-                  disabled={loading}
-                  onChange={setRange}
-                />
+              <div className="ecu-grid-toolbar-actions">
+                <div className="ecu-grid-date-range">
+                  <GridDateRangeBox
+                    from={range.from}
+                    to={range.to}
+                    disabled={loading}
+                    onChange={setRange}
+                  />
+                </div>
+                <GridToolbarRefresh loading={loading} onRefresh={() => void load()} />
               </div>
             }
           />

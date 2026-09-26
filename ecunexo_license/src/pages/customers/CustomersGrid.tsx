@@ -1,6 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
 import { DataGrid, type ColumnDef } from 'glubox'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { useGluDataGridPaging } from '@/hooks/useGluDataGridPaging'
 import { createSpanishDataGridMessages } from '@/lib/gluDataGridMessages'
 import { formatDateTime } from '@/lib/formatDate'
@@ -39,7 +38,6 @@ export function CustomersGrid({
   initialPageSize = 10,
   maxHeight,
 }: CustomersGridProps) {
-  const theme = useGluComponentTheme()
   const { paging, pageSizeOptions, onPageChange, onPageSizeChange } = useGluDataGridPaging(
     initialPageSize,
   )
@@ -146,7 +144,7 @@ export function CustomersGrid({
       showRowCount
       fullWidth
       loading={loading}
-      theme={theme}
+      
       messages={gridMessages}
       stickyFirstColumn
     />

@@ -23,11 +23,18 @@ export function LicenseStatusCell(props: { status: string }) {
   const label = STATUS_LABELS[props.status] ?? props.status
   const tone =
     props.status === 'Active'
-      ? 'success'
+      ? 'active'
       : props.status === 'Revoked'
         ? 'danger'
-        : 'muted'
-  return <span className={`ecu-op-grid__badge ecu-op-grid__badge--${tone}`}>{label}</span>
+        : props.status === 'Exhausted'
+          ? 'warning'
+          : 'inactive'
+  return (
+    <span className={`ecu-status ecu-status--${tone}`}>
+      <span className="ecu-status__dot" aria-hidden />
+      {label}
+    </span>
+  )
 }
 
 export function LicensePlanCell(props: LicenseListItem) {

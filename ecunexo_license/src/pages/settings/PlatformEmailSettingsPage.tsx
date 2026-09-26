@@ -11,7 +11,6 @@ import {
 } from 'lucide-react'
 import { Button, CheckButton, TextBox, Toast } from 'glubox'
 import { PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import {
   getPlatformEmailSettings,
   testPlatformEmailSettings,
@@ -21,7 +20,6 @@ import {
 import { readApiError } from '@/lib/readApiError'
 
 export function PlatformEmailSettingsPage() {
-  const theme = useGluComponentTheme()
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
@@ -157,7 +155,7 @@ export function PlatformEmailSettingsPage() {
           <div style={{ display: 'flex', gap: 8 }}>
             <Button
               variant="outline"
-              theme={theme}
+              
               onClick={fetchSettings}
               disabled={loading}
               title="Refrescar parámetros"
@@ -230,7 +228,7 @@ export function PlatformEmailSettingsPage() {
           action={
             <Button
               variant="outline"
-              theme={theme}
+              
               onClick={applyZohoPreset}
               title="Preconfigurar con valores recomendados de Zoho Mail"
             >
@@ -252,7 +250,7 @@ export function PlatformEmailSettingsPage() {
                     const v = typeof e === 'string' ? e : e?.target?.value ?? ''
                     setSettings((prev) => ({ ...prev, host: v }))
                   }}
-                  theme={theme}
+                  
                   fullWidth
                 />
               </div>
@@ -268,7 +266,7 @@ export function PlatformEmailSettingsPage() {
                     const v = typeof e === 'string' ? e : e?.target?.value ?? ''
                     setSettings((prev) => ({ ...prev, port: parseInt(v, 10) || 587 }))
                   }}
-                  theme={theme}
+                  
                   fullWidth
                 />
               </div>
@@ -278,7 +276,7 @@ export function PlatformEmailSettingsPage() {
               <CheckButton
                 checked={settings.useSsl}
                 onChange={(checked) => setSettings((prev) => ({ ...prev, useSsl: checked }))}
-                theme={theme}
+                
               >
                 Usar conexión SSL/TLS directa (Obligatorio para puerto 465 de Zoho Mail)
               </CheckButton>
@@ -296,7 +294,7 @@ export function PlatformEmailSettingsPage() {
                     const v = typeof e === 'string' ? e : e?.target?.value ?? ''
                     setSettings((prev) => ({ ...prev, userName: v }))
                   }}
-                  theme={theme}
+                  
                   fullWidth
                 />
               </div>
@@ -313,7 +311,7 @@ export function PlatformEmailSettingsPage() {
                     const v = typeof e === 'string' ? e : e?.target?.value ?? ''
                     setPassword(v)
                   }}
-                  theme={theme}
+                  
                   fullWidth
                 />
               </div>
@@ -331,7 +329,7 @@ export function PlatformEmailSettingsPage() {
                     const v = typeof e === 'string' ? e : e?.target?.value ?? ''
                     setSettings((prev) => ({ ...prev, senderEmail: v }))
                   }}
-                  theme={theme}
+                  
                   fullWidth
                 />
               </div>
@@ -347,14 +345,14 @@ export function PlatformEmailSettingsPage() {
                     const v = typeof e === 'string' ? e : e?.target?.value ?? ''
                     setSettings((prev) => ({ ...prev, senderName: v }))
                   }}
-                  theme={theme}
+                  
                   fullWidth
                 />
               </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-              <Button variant="primary" theme={theme} type="submit" disabled={saving}>
+              <Button variant="primary" type="submit" disabled={saving}>
                 <CheckCircle2 className="w-4 h-4 mr-1.5" />
                 {saving ? 'Guardando...' : 'Guardar Parámetros SMTP'}
               </Button>
@@ -380,13 +378,13 @@ export function PlatformEmailSettingsPage() {
                     const v = typeof e === 'string' ? e : e?.target?.value ?? ''
                     setTestEmail(v)
                   }}
-                  theme={theme}
+                  
                   fullWidth
                 />
               </div>
               <Button
                 variant="outline"
-                theme={theme}
+                
                 onClick={handleTestEmail}
                 disabled={testing || !testEmail.trim()}
               >

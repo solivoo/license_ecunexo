@@ -1,4 +1,4 @@
-import { Check, User, X } from 'lucide-react'
+import { User } from 'lucide-react'
 import { formatOperatorRole } from '@/constants/operatorRoles'
 import { formatDateTime } from '@/lib/formatDate'
 import type { OperatorListItem } from '@/lib/platformLicensingApi'
@@ -35,10 +35,18 @@ export function OperatorPersonCell(props: OperatorGridRow) {
   )
 }
 
+const ROLE_BADGE_TONES: Record<string, string> = {
+  super: 'primary',
+  admin: 'info',
+  issuer: 'success',
+  viewer: 'neutral',
+  default: 'neutral',
+}
+
 export function OperatorRoleCell(props: OperatorGridRow) {
-  const tone = operatorRoleTone(props.role)
+  const tone = ROLE_BADGE_TONES[operatorRoleTone(props.role)] ?? 'neutral'
   return (
-    <span className={`ecu-op-grid__badge ecu-op-grid__badge--role ecu-op-grid__badge--${tone}`}>
+    <span className={`ecu-badge ecu-badge--${tone}`}>
       <User size={12} strokeWidth={2} aria-hidden />
       {formatOperatorRole(props.role)}
     </span>
@@ -46,17 +54,14 @@ export function OperatorRoleCell(props: OperatorGridRow) {
 }
 
 export function OperatorStatusCell(props: OperatorGridRow) {
-  if (props.isActive) {
-    return (
-      <span className="ecu-op-grid__badge ecu-op-grid__badge--active">
-        <Check size={12} strokeWidth={2} aria-hidden />
-        Activo
-      </span>
-    )
-  }
-  return (
-    <span className="ecu-op-grid__badge ecu-op-grid__badge--inactive">
-      <X size={12} strokeWidth={2} aria-hidden />
+  return props.isActive ? (
+    <span className="ecu-status ecu-status--active">
+      <span className="ecu-status__dot" aria-hidden />
+      Activo
+    </span>
+  ) : (
+    <span className="ecu-status ecu-status--inactive">
+      <span className="ecu-status__dot" aria-hidden />
       Inactivo
     </span>
   )

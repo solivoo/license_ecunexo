@@ -14,6 +14,12 @@ export function CustomerLegalNameCell(props: {
 
 export function CustomerStatusCell(props: { status: string }) {
   const label = props.status === 'Active' ? 'Activo' : props.status === 'Suspended' ? 'Suspendido' : props.status
-  const tone = props.status === 'Active' ? 'success' : 'muted'
-  return <span className={`ecu-op-grid__badge ecu-op-grid__badge--${tone}`}>{label}</span>
+  const tone =
+    props.status === 'Active' ? 'active' : props.status === 'Suspended' ? 'warning' : 'inactive'
+  return (
+    <span className={`ecu-status ecu-status--${tone}`}>
+      <span className="ecu-status__dot" aria-hidden />
+      {label}
+    </span>
+  )
 }

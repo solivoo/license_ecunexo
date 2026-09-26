@@ -1,6 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
 import { DataGrid, type ColumnDef } from 'glubox'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { useGluDataGridPaging } from '@/hooks/useGluDataGridPaging'
 import { createSpanishDataGridMessages } from '@/lib/gluDataGridMessages'
 import type { OperatorListItem } from '@/lib/platformLicensingApi'
@@ -25,7 +24,6 @@ export type OperatorsGridProps = {
 const gridMessages = createSpanishDataGridMessages('operador', 'operadores')
 
 export function OperatorsGrid({ rows, loading = false, toolbarRight }: OperatorsGridProps) {
-  const theme = useGluComponentTheme()
   const { paging, pageSizeOptions, onPageChange, onPageSizeChange } = useGluDataGridPaging(10)
 
   const columns = useMemo((): ColumnDef<OperatorGridRow>[] => {
@@ -107,7 +105,7 @@ export function OperatorsGrid({ rows, loading = false, toolbarRight }: Operators
       showRowCount
       fullWidth
       loading={loading}
-      theme={theme}
+      
       messages={gridMessages}
       stickyFirstColumn
     />

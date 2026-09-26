@@ -1,7 +1,6 @@
 import { type ChangeEvent } from 'react'
 import { TextArea, TextBox } from 'glubox'
 import { TENANT_MODULE_OPTIONS } from '@/constants/tenantModules'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import type { useIssueLicenseForm } from '@/hooks/useIssueLicenseForm'
 
 export type IssueLicenseReviewStepProps = {
@@ -13,7 +12,6 @@ function moduleLabel(code: string): string {
 }
 
 export function IssueLicenseReviewStep({ form }: IssueLicenseReviewStepProps) {
-  const theme = useGluComponentTheme()
   const plan = form.selectedPlan
   const modules = plan?.enabledModuleCodesDefault ?? form.selectedModules
 
@@ -86,7 +84,7 @@ export function IssueLicenseReviewStep({ form }: IssueLicenseReviewStepProps) {
             required
             fullWidth
             size="md"
-            theme={theme}
+            
           />
           <TextBox
             id="issue-license-owner-name"
@@ -99,7 +97,7 @@ export function IssueLicenseReviewStep({ form }: IssueLicenseReviewStepProps) {
             required
             fullWidth
             size="md"
-            theme={theme}
+            
           />
           <TextBox
             id="issue-license-owner-password"
@@ -113,7 +111,7 @@ export function IssueLicenseReviewStep({ form }: IssueLicenseReviewStepProps) {
             autoComplete="new-password"
             required
             fullWidth
-            theme={theme}
+            
           />
           <TextBox
             id="issue-license-owner-password-confirm"
@@ -129,7 +127,7 @@ export function IssueLicenseReviewStep({ form }: IssueLicenseReviewStepProps) {
             autoComplete="new-password"
             required
             fullWidth
-            theme={theme}
+            
           />
         </div>
       </section>
@@ -147,7 +145,7 @@ export function IssueLicenseReviewStep({ form }: IssueLicenseReviewStepProps) {
           placeholder="No se incluyen en el paquete al cliente"
           fullWidth
           size="md"
-          theme={theme}
+          
         />
       </section>
     </div>

@@ -1,7 +1,6 @@
 import { Popup } from 'glubox'
 import { formatDateTime } from '@/lib/formatDate'
 import type { LicenseListItem } from '@/lib/platformLicensingApi'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 
 export type ExistingLicenseDialogProps = {
   readonly open: boolean
@@ -28,7 +27,6 @@ export function ExistingLicenseDialog({
   onRenew,
   onCreate,
 }: ExistingLicenseDialogProps) {
-  const theme = useGluComponentTheme()
   const plan = license?.planLabel ?? '—'
   const owner = license?.ownerEmail ?? 'sin titular'
   const expires = license ? formatDateTime(license.expiresAtUtc) : '—'
@@ -40,7 +38,7 @@ export function ExistingLicenseDialog({
       onClose={onClose}
       title="Este cliente ya tiene una licencia"
       width="min(92vw, 32rem)"
-      theme={theme}
+      
       actions={[
         {
           id: 'cancel',

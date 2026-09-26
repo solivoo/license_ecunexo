@@ -1,5 +1,4 @@
 import { Select } from 'glubox'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 
 export type EcuDropDownOption = {
   readonly text: string
@@ -25,7 +24,6 @@ export function EcuLabeledDropDown({
   disabled,
   hint,
 }: EcuLabeledDropDownProps) {
-  const theme = useGluComponentTheme()
   const options = dataSource.map((item) => ({ label: item.text, value: item.value }))
 
   return (
@@ -42,7 +40,7 @@ export function EcuLabeledDropDown({
         helperText={hint}
         fullWidth
         size="md"
-        theme={theme}
+        
       />
     </div>
   )

@@ -8,7 +8,6 @@ import {
   Users,
   UsersRound,
 } from 'lucide-react'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
 import {
   scheduleTraining,
@@ -32,7 +31,6 @@ const MODALITY_OPTIONS = [
 ]
 
 export function ScheduleTrainingPage() {
-  const theme = useGluComponentTheme()
   const navigate = useNavigate()
   const formRef = useRef<HTMLFormElement>(null)
   const [busy, setBusy] = useState(false)
@@ -149,7 +147,7 @@ export function ScheduleTrainingPage() {
             Programa una sesión de formación para un cliente con licencia activa.
           </p>
         </div>
-        <Button variant="outline" theme={theme} onClick={() => navigate('/app/capacitaciones')}>
+        <Button variant="outline" onClick={() => navigate('/app/capacitaciones')}>
           ← Capacitaciones
         </Button>
       </div>
@@ -188,7 +186,7 @@ export function ScheduleTrainingPage() {
                 placeholder="Seleccionar cliente…"
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <Select
                 id="train-license"
@@ -201,7 +199,7 @@ export function ScheduleTrainingPage() {
                 placeholder="Seleccionar licencia…"
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
             </div>
           </section>
@@ -224,7 +222,7 @@ export function ScheduleTrainingPage() {
                 required
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <Select
                 id="train-kind"
@@ -236,7 +234,7 @@ export function ScheduleTrainingPage() {
                 onChange={setKind}
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <Select
                 id="train-modality"
@@ -248,7 +246,7 @@ export function ScheduleTrainingPage() {
                 onChange={setModality}
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
             </div>
           </section>
@@ -270,7 +268,7 @@ export function ScheduleTrainingPage() {
                 required
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <TextBox
                 id="train-time"
@@ -282,7 +280,7 @@ export function ScheduleTrainingPage() {
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setScheduledTime(e.target.value)}
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <TextBox
                 id="train-duration"
@@ -297,7 +295,7 @@ export function ScheduleTrainingPage() {
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setDurationHours(Number(e.target.value))}
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
             </div>
           </section>
@@ -319,7 +317,7 @@ export function ScheduleTrainingPage() {
               resize="vertical"
               fullWidth
               size="md"
-              theme={theme}
+              
             />
           </section>
 
@@ -346,12 +344,12 @@ export function ScheduleTrainingPage() {
                 placeholder="correo@ejemplo.com"
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <div className="issue-license-attendee-add">
                 <Button
                   variant="outline"
-                  theme={theme}
+                  
                   type="button"
                   onClick={addEmail}
                   disabled={!emailInput.trim() || !emailInput.includes('@')}
@@ -382,7 +380,7 @@ export function ScheduleTrainingPage() {
           <footer className="issue-license-form-footer">
             <Button
               className="ecu-btn issue-license-submit"
-              variant="primary" theme={theme}
+              variant="primary" 
               size="lg"
               disabled={busy}
               onClick={() => formRef.current?.requestSubmit()}

@@ -3,14 +3,12 @@ import { CheckCircle2, KeyRound, Layers, ShieldCheck, Users, Zap } from 'lucide-
 import { useNavigate } from 'react-router-dom'
 import { Button } from 'glubox'
 import { EmptyState, PageHeader, QuickActionCard, SectionCard, StatCard, StatusBadge } from '@/components/ui'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { listPlans, listLicenses, type PlanListItem } from '@/lib/platformLicensingApi'
 import { readApiError } from '@/lib/readApiError'
 import { useAppSelector } from '@/store/hooks'
 import { selectCanManageOperators, selectOperatorRole } from '@/store/platformAuthSlice'
 
 export function DashboardHomePage() {
-  const theme = useGluComponentTheme()
   const navigate = useNavigate()
   const role = useAppSelector(selectOperatorRole)
   const canManageOperators = useAppSelector(selectCanManageOperators)
@@ -46,7 +44,7 @@ export function DashboardHomePage() {
   }, [])
 
   return (
-    <div className="ecu-dashboard-layout">
+    <div className="ecu-dashboard-layout ecu-section-page">
       <PageHeader
         title="Panel de Operaciones"
         subtitle="Centro de control de licenciamiento, planes comerciales y seguridad corporativa"
@@ -59,7 +57,7 @@ export function DashboardHomePage() {
           <Button
             type="button"
             variant="primary"
-            theme={theme}
+            
             onClick={() => navigate('/app/licencias/nueva')}
           >
             Emitir licencia
@@ -160,7 +158,7 @@ export function DashboardHomePage() {
           <Button
             type="button"
             variant="outline"
-            theme={theme}
+            
             size="sm"
             onClick={() => navigate('/app/planes/nuevo')}
           >
@@ -177,7 +175,7 @@ export function DashboardHomePage() {
               <Button
                 type="button"
                 variant="primary"
-                theme={theme}
+                
                 onClick={() => navigate('/app/planes/nuevo')}
               >
                 Crear primer plan

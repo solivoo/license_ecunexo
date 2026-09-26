@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, Ban, CheckCircle2, KeyRound, Plus } from 'lucide-react'
-import { Button, OptionGroup, Popup, type PageActionItem } from 'glubox'
-import { EcuPageActions } from '@/components/ui/EcuPageActions'
-import { EmptyState, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
+import { Button, OptionGroup, Popup } from 'glubox'
+import {
+  EmptyState,
+  GridToolbarRefresh,
+  PageHeader,
+  SectionCard,
+  StatCard,
+  StatusBadge,
+} from '@/components/ui'
 import { ExpandLicenseDialog } from '@/components/licensing/ExpandLicenseDialog'
 import { IssueLicenseResultDialog } from '@/components/licensing/IssueLicenseResultDialog'
-import { renderSidebarIcon } from '@/config/sidebarIcons'
 import { moduleLabels } from '@/constants/tenantModules'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import {
   listLicenses,
   reissueLicense,
@@ -26,7 +30,6 @@ const STATUS_FILTERS = [
 ] as const
 
 export function LicensesListPage() {
-  const theme = useGluComponentTheme()
   const navigate = useNavigate()
   const [rows, setRows] = useState<LicenseListItem[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
@@ -93,19 +96,6 @@ export function LicensesListPage() {
     return { total, active, revoked, exhausted }
   }, [rows])
 
-  const actionItems = useMemo(
-    (): PageActionItem[] => [
-      {
-        id: 'refresh',
-        label: 'Actualizar',
-        icon: 'refresh-cw',
-        route: null,
-        disabled: loading || reissueBusy,
-      },
-    ],
-    [loading, reissueBusy],
-  )
-
   const handleExpand = useCallback((row: LicenseListItem) => {
     setExpandRow(row)
     setExpandOpen(true)
@@ -139,7 +129,7 @@ export function LicensesListPage() {
   )
 
   return (
-    <div className="ecu-dashboard-layout">
+    <div className="ecu-dashboard-layout ecu-section-page">
       <PageHeader
         title="Historial de Licencias"
         subtitle="Licencias emitidas. Ampliar revoca la anterior y genera un código y archivo con el plan elegido."
@@ -147,30 +137,6 @@ export function LicensesListPage() {
           <StatusBadge tone="primary" withDot>
             Licencias
           </StatusBadge>
-        }
-        actions={
-          <>
-            <Button
-              type="button"
-              variant="primary"
-              theme={theme}
-              disabled={loading || reissueBusy}
-              onClick={() => void navigate('/app/licencias/nueva')}
-            >
-              <Plus size={16} aria-hidden />
-              Emitir licencia
-            </Button>
-            <EcuPageActions
-              items={actionItems}
-              variant="outline"
-              triggerLabel="Acciones"
-              renderIcon={renderSidebarIcon}
-              onNavigate={(route: string) => navigate(route)}
-              onActionSelect={(item) => {
-                if (item.id === 'refresh') void load()
-              }}
-            />
-          </>
         }
       />
 
@@ -233,7 +199,6 @@ export function LicensesListPage() {
             layout="segmented"
             variant="outline"
             size="sm"
-            theme={theme}
             options={STATUS_FILTERS.map((f) => ({ value: f.value, label: f.label }))}
             value={statusFilter}
             onChange={(val) => setStatusFilter(String(val))}
@@ -255,7 +220,6 @@ export function LicensesListPage() {
                 <Button
                   type="button"
                   variant="primary"
-                  theme={theme}
                   onClick={() => void navigate('/app/licencias/nueva')}
                 >
                   <Plus size={16} aria-hidden />
@@ -265,7 +229,6 @@ export function LicensesListPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  theme={theme}
                   size="sm"
                   onClick={() => setStatusFilter('all')}
                 >
@@ -280,6 +243,20 @@ export function LicensesListPage() {
             loading={loading}
             onExpand={handleExpand}
             onManageModules={(row) => navigate(`/app/licencias/${row.id}/modulos`)}
+            toolbarRight={
+              <div className="ecu-grid-toolbar-actions">
+                <GridToolbarRefresh loading={loading || reissueBusy} onRefresh={() => void load()} />
+                <Button
+                  type="button"
+                  variant="primary"
+                  disabled={loading || reissueBusy}
+                  onClick={() => void navigate('/app/licencias/nueva')}
+                >
+                  <Plus size={16} aria-hidden />
+                  Emitir licencia
+                </Button>
+              </div>
+            }
           />
         )}
       </SectionCard>
@@ -292,7 +269,6 @@ export function LicensesListPage() {
         }}
         title="Error de licencias"
         width="min(92vw, 28rem)"
-        theme={theme}
         actions={[
           {
             id: 'close',
@@ -347,4 +323,3 @@ export function LicensesListPage() {
     </div>
   )
 }
-

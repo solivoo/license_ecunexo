@@ -8,7 +8,6 @@ import {
   LayoutGrid,
   SlidersHorizontal,
 } from 'lucide-react'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
 import { ModuleChipList } from '@/components/licensing/ModuleChipList'
 import {
@@ -52,7 +51,6 @@ function limitsFromEntitlements(
 }
 
 export function PlanDetailPage() {
-  const theme = useGluComponentTheme()
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
   const formRef = useRef<HTMLFormElement>(null)
@@ -247,11 +245,11 @@ export function PlanDetailPage() {
           </p>
         </div>
         <div className="ecu-page-header__actions">
-          <Button variant="outline" theme={theme} onClick={() => navigate('/app/planes')}>
+          <Button variant="outline" onClick={() => navigate('/app/planes')}>
             ← Catálogo
           </Button>
           {plan.isActive ? (
-            <Button variant="secondary" theme={theme} disabled={busy} onClick={() => setConfirmDeactivate(true)}>
+            <Button variant="secondary" disabled={busy} onClick={() => setConfirmDeactivate(true)}>
               Desactivar
             </Button>
           ) : null}
@@ -298,7 +296,7 @@ export function PlanDetailPage() {
                 required
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <TextArea
                 id="plan-desc"
@@ -315,7 +313,7 @@ export function PlanDetailPage() {
                 rows={2}
                 resize="vertical"
                 fullWidth
-                theme={theme}
+                
               />
             </div>
           </section>
@@ -343,7 +341,7 @@ export function PlanDetailPage() {
                 }}
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <TextBox
                 id="plan-users"
@@ -361,7 +359,7 @@ export function PlanDetailPage() {
                 }}
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <TextBox
                 id="plan-wh"
@@ -379,7 +377,7 @@ export function PlanDetailPage() {
                 }}
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
             </div>
           </section>
@@ -426,7 +424,7 @@ export function PlanDetailPage() {
                             onChange={(e: ChangeEvent<HTMLInputElement>) => setLimit(m.code, key, e.target.value)}
                             placeholder="ilimitado"
                             fullWidth
-                            theme={theme}
+                            
                           />
                         ))}
                       </div>
@@ -461,7 +459,7 @@ export function PlanDetailPage() {
                 placeholder="0.00"
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <TextBox
                 id="plan-sort"
@@ -479,7 +477,7 @@ export function PlanDetailPage() {
                 }}
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
             </div>
           </section>
@@ -490,13 +488,13 @@ export function PlanDetailPage() {
             ) : null}
             <div className="ecu-form-footer-actions">
               {dirty ? (
-                <Button variant="outline" theme={theme} size="lg" disabled={busy} onClick={handleCancel}>
+                <Button variant="outline" size="lg" disabled={busy} onClick={handleCancel}>
                   Cancelar
                 </Button>
               ) : null}
               <Button
                 className="ecu-btn issue-license-submit"
-                variant="primary" theme={theme}
+                variant="primary" 
                 size="lg"
                 disabled={busy || !dirty}
                 onClick={() => formRef.current?.requestSubmit()}

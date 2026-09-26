@@ -2,14 +2,12 @@ import { useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, TextBox } from 'glubox'
 import { KeyRound, Mail } from 'lucide-react'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { platformLogin } from '@/lib/platformLicensingApi'
 import { readApiError } from '@/lib/readApiError'
 import { useAppDispatch } from '@/store/hooks'
 import { setCredentials } from '@/store/platformAuthSlice'
 
 export function CardLogin() {
-  const theme = useGluComponentTheme()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const [email, setEmail] = useState('')
@@ -68,7 +66,7 @@ export function CardLogin() {
         iconLeft={<Mail size={18} strokeWidth={1.75} aria-hidden />}
         fullWidth
         size="lg"
-        theme={theme}
+        
         required
       />
 
@@ -92,7 +90,7 @@ export function CardLogin() {
         iconLeft={<KeyRound size={18} strokeWidth={1.75} aria-hidden />}
         fullWidth
         size="lg"
-        theme={theme}
+        
         required
       />
 
@@ -101,7 +99,7 @@ export function CardLogin() {
         contacta al administrador de la plataforma.
       </p>
 
-      <Button type="submit" variant="primary" size="lg" fullWidth loading={busy} theme={theme}>
+      <Button type="submit" variant="primary" size="lg" fullWidth loading={busy} >
         {busy ? 'Entrando…' : 'Iniciar sesión'}
       </Button>
 
@@ -111,7 +109,7 @@ export function CardLogin() {
           variant="outline"
           size="lg"
           fullWidth
-          theme={theme}
+          
           onClick={() => {
             window.location.hash = 'solicitar'
           }}

@@ -4,7 +4,6 @@ import { ArrowLeft } from 'lucide-react'
 import { Button, useToast } from 'glubox'
 import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
 import { PageHeader, SectionCard, StatusBadge } from '@/components/ui'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import {
   createLicensingCustomer,
   getLicensingCustomer,
@@ -26,7 +25,6 @@ function toDeploymentValue(mode: string | number): string {
 }
 
 export function CustomerEditorPage() {
-  const theme = useGluComponentTheme()
   const toast = useToast()
   const navigate = useNavigate()
   const { customerId } = useParams<{ customerId: string }>()
@@ -152,7 +150,7 @@ export function CustomerEditorPage() {
           </StatusBadge>
         }
         actions={
-          <Button variant="outline" theme={theme} onClick={() => navigate('/app/clientes')}>
+          <Button variant="outline" onClick={() => navigate('/app/clientes')}>
             <ArrowLeft size={16} aria-hidden />
             Directorio
           </Button>
@@ -175,7 +173,7 @@ export function CustomerEditorPage() {
             subtitle="Razón social o nombre a facturar y canales de contacto comercial"
           >
             <CustomerEditorFields
-              theme={theme}
+              
               busy={busy}
               legalName={legalName}
               tradeName={tradeName}
@@ -195,7 +193,7 @@ export function CustomerEditorPage() {
               onNotes={setNotes}
             />
             <footer className="issue-license-form-footer issue-license-form-footer--end">
-              <Button type="submit" variant="primary" theme={theme} disabled={busy} loading={busy}>
+              <Button type="submit" variant="primary" disabled={busy} loading={busy}>
                 {busy ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear cliente'}
               </Button>
             </footer>

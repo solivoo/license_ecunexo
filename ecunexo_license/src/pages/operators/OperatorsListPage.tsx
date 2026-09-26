@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { Ban, CheckCircle2, ShieldCheck, UserPlus } from 'lucide-react'
-import { Button, OptionGroup, type PageActionItem } from 'glubox'
-import { EcuPageActions } from '@/components/ui/EcuPageActions'
-import { EmptyState, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
-import { renderSidebarIcon } from '@/config/sidebarIcons'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
+import { Button, OptionGroup } from 'glubox'
+import { EmptyState, GridToolbarRefresh, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
 import {
   createOperator,
   listOperators,
@@ -25,8 +22,6 @@ const STATUS_FILTERS = [
 ] as const
 
 export function OperatorsListPage() {
-  const theme = useGluComponentTheme()
-  const navigate = useNavigate()
   const canManage = useAppSelector(selectCanManageOperators)
   const managerRole = useAppSelector(selectOperatorRole)
   const [rows, setRows] = useState<OperatorListItem[]>([])
@@ -83,19 +78,6 @@ export function OperatorsListPage() {
     return { total, active, inactive }
   }, [rows])
 
-  const actionItems = useMemo(
-    (): PageActionItem[] => [
-      {
-        id: 'refresh',
-        label: 'Actualizar',
-        icon: 'refresh-cw',
-        route: null,
-        disabled: loading,
-      },
-    ],
-    [loading],
-  )
-
   const handleCreate = useCallback(
     async (body: CreateOperatorInput) => {
       setCreateBusy(true)
@@ -118,7 +100,7 @@ export function OperatorsListPage() {
   }
 
   return (
-    <div className="ecu-dashboard-layout">
+    <div className="ecu-dashboard-layout ecu-section-page">
       <PageHeader
         title="Operadores del Sistema"
         subtitle="Usuarios autorizados para emitir licencias y administrar la plataforma corporativa EcuNexo."
@@ -132,22 +114,12 @@ export function OperatorsListPage() {
             <Button
               type="button"
               variant="primary"
-              theme={theme}
+              
               onClick={() => setDialogOpen(true)}
             >
               <UserPlus size={16} aria-hidden />
               Nuevo operador
             </Button>
-            <EcuPageActions
-              items={actionItems}
-              variant="outline"
-              triggerLabel="Acciones"
-              renderIcon={renderSidebarIcon}
-              onNavigate={(route: string) => navigate(route)}
-              onActionSelect={(item) => {
-                if (item.id === 'refresh') void load({ showLoading: true })
-              }}
-            />
           </>
         }
       />
@@ -206,7 +178,7 @@ export function OperatorsListPage() {
             layout="segmented"
             variant="outline"
             size="sm"
-            theme={theme}
+            
             options={STATUS_FILTERS.map((f) => ({ value: f.value, label: f.label }))}
             value={statusFilter}
             onChange={(val) => setStatusFilter(String(val))}
@@ -228,7 +200,7 @@ export function OperatorsListPage() {
                 <Button
                   type="button"
                   variant="primary"
-                  theme={theme}
+                  
                   onClick={() => setDialogOpen(true)}
                 >
                   <UserPlus size={16} aria-hidden />
@@ -238,7 +210,7 @@ export function OperatorsListPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  theme={theme}
+                  
                   size="sm"
                   onClick={() => setStatusFilter('all')}
                 >
@@ -248,7 +220,18 @@ export function OperatorsListPage() {
             }
           />
         ) : (
-          <OperatorsGrid rows={visibleRows} loading={loading} />
+          <OperatorsGrid
+            rows={visibleRows}
+            loading={loading}
+            toolbarRight={
+              <div className="ecu-grid-toolbar-actions">
+                <GridToolbarRefresh
+                  loading={loading}
+                  onRefresh={() => void load({ showLoading: true })}
+                />
+              </div>
+            }
+          />
         )}
       </SectionCard>
 

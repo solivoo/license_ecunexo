@@ -1,5 +1,4 @@
 import { Popup } from 'glubox'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 
 export type EcuAlertDialogProps = {
   readonly open: boolean
@@ -18,7 +17,6 @@ export function EcuAlertDialog({
   onConfirm,
   confirmLabel,
 }: EcuAlertDialogProps) {
-  const theme = useGluComponentTheme()
 
   const actions = onConfirm
     ? [
@@ -38,7 +36,7 @@ export function EcuAlertDialog({
       onClose={onClose}
       title={title}
       width="min(92vw, 32rem)"
-      theme={theme}
+      
       actions={actions}
     >
       <p className="ecu-alert-dialog__message issue-license-error-popup" role="alert">

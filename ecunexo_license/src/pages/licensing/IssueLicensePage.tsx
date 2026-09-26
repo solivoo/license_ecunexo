@@ -6,7 +6,6 @@ import { IssueLicenseResultDialog } from '@/components/licensing/IssueLicenseRes
 import { IssueLicenseWizard } from '@/components/licensing/IssueLicenseWizard'
 import { moduleLabels } from '@/constants/tenantModules'
 import { useExistingLicenseChoice } from '@/hooks/useExistingLicenseChoice'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { useIssueLicenseForm } from '@/hooks/useIssueLicenseForm'
 import { issueLicense, type IssueLicenseResult, type LicensingCustomerListItem } from '@/lib/platformLicensingApi'
 import { readApiError } from '@/lib/readApiError'
@@ -21,7 +20,6 @@ function customerLabel(customer: LicensingCustomerListItem): string {
 }
 
 export function IssueLicensePage() {
-  const theme = useGluComponentTheme()
   const location = useLocation()
   const form = useIssueLicenseForm()
   const [step, setStep] = useState(0)
@@ -163,7 +161,7 @@ export function IssueLicensePage() {
         }}
         title="No se pudo emitir la licencia"
         width="min(92vw, 28rem)"
-        theme={theme}
+        
         actions={[
           {
             id: 'close',

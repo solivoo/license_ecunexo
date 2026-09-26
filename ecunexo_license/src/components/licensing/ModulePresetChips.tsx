@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react'
 import { Button } from 'glubox'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { TENANT_MODULE_OPTIONS } from '@/constants/tenantModules'
 
 const CORE_MODULE_CODES = ['identity', 'catalog', 'warehousing', 'inventory'] as const
@@ -23,7 +22,6 @@ export type ModulePresetChipsProps = {
 }
 
 export function ModulePresetChips({ selectedModules, onApply }: ModulePresetChipsProps) {
-  const theme = useGluComponentTheme()
 
   const activePreset = useMemo(() => {
     if (sameSet(selectedModules, CORE_MODULE_CODES)) return 'core'
@@ -54,7 +52,7 @@ export function ModulePresetChips({ selectedModules, onApply }: ModulePresetChip
       <Button
         type="button"
         variant={activePreset === 'core' ? 'primary' : 'outline'}
-        theme={theme}
+        
         size="sm"
         onClick={applyCore}
       >
@@ -63,7 +61,7 @@ export function ModulePresetChips({ selectedModules, onApply }: ModulePresetChip
       <Button
         type="button"
         variant={activePreset === 'taller' ? 'primary' : 'outline'}
-        theme={theme}
+        
         size="sm"
         onClick={applyTaller}
       >
@@ -72,7 +70,7 @@ export function ModulePresetChips({ selectedModules, onApply }: ModulePresetChip
       <Button
         type="button"
         variant={activePreset === 'ecommerce' ? 'primary' : 'outline'}
-        theme={theme}
+        
         size="sm"
         onClick={applyEcommerce}
       >
@@ -81,7 +79,7 @@ export function ModulePresetChips({ selectedModules, onApply }: ModulePresetChip
       <Button
         type="button"
         variant={activePreset === 'all' ? 'primary' : 'outline'}
-        theme={theme}
+        
         size="sm"
         onClick={applyAll}
       >

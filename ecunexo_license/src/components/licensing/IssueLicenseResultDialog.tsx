@@ -9,7 +9,6 @@ import {
 import type { IssueLicenseResult } from '@/lib/platformLicensingApi'
 import { sendLicenseDeliveryEmail } from '@/lib/platformEmailApi'
 import { readApiError } from '@/lib/readApiError'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { TENANT_MODULE_OPTIONS } from '@/constants/tenantModules'
 
 export type IssueLicenseResultDialogProps = {
@@ -38,7 +37,6 @@ export function IssueLicenseResultDialog({
   open,
   onClose,
 }: IssueLicenseResultDialogProps) {
-  const theme = useGluComponentTheme()
   const [download, setDownload] = useState<{ url: string; fileName: string } | null>(null)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [codeCopied, setCodeCopied] = useState(false)
@@ -121,7 +119,7 @@ export function IssueLicenseResultDialog({
               : 'Licencia emitida'
       }
       width="min(94vw, 52rem)"
-      theme={theme}
+      
       actions={[{ id: 'close', label: 'Cerrar', variant: 'primary', onClick: onClose }]}
     >
       <div className="issue-license-result">
@@ -227,7 +225,7 @@ export function IssueLicenseResultDialog({
               type="button"
               variant="outline"
               size="sm"
-              theme={theme}
+              
               onClick={() =>
                 void copyText(
                   typeof issued.licenseArtifact === 'string'
@@ -280,7 +278,7 @@ export function IssueLicenseResultDialog({
               type="button"
               variant="primary"
               size="sm"
-              theme={theme}
+              
               onClick={handleSendEmail}
               disabled={emailSending}
             >
@@ -292,7 +290,7 @@ export function IssueLicenseResultDialog({
                 type="button"
                 variant="outline"
                 size="sm"
-                theme={theme}
+                
                 onClick={() => setShowEmailInput(true)}
               >
                 Otro destinatario

@@ -8,7 +8,6 @@ import {
   type PlanListItem,
 } from '@/lib/platformLicensingApi'
 import { readApiError } from '@/lib/readApiError'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import '@/pages/licensing/licensesGrid.css'
 
 export type ExpandLicenseDialogProps = {
@@ -33,7 +32,6 @@ export function ExpandLicenseDialog({
   onClose,
   onConfirm,
 }: ExpandLicenseDialogProps) {
-  const theme = useGluComponentTheme()
   const [plans, setPlans] = useState<PlanListItem[]>([])
   const [planCode, setPlanCode] = useState('')
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -124,7 +122,7 @@ export function ExpandLicenseDialog({
       onClose={handleClose}
       title="Ampliar licencia"
       width="min(92vw, 32rem)"
-      theme={theme}
+      
       actions={[
         {
           id: 'cancel',
@@ -190,7 +188,7 @@ export function ExpandLicenseDialog({
           disabled={busy || plans.length === 0}
           fullWidth
           size="md"
-          theme={theme}
+          
         />
       </div>
     </Popup>

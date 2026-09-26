@@ -12,7 +12,6 @@ import {
   limitKeyLabel,
   validateModuleDependencies,
 } from '@/constants/tenantModules'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { readApiError } from '@/lib/readApiError'
 import {
   getGrantEntitlements,
@@ -32,7 +31,6 @@ export function GrantModulesPage() {
   const { grantId } = useParams<{ grantId: string }>()
   const navigate = useNavigate()
   const toast = useToast()
-  const theme = useGluComponentTheme()
 
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -240,7 +238,7 @@ export function GrantModulesPage() {
                         placeholder="ilimitado"
                         disabled={!canEdit}
                         fullWidth
-                        theme={theme}
+                        
                       />
                     ))}
                   </div>
@@ -262,7 +260,7 @@ export function GrantModulesPage() {
           placeholder="Ej. Upgrade comercial a plan Big"
           disabled={!canEdit}
           fullWidth
-          theme={theme}
+          
         />
         <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
           <Button type="button" variant="primary" loading={busy} disabled={!canEdit || busy} onClick={() => void onSubmit()}>

@@ -1,6 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
 import { DataGrid, type ColumnDef } from 'glubox'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { useGluDataGridPaging } from '@/hooks/useGluDataGridPaging'
 import { createSpanishDataGridMessages } from '@/lib/gluDataGridMessages'
 import { formatDateTime } from '@/lib/formatDate'
@@ -31,8 +30,7 @@ export function LicensesGrid({
   onManageModules,
   toolbarRight,
 }: LicensesGridProps) {
-  const theme = useGluComponentTheme()
-  const { paging, pageSizeOptions, onPageChange, onPageSizeChange } = useGluDataGridPaging(10)
+  const { paging, pageSizeOptions, onPageChange, onPageSizeChange } = useGluDataGridPaging()
 
   const columns = useMemo((): ColumnDef<LicenseGridRow>[] => {
     return [
@@ -140,7 +138,6 @@ export function LicensesGrid({
       showRowCount
       fullWidth
       loading={loading}
-      theme={theme}
       messages={gridMessages}
       stickyFirstColumn
     />

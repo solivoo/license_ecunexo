@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import { Popup, Select, TextBox } from 'glubox'
 import { getAssignableOperatorRoles } from '@/constants/operatorRoles'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import type { CreateOperatorInput } from '@/lib/platformLicensingApi'
 import { readApiError } from '@/lib/readApiError'
 
@@ -20,7 +19,6 @@ export function CreateOperatorDialog({
   onClose,
   onCreate,
 }: CreateOperatorDialogProps) {
-  const theme = useGluComponentTheme()
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
@@ -96,7 +94,7 @@ export function CreateOperatorDialog({
       onClose={handleClose}
       title="Nuevo operador"
       width="min(92vw, 28rem)"
-      theme={theme}
+      
       actions={[
         { id: 'cancel', label: 'Cancelar', variant: 'ghost', disabled: busy, onClick: handleClose },
         {
@@ -137,7 +135,7 @@ export function CreateOperatorDialog({
           disabled={busy}
           fullWidth
           size="md"
-          theme={theme}
+          
         />
         <TextBox
           id="op-name"
@@ -152,7 +150,7 @@ export function CreateOperatorDialog({
           disabled={busy}
           fullWidth
           size="md"
-          theme={theme}
+          
         />
         <TextBox
           id="op-password"
@@ -169,7 +167,7 @@ export function CreateOperatorDialog({
           required
           disabled={busy}
           fullWidth
-          theme={theme}
+          
         />
         <Select
           id="op-role"
@@ -182,7 +180,7 @@ export function CreateOperatorDialog({
           disabled={busy}
           fullWidth
           size="md"
-          theme={theme}
+          
         />
       </form>
     </Popup>

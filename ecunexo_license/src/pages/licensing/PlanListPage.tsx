@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Ban, CheckCircle2, Layers, Plus } from 'lucide-react'
-import { Button, OptionGroup, type PageActionItem } from 'glubox'
-import { EcuPageActions } from '@/components/ui/EcuPageActions'
+import { Button, OptionGroup } from 'glubox'
 import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
-import { EmptyState, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
-import { renderSidebarIcon } from '@/config/sidebarIcons'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
+import { EmptyState, GridToolbarRefresh, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
 import { deactivatePlan, listPlans, type PlanListItem } from '@/lib/platformLicensingApi'
 import { readApiError } from '@/lib/readApiError'
 import { PlansGrid } from './PlansGrid'
@@ -18,7 +15,6 @@ const STATUS_FILTERS = [
 ] as const
 
 export function PlanListPage() {
-  const theme = useGluComponentTheme()
   const navigate = useNavigate()
   const [plans, setPlans] = useState<PlanListItem[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
@@ -76,19 +72,6 @@ export function PlanListPage() {
     return { total, active, inactive }
   }, [plans])
 
-  const actionItems = useMemo(
-    (): PageActionItem[] => [
-      {
-        id: 'refresh',
-        label: 'Actualizar',
-        icon: 'refresh-cw',
-        route: null,
-        disabled: loading,
-      },
-    ],
-    [loading],
-  )
-
   const handleDeactivate = useCallback(
     async (code: string) => {
       setDeactivating(code)
@@ -107,7 +90,7 @@ export function PlanListPage() {
   )
 
   return (
-    <div className="ecu-dashboard-layout">
+    <div className="ecu-dashboard-layout ecu-section-page">
       <PageHeader
         title="Planes y Módulos"
         subtitle="Catálogo de planes comerciales. Los planes activos se muestran al emitir licencias."
@@ -121,22 +104,12 @@ export function PlanListPage() {
             <Button
               type="button"
               variant="primary"
-              theme={theme}
+              
               onClick={() => navigate('/app/planes/nuevo')}
             >
               <Plus size={16} aria-hidden />
               Crear plan
             </Button>
-            <EcuPageActions
-              items={actionItems}
-              variant="outline"
-              triggerLabel="Acciones"
-              renderIcon={renderSidebarIcon}
-              onNavigate={(route: string) => navigate(route)}
-              onActionSelect={(item) => {
-                if (item.id === 'refresh') void loadPlans()
-              }}
-            />
           </>
         }
       />
@@ -183,7 +156,7 @@ export function PlanListPage() {
             layout="segmented"
             variant="outline"
             size="sm"
-            theme={theme}
+            
             options={STATUS_FILTERS.map((f) => ({ value: f.value, label: f.label }))}
             value={statusFilter}
             onChange={(val) => setStatusFilter(String(val))}
@@ -205,7 +178,7 @@ export function PlanListPage() {
                 <Button
                   type="button"
                   variant="primary"
-                  theme={theme}
+                  
                   onClick={() => navigate('/app/planes/nuevo')}
                 >
                   <Plus size={16} aria-hidden />
@@ -215,7 +188,7 @@ export function PlanListPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  theme={theme}
+                  
                   size="sm"
                   onClick={() => setStatusFilter('all')}
                 >
@@ -231,6 +204,11 @@ export function PlanListPage() {
             deactivatingCode={deactivating}
             onEdit={(code) => navigate(`/app/planes/${encodeURIComponent(code)}`)}
             onDeactivate={setConfirmDeactivate}
+            toolbarRight={
+              <div className="ecu-grid-toolbar-actions">
+                <GridToolbarRefresh loading={loading} onRefresh={() => void loadPlans()} />
+              </div>
+            }
           />
         )}
       </SectionCard>

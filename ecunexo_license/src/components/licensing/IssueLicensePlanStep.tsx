@@ -1,7 +1,6 @@
 import type { ChangeEvent } from 'react'
 import { FileText } from 'lucide-react'
 import { NumberBox, Select } from 'glubox'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import type { useIssueLicenseForm } from '@/hooks/useIssueLicenseForm'
 
 export type IssueLicensePlanStepProps = {
@@ -19,7 +18,6 @@ function parsePositiveInt(raw: string, fallback: number, max?: number): number {
 }
 
 export function IssueLicensePlanStep({ form, planOptions }: IssueLicensePlanStepProps) {
-  const theme = useGluComponentTheme()
   const plan = form.selectedPlan
 
   return (
@@ -44,7 +42,7 @@ export function IssueLicensePlanStep({ form, planOptions }: IssueLicensePlanStep
             helperText={plan ? `Código: ${plan.code}` : undefined}
             fullWidth
             size="md"
-            theme={theme}
+            
           />
         </div>
         <NumberBox
@@ -62,7 +60,7 @@ export function IssueLicensePlanStep({ form, planOptions }: IssueLicensePlanStep
           helperText="Duración del contrato. 365 = un año."
           fullWidth
           size="md"
-          theme={theme}
+          
         />
         <NumberBox
           id="issue-license-online-validation"
@@ -80,7 +78,7 @@ export function IssueLicensePlanStep({ form, planOptions }: IssueLicensePlanStep
           helperText="El tenant consulta el estado en línea. Entre 1 y 90."
           fullWidth
           size="md"
-          theme={theme}
+          
         />
       </div>
     </section>

@@ -2,7 +2,6 @@ import { useMemo, type ReactNode } from 'react'
 import { DataGrid, type ColumnDef } from 'glubox'
 import { Calendar, Check, Mail, X } from 'lucide-react'
 import { GridIconButton } from '@/components/ui/GridIconButton'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { useGluDataGridPaging } from '@/hooks/useGluDataGridPaging'
 import { formatDateTime } from '@/lib/formatDate'
 import { createSpanishDataGridMessages } from '@/lib/gluDataGridMessages'
@@ -53,7 +52,6 @@ export function TrainingSessionsGrid({
   onSendInvite,
   toolbarRight,
 }: TrainingSessionsGridProps) {
-  const theme = useGluComponentTheme()
   const { paging, pageSizeOptions, onPageChange, onPageSizeChange } = useGluDataGridPaging(10)
 
   const columns = useMemo((): ColumnDef<TrainingGridRow>[] => {
@@ -110,9 +108,10 @@ export function TrainingSessionsGrid({
         renderCell: (value) => {
           const status = String(value)
           const tone =
-            status === 'Completed' ? 'success' : status === 'Cancelled' ? 'muted' : 'success'
+            status === 'Completed' ? 'active' : status === 'Cancelled' ? 'danger' : 'warning'
           return (
-            <span className={`ecu-op-grid__badge ecu-op-grid__badge--${tone}`}>
+            <span className={`ecu-status ecu-status--${tone}`}>
+              <span className="ecu-status__dot" aria-hidden />
               {STATUS_LABELS[status] ?? status}
             </span>
           )
@@ -176,7 +175,7 @@ export function TrainingSessionsGrid({
       showRowCount
       fullWidth
       loading={loading}
-      theme={theme}
+      
       messages={gridMessages}
       stickyFirstColumn
     />

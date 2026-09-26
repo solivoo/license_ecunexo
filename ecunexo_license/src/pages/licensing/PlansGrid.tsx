@@ -2,7 +2,6 @@ import { useMemo, type ReactNode } from 'react'
 import { DataGrid, type ColumnDef } from 'glubox'
 import { Ban, Pencil } from 'lucide-react'
 import { GridIconButton } from '@/components/ui/GridIconButton'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { useGluDataGridPaging } from '@/hooks/useGluDataGridPaging'
 import { TENANT_MODULE_OPTIONS } from '@/constants/tenantModules'
 import { formatDateTime } from '@/lib/formatDate'
@@ -38,7 +37,6 @@ export function PlansGrid({
   onDeactivate,
   toolbarRight,
 }: PlansGridProps) {
-  const theme = useGluComponentTheme()
   const { paging, pageSizeOptions, onPageChange, onPageSizeChange } = useGluDataGridPaging(10)
 
   const columns = useMemo((): ColumnDef<PlanGridRow>[] => {
@@ -79,7 +77,8 @@ export function PlansGrid({
         align: 'center',
         sortable: true,
         renderCell: (_value, row) => (
-          <span className={`ecu-op-grid__badge ecu-op-grid__badge--${row.isActive ? 'success' : 'muted'}`}>
+          <span className={`ecu-status ecu-status--${row.isActive ? 'active' : 'inactive'}`}>
+            <span className="ecu-status__dot" aria-hidden />
             {row.isActive ? 'Activo' : 'Inactivo'}
           </span>
         ),
@@ -145,7 +144,7 @@ export function PlansGrid({
       showRowCount
       fullWidth
       loading={loading}
-      theme={theme}
+      
       messages={gridMessages}
       stickyFirstColumn
     />

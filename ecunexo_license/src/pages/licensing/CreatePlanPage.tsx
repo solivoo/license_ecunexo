@@ -8,7 +8,6 @@ import {
   LayoutGrid,
   SlidersHorizontal,
 } from 'lucide-react'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
 import { ModuleChipList } from '@/components/licensing/ModuleChipList'
 import {
@@ -41,7 +40,6 @@ function initLimitsForModules(modules: string[]): Record<string, Record<string, 
 }
 
 export function CreatePlanPage() {
-  const theme = useGluComponentTheme()
   const formRef = useRef<HTMLFormElement>(null)
   const navigate = useNavigate()
   const [busy, setBusy] = useState(false)
@@ -191,7 +189,7 @@ export function CreatePlanPage() {
             Define un plan comercial que los operadores elegirán al emitir licencias.
           </p>
         </div>
-        <Button variant="outline" theme={theme} onClick={() => navigate('/app/planes')}>
+        <Button variant="outline" onClick={() => navigate('/app/planes')}>
           ← Catálogo
         </Button>
       </div>
@@ -252,7 +250,7 @@ export function CreatePlanPage() {
                 required
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <TextBox
                 id="plan-name"
@@ -265,7 +263,7 @@ export function CreatePlanPage() {
                 required
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <TextArea
                 id="plan-desc"
@@ -280,7 +278,7 @@ export function CreatePlanPage() {
                 rows={2}
                 resize="vertical"
                 fullWidth
-                theme={theme}
+                
               />
             </div>
           </section>
@@ -307,7 +305,7 @@ export function CreatePlanPage() {
                 helperText="Tenants máximos por licencia"
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <TextBox
                 id="plan-max-users"
@@ -322,7 +320,7 @@ export function CreatePlanPage() {
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxUsers(Number(e.target.value))}
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <TextBox
                 id="plan-max-warehouses"
@@ -337,7 +335,7 @@ export function CreatePlanPage() {
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxWarehouses(Number(e.target.value))}
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
             </div>
           </section>
@@ -384,7 +382,7 @@ export function CreatePlanPage() {
                             onChange={(e: ChangeEvent<HTMLInputElement>) => setLimit(m.code, key, e.target.value)}
                             placeholder="ilimitado"
                             fullWidth
-                            theme={theme}
+                            
                           />
                         ))}
                       </div>
@@ -417,7 +415,7 @@ export function CreatePlanPage() {
                 placeholder="0.00"
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
               <TextBox
                 id="plan-sort"
@@ -433,7 +431,7 @@ export function CreatePlanPage() {
                 helperText="Menor = primero en la lista"
                 fullWidth
                 size="md"
-                theme={theme}
+                
               />
             </div>
           </section>
@@ -441,7 +439,7 @@ export function CreatePlanPage() {
           <footer className="issue-license-form-footer">
             <Button
               className="ecu-btn issue-license-submit"
-              variant="primary" theme={theme}
+              variant="primary" 
               size="lg"
               disabled={busy}
               onClick={() => formRef.current?.requestSubmit()}
