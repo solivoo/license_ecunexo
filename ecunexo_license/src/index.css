@@ -1,58 +1,71 @@
 /**
- * EcuNexo Licensing — tema gluBox (data-theme + data-mode en <html>).
- * @see https://solivoo.github.io/gluebox/guide/installation.html
+ * EcuNexo Licencias — gluBox + tokens de tema.
+ * Dark mode: clase sf-dark-mode + data-mode en <html>.
  */
 @import './styles/ecu-form-tokens.css';
+@import './styles/ecu-companies-form.css';
 @import './components/ui/enterpriseUi.css';
+@import './styles/ecuSectionIdentity.css';
 
 html,
 body,
 #root {
   margin: 0;
   padding: 0;
-  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
   font-family: var(--glb-font-family);
 }
 
-body {
-  margin: 0 auto;
-  background: var(--glb-app-bg);
-  color: var(--glb-app-text);
-}
-
-/* Puente --c-* → tokens gluBox (páginas aún en migración desde Syncfusion) */
 :root {
-  /* glubox Sidebar usa var(--glb-font-family); su default es Poppins.
-     Se redefine aquí (después de glubox/style.css) para alinear con Inter. */
-  --glb-font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --c-surface: var(--glb-surface);
-  --c-surface-lowest: var(--glb-surface);
-  --c-surface-subtle: color-mix(in srgb, var(--glb-app-bg) 55%, var(--glb-surface));
-  --c-surface-container-high: color-mix(in srgb, var(--glb-border) 35%, var(--glb-surface));
-  --c-surface-container-highest: color-mix(in srgb, var(--glb-primary) 8%, var(--glb-surface));
-  --c-background: var(--glb-app-bg);
-  --c-text-main: var(--glb-text);
-  --c-on-surface: var(--glb-text);
-  --c-text-muted: var(--glb-muted);
-  --c-primary: var(--glb-primary);
-  --c-on-primary: var(--glb-primary-fg);
-  --c-primary-container: var(--glb-primary);
-  --c-tertiary: var(--glb-primary);
-  --c-border: var(--glb-border);
-  --c-outline-variant: var(--glb-border);
-  --c-code-bg: color-mix(in srgb, var(--glb-muted) 12%, var(--glb-surface));
-  --c-code-text: var(--glb-text);
-  --shell-bg: var(--glb-app-bg);
-  --shell-surface: var(--glb-surface);
-  --shell-border: var(--glb-border);
-  --shell-text: var(--glb-text);
-  --shell-muted: var(--glb-muted);
-  --shell-primary: var(--glb-primary);
-  --shell-on-primary: var(--glb-primary-fg, #fff);
+  /* glubox Sidebar usa var(--glb-font-family); su default también es Poppins.
+     Familia única para toda la aplicación. */
+  --glb-font-family: Poppins, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --sf-color-primary: rgb(79, 70, 229);
+
+  --c-surface: #ffffff;
+  --c-surface-lowest: #ffffff;
+  --c-surface-subtle: #f8fafc;
+  --c-surface-container-high: #eae6f4;
+  --c-surface-container-highest: #f5f3ff;
+  --c-background: #fcf8ff;
+  --c-text-main: #1e293b;
+  --c-on-surface: #1b1b24;
+  --c-text-muted: #64748b;
+  --c-primary: #3525cd;
+  --c-on-primary: #ffffff;
+  --c-primary-container: #4f46e5;
+  --c-tertiary: #7c3aed;
+  --c-border: #e2e8f0;
+  --c-outline-variant: #c7c4d8;
+  --c-code-bg: #f1f5f9;
+  --c-code-text: #334155;
 }
 
-/* Primario: texto claro sobre el azul/violeta. En dark, negro sobre azul no compagina. */
-html[data-mode="dark"] {
-  --glb-primary-fg: #fff;
-  --shell-on-primary: #fff;
+html.sf-dark-mode {
+  --c-surface: #1a1b24;
+  --c-surface-lowest: #1a1b24;
+  --c-surface-subtle: #1e1f2a;
+  --c-surface-container-high: #22232e;
+  --c-surface-container-highest: #262735;
+  --c-background: #12131a;
+  --c-text-main: #e8e8ef;
+  --c-on-surface: #e8e8ef;
+  --c-text-muted: #9898a8;
+  --c-primary: #a78bfa;
+  --c-on-primary: #1e1b4b;
+  --c-primary-container: #c4b5fd;
+  --c-tertiary: #c4b5fd;
+  --c-border: #2c2d3a;
+  --c-outline-variant: #3f4054;
+  --c-code-bg: #1e1f2a;
+  --c-code-text: #c4b5fd;
+}
+
+html[data-density='sm'] .app-shell {
+  font-size: 0.9375rem;
+}
+
+html[data-density='lg'] .app-shell {
+  font-size: 1.0625rem;
 }

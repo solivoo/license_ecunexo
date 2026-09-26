@@ -1,9 +1,9 @@
 import logoDark from '@assets/solo_logo_ecunexo_dark.svg'
 import logoLight from '@assets/solo_logo_ecunexo_light.svg'
-import { useTheme } from '@/theme/ThemeProvider'
+import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 
 export function Branding({ subtitle }: { readonly subtitle?: string }) {
-  const { mode } = useTheme()
+  const mode = useGluComponentTheme()
   const logo = mode === 'dark' ? logoDark : logoLight
 
   return (

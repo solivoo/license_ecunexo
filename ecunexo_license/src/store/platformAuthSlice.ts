@@ -3,6 +3,7 @@ import {
   clearSession,
   getAccessToken,
   getExpiresAt,
+  getOperatorEmail,
   getOperatorId,
   getOperatorRole,
   setSession,
@@ -13,6 +14,7 @@ export type PlatformAuthState = {
   operatorId: string | null
   expiresAt: string | null
   operatorRole: string | null
+  operatorEmail: string | null
 }
 
 const initialState: PlatformAuthState = {
@@ -20,6 +22,7 @@ const initialState: PlatformAuthState = {
   operatorId: null,
   expiresAt: null,
   operatorRole: null,
+  operatorEmail: null,
 }
 
 export const platformAuthSlice = createSlice({
@@ -31,6 +34,7 @@ export const platformAuthSlice = createSlice({
       state.operatorId = getOperatorId()
       state.expiresAt = getExpiresAt()
       state.operatorRole = getOperatorRole()
+      state.operatorEmail = getOperatorEmail()
     },
     setCredentials(
       state,
@@ -39,20 +43,23 @@ export const platformAuthSlice = createSlice({
         operatorId: string
         expiresAt: string
         operatorRole: string
+        operatorEmail: string
       }>
     ) {
-      const { accessToken, operatorId, expiresAt, operatorRole } = action.payload
+      const { accessToken, operatorId, expiresAt, operatorRole, operatorEmail } = action.payload
       state.accessToken = accessToken
       state.operatorId = operatorId
       state.expiresAt = expiresAt
       state.operatorRole = operatorRole
-      setSession(accessToken, operatorId, expiresAt, operatorRole)
+      state.operatorEmail = operatorEmail
+      setSession(accessToken, operatorId, expiresAt, operatorRole, operatorEmail)
     },
     clearCredentials(state) {
       state.accessToken = null
       state.operatorId = null
       state.expiresAt = null
       state.operatorRole = null
+      state.operatorEmail = null
       clearSession()
     },
   },
@@ -70,6 +77,10 @@ export function selectIsAuthenticated(state: { platformAuth: PlatformAuthState }
 
 export function selectOperatorRole(state: { platformAuth: PlatformAuthState }): string | null {
   return state.platformAuth.operatorRole
+}
+
+export function selectOperatorEmail(state: { platformAuth: PlatformAuthState }): string | null {
+  return state.platformAuth.operatorEmail
 }
 
 export function selectCanManageOperators(state: { platformAuth: PlatformAuthState }): boolean {

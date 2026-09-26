@@ -1,44 +1,25 @@
-export type GluThemePreset = 'default' | 'modern' | 'enterprise'
 export type EcuThemeMode = 'light' | 'dark'
 
-const MODE_STORAGE_KEY = 'ecunexo.ui.theme'
-const PRESET_STORAGE_KEY = 'ecunexo.glu.theme.preset'
-const DEFAULT_PRESET: GluThemePreset = 'default'
+const STORAGE_KEY = 'ecunexo.ui.theme'
 
-export function readStoredThemePreset(): GluThemePreset {
-  try {
-    const raw = localStorage.getItem(PRESET_STORAGE_KEY)
-    if (raw === 'default' || raw === 'modern' || raw === 'enterprise') return raw
-  } catch { /* ignore */ }
-  return DEFAULT_PRESET
-}
-
+/** Lee el modo guardado en localStorage, si no existe devuelve "dark". */
 export function readStoredTheme(): EcuThemeMode {
   try {
-    const raw = localStorage.getItem(MODE_STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEY)
     if (raw === 'light' || raw === 'dark') return raw
   } catch { /* ignore */ }
   return 'dark'
 }
 
-export function applyGluTheme(preset: GluThemePreset, mode: EcuThemeMode): void {
-  const root = document.documentElement
-  root.setAttribute('data-theme', preset)
-  root.setAttribute('data-mode', mode)
-  root.classList.remove('sf-dark-mode')
-
-  try {
-    localStorage.setItem(PRESET_STORAGE_KEY, preset)
-    localStorage.setItem(MODE_STORAGE_KEY, mode)
-  } catch { /* ignore */ }
-}
-
-/** Compatibilidad con ThemeProvider existente (preset desde storage). */
+/** Aplica el modo: clase sf-dark-mode (tokens CSS) + gluBox (data-mode). */
 export function applyEcuTheme(mode: EcuThemeMode): void {
-  applyGluTheme(readStoredThemePreset(), mode)
+  const isDark = mode === 'dark'
+  document.documentElement.classList.toggle('sf-dark-mode', isDark)
+  document.documentElement.setAttribute('data-mode', mode)
+  try { localStorage.setItem(STORAGE_KEY, mode) } catch { /* ignore */ }
 }
 
+/** Devuelve el modo actual leyendo el classList de <html>. */
 export function readCurrentTheme(): EcuThemeMode {
-  const mode = document.documentElement.getAttribute('data-mode')
-  return mode === 'light' ? 'light' : 'dark'
+  return document.documentElement.classList.contains('sf-dark-mode') ? 'dark' : 'light'
 }

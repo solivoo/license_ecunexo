@@ -6,26 +6,26 @@ import 'glubox/style.css'
 import 'glubox/themes/index.css'
 import './index.css'
 import { ToastProvider } from 'glubox'
+import { applyDocumentPreferences, readAppPreferences } from '@/lib/appPreferences'
 import { configurePlatformApi } from '@/lib/configurePlatformApi'
-import { applyGluTheme, readStoredTheme, readStoredThemePreset } from '@/lib/ecuTheme'
 import { router } from '@/router'
 import { store } from '@/store'
 import { hydrateFromStorage } from '@/store/platformAuthSlice'
-import { ThemeProvider } from '@/theme/ThemeProvider'
+import { AppPreferencesProvider } from '@/features/settings/AppPreferencesProvider'
 
-applyGluTheme(readStoredThemePreset(), readStoredTheme())
+applyDocumentPreferences(readAppPreferences())
 
 configurePlatformApi(store)
 store.dispatch(hydrateFromStorage())
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider>
-      <ToastProvider>
-        <Provider store={store}>
+    <Provider store={store}>
+      <AppPreferencesProvider>
+        <ToastProvider>
           <RouterProvider router={router} />
-        </Provider>
-      </ToastProvider>
-    </ThemeProvider>
+        </ToastProvider>
+      </AppPreferencesProvider>
+    </Provider>
   </StrictMode>
 )

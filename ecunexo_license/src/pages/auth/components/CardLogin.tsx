@@ -28,6 +28,7 @@ export function CardLogin() {
           operatorId: result.operatorId,
           expiresAt: result.expiresAt,
           operatorRole: result.role,
+          operatorEmail: email.trim(),
         })
       )
       void navigate('/app/inicio', { replace: true })

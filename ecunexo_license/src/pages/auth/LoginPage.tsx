@@ -5,7 +5,7 @@ import { ThemeToggleButton } from '@/components/ui/ThemeToggleButton'
 export function LoginPage() {
   return (
     <div className="login-page__wrapper">
-      <ThemeToggleButton className="login-page__theme-btn-round" />
+      <ThemeToggleButton variant="icon" className="login-page__theme-btn-round" />
       <Branding />
       <div className="login-page__card">
         <CardLogin />

@@ -3,9 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar } from 'glubox'
 import { renderSidebarIcon } from '@/config/sidebarIcons'
 import type { PlatformNavItem } from '@/config/platformNav'
-import { platformNavToMenuConfig } from '@/features/navigation/mapPlatformNavToMenu'
+import {
+  platformNavToMenuConfig,
+  resolveMenuActivePath,
+} from '@/features/navigation/mapPlatformNavToMenu'
 import { PlatformSidebarBrand } from '@/shell/PlatformSidebarBrand'
-import { useTheme } from '@/theme/ThemeProvider'
 
 const SIDEBAR_WIDTH_EXPANDED = 260
 const SIDEBAR_WIDTH_COLLAPSED = 72
@@ -19,8 +21,8 @@ export interface AppSidebarProps {
 export function AppSidebar({ items, collapsed, onCollapsedChange }: AppSidebarProps) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const { mode } = useTheme()
   const menu = useMemo(() => platformNavToMenuConfig(items), [items])
+  const activePath = useMemo(() => resolveMenuActivePath(pathname, menu), [pathname, menu])
   const width = collapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED
 
   return (
@@ -29,8 +31,7 @@ export function AppSidebar({ items, collapsed, onCollapsedChange }: AppSidebarPr
       userPermissions={[]}
       brand={PlatformSidebarBrand}
       collapsed={collapsed}
-      activePath={pathname}
-      theme={mode}
+      activePath={activePath}
       width={width}
       renderIcon={renderSidebarIcon}
       onCollapsedChange={onCollapsedChange}

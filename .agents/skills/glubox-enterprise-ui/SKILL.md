@@ -4,7 +4,8 @@ description: >-
   Use this skill whenever designing, building, or refactoring UI components, pages, dashboards,
   forms, or tables in the frontend. Combines Google Material Design 3 surface layering,
   modern enterprise SaaS layout patterns (PageHeader, KPI StatCards, SectionCards, Toolbars),
-  and glubox component integration.
+  glubox component integration, and the canonical DataGrid list pattern (OptionGroup +
+  ecu-companies-grid toolbar like Inventory Documents).
 ---
 
 # Glubox Enterprise UI & UX Design System
@@ -48,9 +49,9 @@ Toda vista principal de la aplicación debe estructurarse siguiendo esta secuenc
 ├────────────────────────────────────────────────────────────────────────┤
 │  MAIN CONTENT / DATA SECTION                                           │
 │  ┌───────────────────────────────────────────────────────────────────┐ │
-│  │ SectionCard con Header (Búsqueda + Filtros rápidos + DataGrid)    │ │
-│  │                                                                   │ │
-│  │  <DataGrid ... />   o   <EmptyState ... />                        │ │
+│  │ SectionCard: título + OptionGroup segmentado (cola/estado)        │ │
+│  │ DataGrid ecu-companies-grid: buscar izq. + fechas/filtros der.    │ │
+│  │ <EmptyState /> si no hay filas                                    │ │
 │  └───────────────────────────────────────────────────────────────────┘ │
 └────────────────────────────────────────────────────────────────────────┘
 ```
@@ -66,12 +67,46 @@ Provee orientación instantánea al usuario:
 - **Descripción**: Subtítulo explicativo en color atenuado (`--glb-muted`).
 - **Acciones**: Botones de acción principal (`<Button variant="primary">`) y secundarias alineadas a la derecha.
 
-### 3.2. StatCard (KPIs / Métricas)
-Destaca datos cuantitativos o estados clave en una cuadrícula responsiva (`grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))`):
+### 3.2. StatCard (KPIs / Métricas) y Cuadrícula Obligatoria `.ecu-stat-grid`
+Destaca datos cuantitativos o estados clave en una cuadrícula responsiva:
+
+> [!CAUTION]
+> **REGLA DE CONTENEDOR OBLIGATORIO `.ecu-stat-grid`:**
+> Las tarjetas `<StatCard />` **NUNCA** deben renderizarse sueltas ni dentro de un `<div>` plano sin estilos o con clases arbitrarias no definidas.
+> Si se omite la clase `.ecu-stat-grid`, cada tarjeta ocupará el 100% del ancho y se apilarán verticalmente una encima de otra en una columna gigante (rompiendo el layout).
+>
+> **Estructura Canónica Obligatoria:**
+> ```tsx
+> <div className="ecu-stat-grid" aria-label="Resumen de métricas">
+>   <StatCard
+>     label="Total Facturas"
+>     value={String(kpi.total)}
+>     toneColor="#4f46e5"
+>     icon={<FileSpreadsheet size={20} />}
+>     footerText="Documentos procesados"
+>   />
+>   {/* Más tarjetas... */}
+> </div>
+> ```
+
+- **Estilo Canónico en `enterpriseUi.css`:**
+  ```css
+  .ecu-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  ```
 - **Icono en Contenedor Tonal**: Icono SVG/Material en un contenedor redondeado con color tonal tenue (`background: color-mix(in srgb, var(--primary) 12%, transparent)`).
 - **Valor Principal**: Número o estado en grande (1.5rem, font-weight: 700).
 - **Etiqueta**: Nombre de la métrica (font-size: 0.8125rem, color atenuado).
 - **Tendencia o Detalle**: Badge tipo pill que muestra variación (+12%, Límite alcanzado, etc.).
+
+### 3.2.1. Contenedor Raíz de Página (`ecu-dashboard-layout`)
+Toda página o vista de la aplicación debe estar envuelta en el layout estándar:
+- Vistas estándar: `<div className="ecu-dashboard-layout">` (max-width: 1400px, centrado y con espaciado equilibrado).
+- Vistas de pantalla completa / importación / tablas anchas: `<div className="ecu-dashboard-layout ecu-dashboard-layout--fluid">` (max-width: min(100%, 1680px)).
 
 ### 3.3. SectionCard (Contenedores M3)
 - Tarjetas con `border-radius: 14px` o `16px`.
@@ -88,12 +123,55 @@ Cuando una tabla o lista no contiene registros:
   3. Texto explicativo de qué debe hacer el usuario.
   4. Botón de acción principal (`<Button variant="primary">Crear empresa</Button>`).
 
-### 3.5. DataGrid Toolbar
-Las tablas `glubox` deben estar acompañadas de una barra superior consistente:
-- Campo de búsqueda instantánea (`TextBox` con icono de lupa).
-- Selector de fechas (`RangeDateBox`) si hay registros temporales.
-- Filtros por estado o categoría (`Select` o Chips).
-- Acciones rápidas (Refrescar, Exportar CSV/PDF, Acciones en lote).
+### 3.5. DataGrid / Listas — Patrón Canónico (obligatorio)
+
+Todas las pantallas de listado con `DataGrid` deben verse y estructurarse como **Historial de Documentos Logísticos**.
+
+**Referencia de código:** [`ecunexo_admin/src/pages/inventory/InventoryDocumentsListPage.tsx`](../../ecunexo_admin/src/pages/inventory/InventoryDocumentsListPage.tsx)
+
+**Regla Cursor:** `.cursor/rules/enterprise-datagrid-lists.mdc` (se aplica al editar `*List*` / `*Grid*` pages).
+
+#### Anatomía
+
+```
+┌─ SectionCard ─────────────────────────────────────────────────────────┐
+│  Título + subtítulo                    [ OptionGroup segmentado ]     │
+│  (ej. Activos | Todos | Inactivos)     ← cola / estado PRIMARIO       │
+├───────────────────────────────────────────────────────────────────────┤
+│  DataGrid  className="ecu-companies-grid"                             │
+│  [🔍 Buscar……………]              [ Select tipo? ] [ Rango fechas ]     │
+│  ───────────────────────────────────────────────────────────────────  │
+│  | columnas…                                                    |     │
+│  paginación…                                                          │
+└───────────────────────────────────────────────────────────────────────┘
+```
+
+#### Checklist de implementación
+
+1. **`SectionCard.action`**: filtros de cola/estado primario con `<OptionGroup layout="segmented" variant="outline" size={size} />` (`useGluComponentSize`). **No** usar `Select` con `label` / `labelPosition="outlined"` en el header de la card.
+2. **`DataGrid`**: `className="ecu-companies-grid"` (habilita toolbar horizontal en `src/styles/ecu-companies-form.css`).
+3. **Búsqueda**: `showSearch`, `searchPosition="left"`, `searchWidth={280}` (o similar), placeholder corto.
+4. **`toolbarRight`**:
+   - Ideal: solo `<GridDateRangeBox … />`.
+   - Si hay un filtro secundario (tipo, categoría): `Select` **sin** label flotante (`aria-label=…`) + fechas, envueltos en `<div className="ecu-comprobantes-filters">` para mantener **una sola fila**.
+5. **Columna Acciones** (glubox ≥ **0.1.22**): siempre última, con `sticky: 'right'` en el `ColumnDef`. No se esconde al scroll horizontal.
+6. **EmptyState** dentro del mismo `SectionCard` cuando no hay filas; el `OptionGroup` del header permanece visible.
+
+#### Anti-patrones (evitar errores de UI)
+
+| Incorrecto | Por qué falla | Correcto |
+|---|---|---|
+| `Select` “Mostrar” outlined en `SectionCard.action` | Label flotante + desalineado vs tabs | `OptionGroup` segmentado |
+| Filtros en franja aparte encima del grid | Duplica toolbar; se ve “otro módulo” | Todo en header + `toolbarRight` |
+| Varios `Select` apilados en `toolbarRight` sin `ecu-companies-grid` | Slot derecho estrecho → wrap vertical | `ecu-companies-grid` + `ecu-comprobantes-filters` |
+| Clase inventada (`ecu-customers-grid`) sin CSS de toolbar | Pierde el layout canónico | `ecu-companies-grid` |
+| Acciones sin `sticky: 'right'` | Se ocultan al scroll horizontal | `sticky: 'right'` en ColumnDef |
+
+#### CSS de soporte (no reinventar)
+
+- `.ecu-companies-grid .glb-datagrid__toolbar` / `__toolbar-right` — fila alineada, `flex-shrink: 0` a la derecha.
+- `.ecu-comprobantes-filters` — flex fila + wrap controlado para varios filtros.
+- `.ecu-grid-date-range` — ancho fijo del rango de fechas (~23rem).
 
 ### 3.6. Command Palette & Top Bar Global Search (`Ctrl + K` / `Cmd + K`)
 Acceso rápido universal montado en el header del layout principal:
@@ -103,6 +181,13 @@ Acceso rápido universal montado en el header del layout principal:
 - Agrupamiento semántico: *Acciones Rápidas*, *Navegación* y *Sistema y Preferencias*.
 - Navegación completa por teclado (`↑` / `↓` para mover selección, `↵` para ejecutar, `Esc` para salir).
 - Filtrado dinámico por permisos activos de sesión (`selectVisibleNavigation` y `selectPermissions`).
+
+### 3.7. Regla Estricta Anti-Duplicidad de Botones en PageHeader y EcuPageActions
+- **Problema de diseño**: En pantallas de escritorio, `<EcuPageActions items={actionItems} />` renderiza sus ítems como botones visibles en un toolbar horizontal (`.ecu-page-actions__desktop`). Si un componente define un botón primario o destacado directamente en `PageHeader.actions` (por ejemplo: `<Button variant="primary">+ Nuevo...</Button>`, `<Button variant="outline"><Ban /> Anular Lote</Button>`, o `<Button><Download /> Descargar Informe</Button>`) y **al mismo tiempo** incluye esa misma acción dentro de `actionItems` (ej. `{ id: 'create', label: 'Nuevo...' }`, `{ id: 'cancel-batch', label: 'Anular Lote' }`), en escritorio aparecerán **dos botones repetidos e idénticos** uno al lado del otro.
+- **Regla Obligatoria**:
+  1. **Acción Principal o Destacada**: Renderizar como un `<Button>` independiente directamente en `PageHeader.actions` (ej. `+ Nuevo Ítem`, `Importar Lote`, `Anular Lote`, `Descargar Informe`).
+  2. **`actionItems` de `EcuPageActions`**: **NUNCA** debe contener una acción que ya fue renderizada como botón directo. Solo debe incluir acciones complementarias o secundarias (ej. `Actualizar`, `Plantilla Excel`, o accesos a otros submódulos) que no cuenten con botón visible propio.
+  3. Antes de agregar cualquier entrada a `actionItems`, auditar que no duplique ningún botón adyacente en el header.
 
 ---
 
@@ -122,7 +207,33 @@ Acceso rápido universal montado en el header del layout principal:
 
 ---
 
-## 5. Historial de Versiones & Features
+## 5. Estándares de UX Copywriting & Lenguaje de Interfaz
+
+> [!IMPORTANT]
+> **REGLA ANTI-LENGUAJE TÉCNICO DE PROGRAMACIÓN:**
+> Los usuarios de EcuNexo son comerciantes, administradores, bodegueros y contadores, **NO ingenieros de software ni arquitectos de base de datos**.
+> Todos los títulos, subtítulos, textos de ayuda (`lead`, `subtitle`, `footerText`, `placeholder`) deben redactarse en lenguaje de negocio claro, breve y orientado a la acción, **NUNCA con explicaciones técnicas de programación**.
+
+### 5.1. Comparativa de Anti-Patrones vs. Redacción Correcta
+
+| Elemento UI | ❌ Anti-patrón (Técnico / Programador) | ✅ Patrón Correcto (Negocio / Usuario) |
+| :--- | :--- | :--- |
+| **Cabecera Atributos** | *"Estandariza los nombres y valores de atributos para evitar inconsistencias en variantes y especificaciones."* | **"Administra las opciones de tallas, colores y medidas para tus productos."** |
+| **Configurador Variantes** | *"Configurador de Producto Matriz Parent-Child con producto cartesiano multidimensional."* | **"Configura las combinaciones de tu producto (tallas, colores, etc.)."** |
+| **Guardar Producto** | *"Persiste la entidad agregada validando invariantes de categoría."* | **"Guardar producto"** |
+| **Estados / Badges** | *"Registro inmutable por restricción de integridad referencial."* | **"En uso (asociado a productos)"** |
+| **Subtítulo de Tabla** | *"Selecciona o gestiona los atributos que se reutilizan en variantes y campos adicionales."* | **"Opciones y medidas disponibles para asignar a tus productos."** |
+| **Mensajes de Error** | *"Error de deserialización JSON en CustomAttributesJson."* | **"Verifica los datos ingresados en las especificaciones del producto."** |
+
+### 5.2. Reglas de Oro de Redacción en UI:
+1. **Comenzar con verbos de acción sencillos:** *Administra*, *Gestiona*, *Crea*, *Consulta*, *Configura*.
+2. **Enfocarse en el objeto cotidiano de la empresa:** *tus productos*, *tus facturas*, *tus clientes*, *tus bodegas*, *las medidas*.
+3. **Prohibido el vocabulario de ingeniería en la vista:** Eliminar términos como *inconsistencias*, *esquemas*, *entidades*, *padre-hijo*, *invariantes*, *payloads*, *deserializar*, *endpoints*, *inmutabilidad interna*.
+4. **Claridad en 1 línea:** Los subtítulos de `PageHeader` deben poder leerse y entenderse en menos de 2 segundos.
+
+---
+
+## 6. Historial de Versiones & Features
 
 ### v0.3.0 — Global Command Palette & Comprehensive UI Test Suite
 - **Buscador Global & Command Palette (`Ctrl + K` / `Cmd + K`)**:

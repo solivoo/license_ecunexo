@@ -1,26 +1,64 @@
-import { Moon, Sun } from 'lucide-react'
-import { useTheme } from '@/theme/ThemeProvider'
+import { useCallback, useSyncExternalStore } from 'react'
+import { writeAppPreferences } from '@/lib/appPreferences'
+import { readCurrentTheme, type EcuThemeMode } from '@/lib/ecuTheme'
 
-export type ThemeToggleButtonProps = {
-  readonly className?: string
+function subscribe(onChange: () => void): () => void {
+  const observer = new MutationObserver(onChange)
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class', 'data-mode'],
+  })
+  return () => observer.disconnect()
 }
 
-/** Alterna tema claro / oscuro (icono luna / sol). */
-export function ThemeToggleButton({ className = '' }: ThemeToggleButtonProps) {
-  const { mode, toggleMode } = useTheme()
+function getSnapshot(): EcuThemeMode {
+  return readCurrentTheme()
+}
+
+export interface ThemeToggleButtonProps {
+  readonly className?: string
+  readonly variant?: 'toolbar' | 'icon'
+}
+
+export function ThemeToggleButton({ className = '', variant = 'toolbar' }: ThemeToggleButtonProps) {
+  const mode = useSyncExternalStore(subscribe, getSnapshot)
+
+  const toggleMode = useCallback(() => {
+    const next = mode === 'dark' ? 'light' : 'dark'
+    writeAppPreferences({ startDarkMode: next === 'dark' })
+  }, [mode])
+
   const isDark = mode === 'dark'
   const label = isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
-  const Icon = isDark ? Sun : Moon
+
+  if (variant === 'icon') {
+    return (
+      <button
+        type="button"
+        className={`ecu-theme-toggle ecu-theme-toggle--icon ${className}`.trim()}
+        onClick={toggleMode}
+        aria-label={label}
+        title={label}
+      >
+        <span className="material-symbols-outlined" aria-hidden>
+          {isDark ? 'light_mode' : 'dark_mode'}
+        </span>
+      </button>
+    )
+  }
 
   return (
     <button
       type="button"
-      className={`platform-shell__icon-btn ecu-theme-toggle--icon ${className}`.trim()}
+      className={`ecu-theme-toggle ${className}`.trim()}
       onClick={toggleMode}
-      aria-label={label}
+      aria-pressed={isDark}
       title={label}
     >
-      <Icon aria-hidden size={20} strokeWidth={1.75} />
+      <span className="material-symbols-outlined" aria-hidden>
+        {isDark ? 'light_mode' : 'dark_mode'}
+      </span>
+      <span>{isDark ? 'Modo claro' : 'Modo oscuro'}</span>
     </button>
   )
 }

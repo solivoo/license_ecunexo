@@ -3,6 +3,10 @@ export type GridLookback = (typeof GRID_LOOKBACK_IDS)[number]
 
 export const DEFAULT_GRID_LOOKBACK: GridLookback = '1y'
 
+export function isGridLookback(value: unknown): value is GridLookback {
+  return typeof value === 'string' && (GRID_LOOKBACK_IDS as readonly string[]).includes(value)
+}
+
 const LOOKBACK_MONTHS: Record<GridLookback, number> = {
   '1m': 1,
   '3m': 3,
