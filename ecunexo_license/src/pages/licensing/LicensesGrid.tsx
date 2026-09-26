@@ -16,6 +16,7 @@ export type LicensesGridProps = {
   readonly rows: LicenseListItem[]
   readonly loading?: boolean
   readonly onExpand?: (row: LicenseListItem) => void
+  readonly onManageModules?: (row: LicenseListItem) => void
   readonly toolbarRight?: ReactNode
 }
 
@@ -27,6 +28,7 @@ export function LicensesGrid({
   rows,
   loading = false,
   onExpand,
+  onManageModules,
   toolbarRight,
 }: LicensesGridProps) {
   const theme = useGluComponentTheme()
@@ -104,11 +106,11 @@ export function LicensesGrid({
         sortable: false,
         sticky: 'right',
         renderCell: (_value: unknown, row: LicenseGridRow) => (
-          <LicenseActionsCell {...row} onExpand={onExpand} />
+          <LicenseActionsCell {...row} onExpand={onExpand} onManageModules={onManageModules} />
         ),
       },
     ]
-  }, [onExpand])
+  }, [onExpand, onManageModules])
 
   const dataSource = useMemo(
     () => (Array.isArray(rows) ? rows : []) as LicenseGridRow[],

@@ -257,6 +257,39 @@ export async function reissueLicense(
   return data
 }
 
+export interface GrantEntitlements {
+  grantId: string
+  entitlementsVersion: number
+  deploymentMode: string
+  status: string
+  enabledModuleCodes: string[]
+  moduleEntitlements?: ModuleEntitlement[] | null
+  updatedAtUtc?: string | null
+  appliedToTenant: boolean
+}
+
+export async function getGrantEntitlements(grantId: string): Promise<GrantEntitlements> {
+  const { data } = await platformApi.get<GrantEntitlements>(
+    `/api/v1/platform/licenses/${grantId}/entitlements`
+  )
+  return data
+}
+
+export async function updateGrantEntitlements(
+  grantId: string,
+  body: {
+    enabledModuleCodes: string[]
+    moduleEntitlements?: ModuleEntitlement[] | null
+    reason?: string | null
+  }
+): Promise<GrantEntitlements> {
+  const { data } = await platformApi.put<GrantEntitlements>(
+    `/api/v1/platform/licenses/${grantId}/entitlements`,
+    body
+  )
+  return data
+}
+
 export async function listLicensingCustomers(): Promise<LicensingCustomerListItem[]> {
   const { data } = await platformApi.get<unknown>('/api/v1/platform/customers')
   return asRowList<LicensingCustomerListItem>(data)

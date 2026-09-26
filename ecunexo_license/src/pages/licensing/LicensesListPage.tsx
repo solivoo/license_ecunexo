@@ -279,6 +279,7 @@ export function LicensesListPage() {
             rows={visibleRows}
             loading={loading}
             onExpand={handleExpand}
+            onManageModules={(row) => navigate(`/app/licencias/${row.id}/modulos`)}
           />
         )}
       </SectionCard>
