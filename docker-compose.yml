@@ -42,6 +42,7 @@ services:
       Jwt__SigningKey: ${JWT_SIGNING_KEY:?set JWT_SIGNING_KEY min 32 chars}
       ActivationCodes__IssuePepper: ${ISSUE_PEPPER:?set ISSUE_PEPPER}
       LicenseValidation__ValidationPepper: ${VALIDATION_PEPPER:?set VALIDATION_PEPPER}
+      LicenseValidation__TenantApiKey: ${TENANT_API_KEY:-}
       Licensing__ProvisioningEncryptionKey: ${PROVISIONING_ENCRYPTION_KEY:?set PROVISIONING_ENCRYPTION_KEY}
       LicenseSigning__PrivateKeyPath: ${LICENSE_PRIVATE_KEY_PATH:-/keys/license-private.pem}
       Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS:-}
