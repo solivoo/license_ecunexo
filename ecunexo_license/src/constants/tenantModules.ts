@@ -334,7 +334,6 @@ export function moduleShortLabel(moduleCode: string): string {
 const LIMIT_KEY_LABELS: Record<string, string> = {
   max_sku_count: 'SKU',
   max_variants_per_item: 'Variantes / ítem',
-  max_categories: 'Categorías',
   max_warehouse_count: 'Bodegas',
   max_invoices_per_month: 'Facturas / mes',
   invoice_history_months: 'Historial (meses)',
