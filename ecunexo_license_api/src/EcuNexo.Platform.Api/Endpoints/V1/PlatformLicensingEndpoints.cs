@@ -5,17 +5,22 @@ using Asp.Versioning.Builder;
 using EcuNexo.Platform.Business.Abstractions;
 using EcuNexo.Platform.Business.Licensing.Commands.IssueLicense;
 using EcuNexo.Platform.Business.Licensing.Commands.CreateCustomer;
+using EcuNexo.Platform.Business.Licensing.Commands.ClearGrantTenantOverride;
 using EcuNexo.Platform.Business.Licensing.Commands.DeactivateCustomer;
+using EcuNexo.Platform.Business.Licensing.Commands.ReportGrantTenants;
 using EcuNexo.Platform.Business.Licensing.Commands.UpdateCustomer;
 using EcuNexo.Platform.Business.Licensing.Commands.CreateOperator;
 using EcuNexo.Platform.Business.Licensing.Commands.OperatorLogin;
 using EcuNexo.Platform.Business.Licensing.Commands.ReissueLicense;
 using EcuNexo.Platform.Business.Licensing.Commands.UpdateGrantEntitlements;
+using EcuNexo.Platform.Business.Licensing.Commands.UpdateGrantTenantEntitlements;
 using EcuNexo.Platform.Business.Licensing.Commands.CreatePlan;
 using EcuNexo.Platform.Business.Licensing.Commands.UpdatePlan;
 using EcuNexo.Platform.Business.Licensing.Commands.DeactivatePlan;
 using EcuNexo.Platform.Business.Licensing.Queries.GetLicenseStatus;
 using EcuNexo.Platform.Business.Licensing.Queries.GetGrantEntitlements;
+using EcuNexo.Platform.Business.Licensing.Queries.GetGrantTenantEntitlements;
+using EcuNexo.Platform.Business.Licensing.Queries.ListGrantTenants;
 using EcuNexo.Platform.Business.Licensing.Queries.ListLicenses;
 using EcuNexo.Platform.Business.Licensing.Queries.GetCustomer;
 using EcuNexo.Platform.Business.Licensing.Queries.ListLicensingCustomers;
@@ -93,11 +98,18 @@ public static class PlatformLicensingEndpoints
         secured.MapPost("/settings/email/test", TestEmailSettingsAsync);
         secured.MapPost("/licenses/{grantId:guid}/send-email", SendLicenseDeliveryEmailAsync);
         secured.MapPut("/licenses/{grantId:guid}/entitlements", UpdateGrantEntitlementsAsync);
+        secured.MapGet("/licenses/{grantId:guid}/tenants", ListGrantTenantsAsync);
+        secured.MapGet("/licenses/{grantId:guid}/tenants/{tenantId:guid}/entitlements", GetGrantTenantEntitlementsAsync);
+        secured.MapPut("/licenses/{grantId:guid}/tenants/{tenantId:guid}/entitlements", UpdateGrantTenantEntitlementsAsync);
+        secured.MapDelete("/licenses/{grantId:guid}/tenants/{tenantId:guid}/entitlements", ClearGrantTenantOverrideAsync);
 
         // Sincronización máquina-a-máquina del tenant (clave en X-Platform-Validation-Key)
         var tenantCredentials = group.MapGroup("").AllowAnonymous();
         tenantCredentials
             .MapGet("/licenses/{grantId:guid}/entitlements", GetGrantEntitlementsAsync)
+            .AddEndpointFilter<TenantApiKeyEndpointFilter>();
+        tenantCredentials
+            .MapPost("/licenses/{grantId:guid}/tenants", ReportGrantTenantsAsync)
             .AddEndpointFilter<TenantApiKeyEndpointFilter>();
 
         return app;
@@ -479,6 +491,104 @@ public static class PlatformLicensingEndpoints
         var result = await sender
             .AskAsync<GetGrantEntitlementsQuery, GrantEntitlementsResponse>(
                 new GetGrantEntitlementsQuery(grantId),
+                ct)
+            .ConfigureAwait(false);
+
+        return result.ToHttpResult();
+    }
+
+    private static async Task<IResult> ReportGrantTenantsAsync(
+        Guid grantId,
+        ReportGrantTenantsRequest body,
+        ISender sender,
+        CancellationToken ct)
+    {
+        var result = await sender
+            .SendAsync<ReportGrantTenantsCommand, ReportGrantTenantsResponse>(
+                body.ToCommand(grantId),
+                ct)
+            .ConfigureAwait(false);
+        if (!result.IsSuccess)
+        {
+            return result.ToHttpResult();
+        }
+
+        return Results.Ok(result.Value);
+    }
+
+    private static async Task<IResult> ListGrantTenantsAsync(
+        Guid grantId,
+        ISender sender,
+        CancellationToken ct)
+    {
+        var result = await sender
+            .AskAsync<ListGrantTenantsQuery, IReadOnlyList<GrantTenantListItem>>(
+                new ListGrantTenantsQuery(grantId),
+                ct)
+            .ConfigureAwait(false);
+        if (!result.IsSuccess)
+        {
+            return result.ToHttpResult();
+        }
+
+        return Results.Ok(result.Value!);
+    }
+
+    private static async Task<IResult> GetGrantTenantEntitlementsAsync(
+        Guid grantId,
+        Guid tenantId,
+        ISender sender,
+        CancellationToken ct)
+    {
+        var result = await sender
+            .AskAsync<GetGrantTenantEntitlementsQuery, GrantTenantEntitlementsResponse>(
+                new GetGrantTenantEntitlementsQuery(grantId, tenantId),
+                ct)
+            .ConfigureAwait(false);
+
+        return result.ToHttpResult();
+    }
+
+    private static async Task<IResult> UpdateGrantTenantEntitlementsAsync(
+        Guid grantId,
+        Guid tenantId,
+        UpdateGrantTenantEntitlementsRequest body,
+        ClaimsPrincipal user,
+        ISender sender,
+        CancellationToken ct)
+    {
+        var operatorId = ResolveOperatorId(user);
+        if (operatorId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await sender
+            .SendAsync<UpdateGrantTenantEntitlementsCommand, GrantTenantEntitlementsResponse>(
+                body.ToCommand(grantId, tenantId, operatorId.Value),
+                ct)
+            .ConfigureAwait(false);
+
+        return result.ToHttpResult();
+    }
+
+    private static async Task<IResult> ClearGrantTenantOverrideAsync(
+        Guid grantId,
+        Guid tenantId,
+        string? reason,
+        ClaimsPrincipal user,
+        ISender sender,
+        CancellationToken ct)
+    {
+        var operatorId = ResolveOperatorId(user);
+        if (operatorId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await sender
+            .SendAsync<ClearGrantTenantOverrideCommand, GrantTenantEntitlementsResponse>(
+                new ClearGrantTenantOverrideCommand(grantId, tenantId, operatorId.Value, reason),
                 ct)
             .ConfigureAwait(false);
 

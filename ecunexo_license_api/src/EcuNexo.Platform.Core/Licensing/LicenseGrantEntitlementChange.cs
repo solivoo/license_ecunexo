@@ -18,6 +18,10 @@ public sealed class LicenseGrantEntitlementChange : Entity<Guid>
 
     public Guid GrantId { get; private set; }
 
+    public Guid? TenantId { get; private set; }
+
+    public string? TenantName { get; private set; }
+
     public IReadOnlyList<string> PreviousEnabledModuleCodes { get; private set; }
 
     public IReadOnlyList<string> NewEnabledModuleCodes { get; private set; }
@@ -41,7 +45,9 @@ public sealed class LicenseGrantEntitlementChange : Entity<Guid>
         IReadOnlyList<ModuleEntitlement>? newEntitlements,
         Guid changedByOperatorId,
         DateTimeOffset changedAtUtc,
-        string? reason)
+        string? reason,
+        Guid? tenantId = null,
+        string? tenantName = null)
     {
         if (id == Guid.Empty || grantId == Guid.Empty)
         {
@@ -62,10 +68,22 @@ public sealed class LicenseGrantEntitlementChange : Entity<Guid>
                 new Error("license.entitlements.change.reason_length", $"El motivo no puede superar {ReasonMaxLength} caracteres.", ErrorType.Validation));
         }
 
+        var normalizedTenantName = string.IsNullOrWhiteSpace(tenantName) ? null : tenantName.Trim();
+        if (normalizedTenantName is not null && normalizedTenantName.Length > LicenseGrantTenant.TenantNameMaxLength)
+        {
+            return Result.Failure<LicenseGrantEntitlementChange>(
+                new Error(
+                    "license.entitlements.change.tenant_name_length",
+                    $"El nombre de la empresa no puede superar {LicenseGrantTenant.TenantNameMaxLength} caracteres.",
+                    ErrorType.Validation));
+        }
+
         return new LicenseGrantEntitlementChange
         {
             Id = id,
             GrantId = grantId,
+            TenantId = tenantId,
+            TenantName = normalizedTenantName,
             PreviousEnabledModuleCodes = previousEnabledModuleCodes,
             NewEnabledModuleCodes = newEnabledModuleCodes,
             PreviousEntitlements = previousEntitlements,

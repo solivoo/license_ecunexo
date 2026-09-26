@@ -8,6 +8,12 @@ public interface ILicenseGrantRepository
 
     Task AddEntitlementChangeAsync(LicenseGrantEntitlementChange change, CancellationToken ct);
 
+    Task<IReadOnlyList<LicenseGrantTenant>> ListTenantsAsync(Guid grantId, CancellationToken ct);
+
+    Task<LicenseGrantTenant?> GetTenantForUpdateAsync(Guid grantId, Guid tenantId, CancellationToken ct);
+
+    Task AddTenantAsync(LicenseGrantTenant tenant, CancellationToken ct);
+
     Task<bool> ExistsActiveOwnerEmailAsync(string ownerEmailNormalized, CancellationToken ct);
 
     /// <summary>Igual que <see cref="ExistsActiveOwnerEmailAsync"/> pero ignorando el grant que se está reemitiendo.</summary>

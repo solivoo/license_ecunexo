@@ -15,6 +15,8 @@ public sealed class LicenseGrantEntitlementChangeConfiguration
 
         builder.Property(x => x.Id).HasColumnType("uuid").ValueGeneratedNever();
         builder.Property(x => x.GrantId).HasColumnType("uuid").IsRequired();
+        builder.Property(x => x.TenantId).HasColumnType("uuid");
+        builder.Property(x => x.TenantName).HasMaxLength(LicenseGrantTenant.TenantNameMaxLength);
 
         builder.HasOne<LicenseGrant>()
             .WithMany()

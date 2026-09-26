@@ -15,7 +15,15 @@ public sealed record GrantEntitlementsResponse(
     IReadOnlyList<string> EnabledModuleCodes,
     IReadOnlyList<ModuleEntitlement>? ModuleEntitlements,
     DateTimeOffset? UpdatedAtUtc,
-    bool AppliedToTenant);
+    bool AppliedToTenant,
+    IReadOnlyList<GrantTenantOverrideItem>? TenantOverrides = null);
+
+public sealed record GrantTenantOverrideItem(
+    Guid TenantId,
+    string TenantName,
+    IReadOnlyList<string> EnabledModuleCodes,
+    IReadOnlyList<ModuleEntitlement>? ModuleEntitlements,
+    int OverrideVersion);
 
 public sealed class GetGrantEntitlementsHandler
     : IQueryHandler<GetGrantEntitlementsQuery, GrantEntitlementsResponse>
@@ -35,6 +43,17 @@ public sealed class GetGrantEntitlementsHandler
                 new Error("license.entitlements.not_found", "Licencia no encontrada.", ErrorType.NotFound));
         }
 
+        var tenants = await _grants.ListTenantsAsync(grant.Id, ct).ConfigureAwait(false);
+        var overrides = tenants
+            .Where(t => t.HasOverride)
+            .Select(t => new GrantTenantOverrideItem(
+                t.TenantId,
+                t.TenantName,
+                t.EnabledModuleCodes,
+                t.ModuleEntitlements,
+                t.OverrideVersion))
+            .ToList();
+
         return Result.Success(new GrantEntitlementsResponse(
             grant.Id,
             grant.EntitlementsVersion,
@@ -43,6 +62,7 @@ public sealed class GetGrantEntitlementsHandler
             grant.EnabledModuleCodes,
             grant.ModuleEntitlements,
             grant.EntitlementsUpdatedAtUtc,
-            AppliedToTenant: false));
+            AppliedToTenant: false,
+            TenantOverrides: overrides.Count > 0 ? overrides : null));
     }
 }

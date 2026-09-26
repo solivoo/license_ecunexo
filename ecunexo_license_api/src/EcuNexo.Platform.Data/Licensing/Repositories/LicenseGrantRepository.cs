@@ -22,6 +22,26 @@ public sealed class LicenseGrantRepository : ILicenseGrantRepository
         return Task.CompletedTask;
     }
 
+    public async Task<IReadOnlyList<LicenseGrantTenant>> ListTenantsAsync(Guid grantId, CancellationToken ct)
+    {
+        return await _db.LicenseGrantTenants.AsNoTracking()
+            .Where(t => t.GrantId == grantId)
+            .OrderBy(t => t.TenantName)
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+    }
+
+    public Task<LicenseGrantTenant?> GetTenantForUpdateAsync(Guid grantId, Guid tenantId, CancellationToken ct) =>
+        _db.LicenseGrantTenants.FirstOrDefaultAsync(
+            t => t.GrantId == grantId && t.TenantId == tenantId,
+            ct);
+
+    public Task AddTenantAsync(LicenseGrantTenant tenant, CancellationToken ct)
+    {
+        _db.LicenseGrantTenants.Add(tenant);
+        return Task.CompletedTask;
+    }
+
     public Task<LicenseGrant?> GetActiveByCodeHashForUpdateAsync(
         string codeHash,
         DateTimeOffset utcNow,

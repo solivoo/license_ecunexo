@@ -153,6 +153,13 @@ public sealed class LicenseGrant : AggregateRoot<Guid>
         return Unit.Value;
     }
 
+    public void TouchEntitlements(Guid operatorId, DateTimeOffset utcNow)
+    {
+        EntitlementsVersion++;
+        EntitlementsUpdatedAtUtc = utcNow;
+        EntitlementsUpdatedByOperatorId = operatorId;
+    }
+
     /// <summary>Null en la emisión original. Renew = mismo plan; Expand = cambio de plan.</summary>
     public LicenseReissueKind? ReissueKind { get; private set; }
 
