@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Button, TextBox, useToast } from 'glubox'
+import { Button, Select, TextBox, useToast } from 'glubox'
 import { ArrowLeft, Building2, LayoutGrid, TriangleAlert } from 'lucide-react'
-import { GrantEntitlementsForm } from '@/components/licensing/GrantEntitlementsForm'
+import { ModulePickerGrid } from '@/components/licensing/ModulePickerGrid'
 import { createGrantEntitlementsDraft, toModuleEntitlements } from '@/lib/grantEntitlements'
+import {
+  MODULES_WITH_LIMITS,
+  getModuleDefaultLimits,
+  limitKeyLabel,
+  moduleShortLabel,
+} from '@/constants/tenantModules'
 import {
   EcuAlertDialog,
   EmptyState,
   GridToolbarRefresh,
   PageHeader,
-  SectionCard,
   StatusBadge,
 } from '@/components/ui'
 import { useGluComponentSize } from '@/hooks/useGluComponentSize'
@@ -22,7 +27,14 @@ import {
   type GrantTenantEntitlementsView,
   type GrantTenantItem,
 } from '@/lib/platformLicensingApi'
-import { GrantTenantsGrid } from './GrantTenantsGrid'
+import './grantTenants.css'
+
+const TIER_OPTIONS = [
+  { label: 'Small', value: '0' },
+  { label: 'Medium', value: '1' },
+  { label: 'Big', value: '2' },
+  { label: 'Enterprise', value: '3' },
+]
 
 export function GrantTenantsPage() {
   const { grantId } = useParams<{ grantId: string }>()
@@ -207,11 +219,16 @@ export function GrantTenantsPage() {
   const hasTenants = tenants.length > 0
   const overrideVersion = detail?.hasOverride ? selectedTenant?.overrideVersion : undefined
 
+  const editableModules = useMemo(
+    () => MODULES_WITH_LIMITS.filter((module) => selectedModules.includes(module.code)),
+    [selectedModules]
+  )
+
   return (
-    <div className="ecu-dashboard-layout ecu-section-page">
+    <div className="ecu-dashboard-layout ecu-section-page grant-tenants">
       <PageHeader
         title="Empresas y accesos"
-        subtitle="Personaliza módulos, tier y límites por empresa. Sin override, la empresa hereda los accesos de la licencia."
+        subtitle="Módulos, tier y límites por empresa."
         badge={
           <StatusBadge tone="primary" withDot>
             {listLoading ? 'Cargando' : `${tenants.length} empresa${tenants.length === 1 ? '' : 's'}`}
@@ -235,131 +252,237 @@ export function GrantTenantsPage() {
         </p>
       ) : null}
 
-      <SectionCard
-        title="Empresas reportadas"
-        subtitle="Aparecen cuando el cliente inicia sesión con su licencia y el tenant reporta sus datos."
-      >
-        {!listLoading && !listError && !hasTenants ? (
-          <EmptyState
-            icon={<Building2 size={32} strokeWidth={1.75} />}
-            title="Aún no hay empresas reportadas"
-            description="Cuando el cliente active la licencia e inicie sesión, sus empresas se reportarán automáticamente y podrás personalizar sus accesos aquí."
-            action={
-              <div className="ecu-grid-toolbar-actions">
-                <Button type="button" variant="primary" onClick={() => void loadTenants()}>
-                  Actualizar
-                </Button>
-                <Button type="button" variant="outline" disabled={!grantId} onClick={goToModules}>
-                  Ver módulos
-                </Button>
-              </div>
-            }
-          />
-        ) : (
-          <GrantTenantsGrid
-            rows={tenants}
-            loading={listLoading}
-            selectedTenantId={selectedTenantId}
-            onSelect={handleSelectTenant}
-            toolbarRight={
+      <div className="grant-tenants__split">
+        <aside className="grant-tenants__sidebar" aria-label="Empresas de la licencia">
+          <div className="grant-tenants__sidebar-head">
+            <h2 className="grant-tenants__sidebar-title">Empresas</h2>
+            <div className="grant-tenants__sidebar-actions">
+              {hasTenants ? (
+                <span className="grant-tenants__sidebar-count">{tenants.length}</span>
+              ) : null}
               <GridToolbarRefresh loading={listLoading} onRefresh={() => void loadTenants()} />
-            }
-          />
-        )}
-      </SectionCard>
+            </div>
+          </div>
 
-      {selectedTenantId ? (
-        detailLoading ? (
-          <p className="login-page__muted">Cargando accesos…</p>
-        ) : detail ? (
-          <>
-            {detailError ? (
-              <div className="ecu-form-error-banner" role="alert">
-                <TriangleAlert size={16} aria-hidden />
-                <span>{detailError}</span>
-              </div>
-            ) : null}
+          {listLoading ? (
+            <p className="grant-tenants__muted">Cargando…</p>
+          ) : hasTenants ? (
+            <div className="grant-tenants__list" role="listbox" aria-label="Empresas">
+              {tenants.map((tenant) => {
+                const active = tenant.tenantId === selectedTenantId
+                return (
+                  <button
+                    key={tenant.tenantId}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    className={`grant-tenants__tenant${
+                      active ? ' grant-tenants__tenant--active' : ''
+                    }`}
+                    onClick={() => handleSelectTenant(tenant)}
+                  >
+                    <span className="grant-tenants__tenant-name" title={tenant.name}>
+                      {tenant.name}
+                    </span>
+                    <span className="grant-tenants__tenant-meta">
+                      {tenant.hasOverride ? (
+                        <StatusBadge tone="primary" withDot>
+                          Personalizado
+                        </StatusBadge>
+                      ) : (
+                        <StatusBadge tone="neutral">Heredado</StatusBadge>
+                      )}
+                      {tenant.hasOverride ? (
+                        <span className="grant-tenants__tenant-version">
+                          v{tenant.overrideVersion}
+                        </span>
+                      ) : null}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <EmptyState
+              className="ecu-empty-state--compact"
+              icon={<Building2 size={26} strokeWidth={1.75} aria-hidden />}
+              title="Sin empresas reportadas"
+            />
+          )}
+        </aside>
 
-            <SectionCard
-              title={`Accesos de ${detail.tenantName}`}
-              subtitle={`Base de la licencia: ${detail.baseEnabledModuleCodes.length} módulos · v${detail.baseEntitlementsVersion}`}
-              action={
-                detail.hasOverride ? (
+        <section className="grant-tenants__editor" aria-label="Editor de accesos">
+          {!selectedTenantId ? (
+            <div className="grant-tenants__editor-card grant-tenants__placeholder">
+              <EmptyState
+                className="ecu-empty-state--compact"
+                title="Selecciona una empresa"
+                description="Elige una empresa de la lista."
+              />
+            </div>
+          ) : detailLoading ? (
+            <div className="grant-tenants__editor-card">
+              <p className="grant-tenants__muted">Cargando accesos…</p>
+            </div>
+          ) : detail ? (
+            <div className="grant-tenants__editor-card">
+              <header className="grant-tenants__head">
+                <h2 className="grant-tenants__head-title" title={detail.tenantName}>
+                  {detail.tenantName}
+                </h2>
+                {detail.hasOverride ? (
                   <StatusBadge tone="primary" withDot>
                     Personalizado{overrideVersion != null ? ` · v${overrideVersion}` : ''}
                   </StatusBadge>
                 ) : (
-                  <StatusBadge tone="neutral">Heredado de la licencia</StatusBadge>
-                )
-              }
-            >
-              <p className="issue-license-subpanel__hint">
-                {detail.hasOverride
-                  ? 'Esta empresa tiene un override activo. Los cambios se auditan y se aplican en la próxima validación.'
-                  : 'Esta empresa hereda los módulos, tier y límites de la licencia. Guarda un override para personalizarla.'}
-              </p>
-            </SectionCard>
+                  <StatusBadge tone="neutral">Heredado</StatusBadge>
+                )}
+                <span className="grant-tenants__head-meta">
+                  {`Base: ${detail.baseEnabledModuleCodes.length} módulos · v${detail.baseEntitlementsVersion}`}
+                </span>
+              </header>
 
-            <GrantEntitlementsForm
-              selectedModules={selectedModules}
-              tiers={tiers}
-              limits={limits}
-              disabled={busy}
-              idPrefix={`tenant-${selectedTenantId}`}
-              onSelectedModulesChange={setSelectedModules}
-              onTierChange={setTier}
-              onLimitChange={setLimit}
-            />
+              {detailError ? (
+                <div className="grant-tenants__section">
+                  <div className="ecu-form-error-banner" role="alert">
+                    <TriangleAlert size={16} aria-hidden />
+                    <span>{detailError}</span>
+                  </div>
+                </div>
+              ) : null}
 
-            <SectionCard title="Motivo y guardado">
-              <TextBox
-                id="grant-tenant-reason"
-                label="Motivo (auditoría)"
-                labelPosition="outlined"
-                variant="outline"
-                value={reason}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setReason(e.target.value)}
-                placeholder="Ej. Condiciones comerciales de la empresa"
-                disabled={busy}
-                fullWidth
-                size={size}
-              />
-              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
-                <Button
-                  type="button"
-                  variant="primary"
-                  loading={busy}
+              <div className="grant-tenants__section">
+                <h3 className="grant-tenants__section-title">Módulos</h3>
+                <ModulePickerGrid
+                  selected={selectedModules}
+                  onChange={setSelectedModules}
                   disabled={busy}
-                  onClick={() => void saveOverride()}
-                >
-                  Guardar override
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={busy || !detail.hasOverride}
-                  onClick={() => setConfirmResetOpen(true)}
-                >
-                  Restablecer a la licencia
-                </Button>
+                  idPrefix={`tenant-${selectedTenantId}`}
+                />
               </div>
-            </SectionCard>
-          </>
-        ) : detailError ? (
-          <div className="ecu-form-error-banner" role="alert">
-            <TriangleAlert size={16} aria-hidden />
-            <span>{detailError}</span>
-          </div>
-        ) : null
-      ) : !listLoading && hasTenants ? (
-        <SectionCard title="Selecciona una empresa" subtitle="Elige una empresa de la lista para editar sus accesos.">
-          <EmptyState
-            icon={<Building2 size={32} strokeWidth={1.75} />}
-            title="Sin empresa seleccionada"
-            description="Selecciona una empresa para ver y personalizar sus módulos, tier y límites."
-          />
-        </SectionCard>
-      ) : null}
+
+              <div className="grant-tenants__section">
+                <h3 className="grant-tenants__section-title">Tier y límites</h3>
+                {editableModules.length > 0 ? (
+                  <div className="grant-tenants__limits-scroll">
+                    <table className="grant-tenants__limits-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Módulo</th>
+                          <th scope="col">Tier</th>
+                          <th scope="col">Límites</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {editableModules.map((module) => {
+                          const limitKeys = Object.keys(getModuleDefaultLimits(module.code) ?? {})
+                          const tierId = `tenant-${selectedTenantId}-tier-${module.code}`
+                          return (
+                            <tr key={module.code}>
+                              <td className="grant-tenants__limits-module">
+                                <span title={module.label}>{moduleShortLabel(module.code)}</span>
+                              </td>
+                              <td className="grant-tenants__limits-tier">
+                                <label className="grant-tenants__sr-only" htmlFor={tierId}>
+                                  Tier de {module.label}
+                                </label>
+                                <div className="grant-tenants__tier-field">
+                                  <Select
+                                    id={tierId}
+                                    options={TIER_OPTIONS}
+                                    value={tiers[module.code] ?? '0'}
+                                    onChange={(value) => setTier(module.code, value)}
+                                    disabled={busy}
+                                    size="sm"
+                                    variant="outline"
+                                  />
+                                </div>
+                              </td>
+                              <td>
+                                <div className="grant-tenants__limits-fields">
+                                  {limitKeys.map((key) => {
+                                    const label = limitKeyLabel(key)
+                                    return (
+                                      <div key={key} className="grant-tenants__limit-field">
+                                        <TextBox
+                                          id={`tenant-${selectedTenantId}-limit-${module.code}-${key}`}
+                                          type="number"
+                                          inputMode="numeric"
+                                          min={0}
+                                          size="sm"
+                                          variant="outline"
+                                          value={limits[module.code]?.[key] ?? ''}
+                                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                            setLimit(module.code, key, e.target.value)
+                                          }
+                                          placeholder="—"
+                                          aria-label={`${module.label}: ${label}`}
+                                          title={`${label} (vacío = ilimitado)`}
+                                          disabled={busy}
+                                          fullWidth
+                                        />
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="grant-tenants__muted">Sin módulos con límites.</p>
+                )}
+              </div>
+
+              <footer className="grant-tenants__footer">
+                <TextBox
+                  id="grant-tenant-reason"
+                  className="grant-tenants__footer-reason"
+                  variant="outline"
+                  value={reason}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setReason(e.target.value)}
+                  placeholder="Motivo..."
+                  aria-label="Motivo (auditoría)"
+                  disabled={busy}
+                  fullWidth
+                  size={size}
+                />
+                <div className="grant-tenants__footer-actions">
+                  <Button
+                    type="button"
+                    variant="primary"
+                    loading={busy}
+                    disabled={busy}
+                    onClick={() => void saveOverride()}
+                  >
+                    Guardar override
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={busy || !detail.hasOverride}
+                    onClick={() => setConfirmResetOpen(true)}
+                  >
+                    Restablecer a la licencia
+                  </Button>
+                </div>
+              </footer>
+            </div>
+          ) : detailError ? (
+            <div className="grant-tenants__editor-card">
+              <div className="grant-tenants__section">
+                <div className="ecu-form-error-banner" role="alert">
+                  <TriangleAlert size={16} aria-hidden />
+                  <span>{detailError}</span>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </section>
+      </div>
 
       <EcuAlertDialog
         open={confirmResetOpen}

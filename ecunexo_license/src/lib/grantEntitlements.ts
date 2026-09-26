@@ -10,6 +10,21 @@ export type GrantEntitlementsDraft = {
   limits: Record<string, Record<string, string>>
 }
 
+const TIER_NAME_TO_VALUE: Record<string, string> = {
+  Small: '0',
+  Medium: '1',
+  Big: '2',
+  Enterprise: '3',
+}
+
+/** Normaliza el tier al value numérico del dropdown (la API lo serializa como nombre, ej. "Small"). */
+function normalizeTierValue(tier: unknown): string {
+  if (typeof tier === 'number' && Number.isFinite(tier)) return String(tier)
+  const raw = String(tier ?? '').trim()
+  if (TIER_NAME_TO_VALUE[raw]) return TIER_NAME_TO_VALUE[raw]
+  return /^[0-3]$/.test(raw) ? raw : '0'
+}
+
 export function createGrantEntitlementsDraft(
   enabledModuleCodes: readonly string[],
   moduleEntitlements?: readonly ModuleEntitlement[] | null
@@ -18,7 +33,7 @@ export function createGrantEntitlementsDraft(
   const tiers: Record<string, string> = {}
   const limits: Record<string, Record<string, string>> = {}
   for (const entitlement of moduleEntitlements ?? []) {
-    tiers[entitlement.moduleCode] = String(entitlement.tier)
+    tiers[entitlement.moduleCode] = normalizeTierValue(entitlement.tier)
     limits[entitlement.moduleCode] = Object.fromEntries(
       Object.entries(entitlement.limits ?? {}).map(([key, value]) => [key, String(value)])
     )
@@ -45,9 +60,10 @@ export function toModuleEntitlements(
       if (!Number.isFinite(parsed) || parsed < 0) continue
       moduleLimits[key] = parsed
     }
+    const tier = Number(normalizeTierValue(tiers[code] ?? '0'))
     return {
       moduleCode: code,
-      tier: Number(tiers[code] ?? '0'),
+      tier: Number.isFinite(tier) ? tier : 0,
       limits: Object.keys(moduleLimits).length > 0 ? moduleLimits : undefined,
     }
   })

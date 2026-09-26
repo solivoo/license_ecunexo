@@ -306,6 +306,30 @@ export function moduleLabels(codes: string[]): string {
     .join(', ')
 }
 
+/** Etiquetas cortas para selectores compactos (una línea por módulo). */
+const MODULE_SHORT_LABELS: Record<string, string> = {
+  identity: 'Identidad',
+  catalog: 'Catálogo',
+  warehousing: 'Bodegas',
+  inventory: 'Inventario',
+  facturacion: 'Facturación SRI',
+  contabilidad: 'Contabilidad',
+  purchases: 'Compras',
+  customers: 'Clientes',
+  ecommerce: 'E-commerce',
+  repairs: 'Taller',
+  training: 'Capacitación',
+  support: 'Soporte',
+}
+
+export function moduleShortLabel(moduleCode: string): string {
+  const direct = MODULE_SHORT_LABELS[moduleCode]
+  if (direct) {
+    return direct
+  }
+  return TENANT_MODULE_OPTIONS.find((m) => m.code === moduleCode)?.label ?? moduleCode
+}
+
 /** Etiqueta en español para una clave de límite (ej. max_sku_count → «SKU»). */
 const LIMIT_KEY_LABELS: Record<string, string> = {
   max_sku_count: 'SKU',
