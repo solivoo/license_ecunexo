@@ -290,6 +290,79 @@ export async function updateGrantEntitlements(
   return data
 }
 
+// ═══════════════════════════════════════════════════════════════
+// Empresas (tenants) y overrides por licencia
+// ═══════════════════════════════════════════════════════════════
+
+export interface GrantTenantItem {
+  tenantId: string
+  name: string
+  hasOverride: boolean
+  overrideVersion: number
+  reportedAtUtc: string
+  overrideUpdatedAtUtc: string | null
+}
+
+export interface GrantTenantEntitlementsView {
+  grantId: string
+  tenantId: string
+  tenantName: string
+  hasOverride: boolean
+  baseEnabledModuleCodes: string[]
+  baseModuleEntitlements?: ModuleEntitlement[] | null
+  baseEntitlementsVersion: number
+  effectiveEnabledModuleCodes: string[]
+  effectiveModuleEntitlements?: ModuleEntitlement[] | null
+}
+
+export interface UpdateGrantTenantEntitlementsInput {
+  enabledModuleCodes: string[]
+  moduleEntitlements?: ModuleEntitlement[] | null
+  reason?: string | null
+}
+
+export async function listGrantTenants(grantId: string): Promise<GrantTenantItem[]> {
+  const { data } = await platformApi.get<unknown>(
+    `/api/v1/platform/licenses/${grantId}/tenants`
+  )
+  return asRowList<GrantTenantItem>(data)
+}
+
+export async function getGrantTenantEntitlements(
+  grantId: string,
+  tenantId: string
+): Promise<GrantTenantEntitlementsView> {
+  const { data } = await platformApi.get<GrantTenantEntitlementsView>(
+    `/api/v1/platform/licenses/${grantId}/tenants/${tenantId}/entitlements`
+  )
+  return data
+}
+
+export async function updateGrantTenantEntitlements(
+  grantId: string,
+  tenantId: string,
+  body: UpdateGrantTenantEntitlementsInput
+): Promise<GrantTenantEntitlementsView> {
+  const { data } = await platformApi.put<GrantTenantEntitlementsView>(
+    `/api/v1/platform/licenses/${grantId}/tenants/${tenantId}/entitlements`,
+    body
+  )
+  return data
+}
+
+export async function clearGrantTenantOverride(
+  grantId: string,
+  tenantId: string,
+  reason?: string | null
+): Promise<GrantTenantEntitlementsView> {
+  const trimmed = reason?.trim()
+  const query = trimmed ? `?reason=${encodeURIComponent(trimmed)}` : ''
+  const { data } = await platformApi.delete<GrantTenantEntitlementsView>(
+    `/api/v1/platform/licenses/${grantId}/tenants/${tenantId}/entitlements${query}`
+  )
+  return data
+}
+
 export async function listLicensingCustomers(): Promise<LicensingCustomerListItem[]> {
   const { data } = await platformApi.get<unknown>('/api/v1/platform/customers')
   return asRowList<LicensingCustomerListItem>(data)

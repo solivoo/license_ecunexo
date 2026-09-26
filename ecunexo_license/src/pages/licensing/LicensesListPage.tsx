@@ -243,6 +243,7 @@ export function LicensesListPage() {
             loading={loading}
             onExpand={handleExpand}
             onManageModules={(row) => navigate(`/app/licencias/${row.id}/modulos`)}
+            onManageTenants={(row) => navigate(`/app/licencias/${row.id}/empresas`)}
             toolbarRight={
               <div className="ecu-grid-toolbar-actions">
                 <GridToolbarRefresh loading={loading || reissueBusy} onRefresh={() => void load()} />

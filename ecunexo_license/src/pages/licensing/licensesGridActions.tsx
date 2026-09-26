@@ -1,4 +1,4 @@
-import { ArrowUpCircle, LayoutGrid } from 'lucide-react'
+import { ArrowUpCircle, Building2, LayoutGrid } from 'lucide-react'
 import { GridIconButton } from '@/components/ui/GridIconButton'
 import type { LicenseListItem } from '@/lib/platformLicensingApi'
 
@@ -6,12 +6,14 @@ export function LicenseActionsCell(
   props: LicenseListItem & {
     onExpand?: (row: LicenseListItem) => void
     onManageModules?: (row: LicenseListItem) => void
+    onManageTenants?: (row: LicenseListItem) => void
   },
 ) {
   const canExpand = props.status === 'Active' || props.status === 'Exhausted'
   const canManageModules = props.status === 'Active'
+  const canManageTenants = props.status === 'Active'
 
-  if (!canExpand && !canManageModules) {
+  if (!canExpand && !canManageModules && !canManageTenants) {
     return null
   }
 
@@ -22,6 +24,13 @@ export function LicenseActionsCell(
           label="Módulos de la licencia"
           icon={LayoutGrid}
           onClick={() => props.onManageModules?.(props)}
+        />
+      ) : null}
+      {canManageTenants && props.onManageTenants ? (
+        <GridIconButton
+          label="Empresas y accesos"
+          icon={Building2}
+          onClick={() => props.onManageTenants?.(props)}
         />
       ) : null}
       {canExpand && props.onExpand ? (

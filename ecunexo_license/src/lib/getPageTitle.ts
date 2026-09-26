@@ -19,6 +19,7 @@ function findLabel(items: MenuConfig['items'], pathname: string): string | null 
 
 function staticTitle(pathname: string): string | null {
   if (/^\/app\/licencias\/[^/]+\/modulos$/.test(pathname)) return 'Módulos de la licencia'
+  if (/^\/app\/licencias\/[^/]+\/empresas$/.test(pathname)) return 'Empresas y accesos'
   if (pathname === '/app/clientes/nuevo') return 'Agregar cliente'
   if (/^\/app\/clientes\/[^/]+\/editar$/.test(pathname)) return 'Editar cliente'
   if (pathname === '/app/planes/nuevo') return 'Crear plan'

@@ -14,6 +14,7 @@ import { PlanListPage } from '@/pages/licensing/PlanListPage'
 import { CreatePlanPage } from '@/pages/licensing/CreatePlanPage'
 import { PlanDetailPage } from '@/pages/licensing/PlanDetailPage'
 import { GrantModulesPage } from '@/pages/licensing/GrantModulesPage'
+import { GrantTenantsPage } from '@/pages/licensing/GrantTenantsPage'
 import { TrainingSessionsListPage } from '@/pages/training/TrainingSessionsListPage'
 import { ScheduleTrainingPage } from '@/pages/training/ScheduleTrainingPage'
 import { PlatformEmailSettingsPage } from '@/pages/settings/PlatformEmailSettingsPage'
@@ -38,6 +39,7 @@ export const routes: RouteObject[] = [
           { path: 'licencias/nueva', element: <IssueLicensePage /> },
           { path: 'licencias/historial', element: <LicensesListPage /> },
           { path: 'licencias/:grantId/modulos', element: <GrantModulesPage /> },
+          { path: 'licencias/:grantId/empresas', element: <GrantTenantsPage /> },
           { path: 'operadores', element: <OperatorsListPage /> },
           { path: 'clientes', element: <CustomersListPage /> },
           { path: 'clientes/nuevo', element: <CustomerEditorPage /> },
