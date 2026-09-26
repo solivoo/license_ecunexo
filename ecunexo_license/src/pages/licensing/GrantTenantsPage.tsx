@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Button, Select, TextBox, useToast } from 'glubox'
+import { Button, CheckButton, Select, TextBox, useToast } from 'glubox'
 import { ArrowLeft, Building2, LayoutGrid, TriangleAlert } from 'lucide-react'
 import { ModulePickerGrid } from '@/components/licensing/ModulePickerGrid'
 import { createGrantEntitlementsDraft, toModuleEntitlements } from '@/lib/grantEntitlements'
 import {
   MODULES_WITH_LIMITS,
   getModuleDefaultLimits,
+  getModuleFlags,
   limitKeyLabel,
   moduleShortLabel,
 } from '@/constants/tenantModules'
@@ -375,7 +376,11 @@ export function GrantTenantsPage() {
                       </thead>
                       <tbody>
                         {editableModules.map((module) => {
-                          const limitKeys = Object.keys(getModuleDefaultLimits(module.code) ?? {})
+                          const flags = getModuleFlags(module.code)
+                          const flagKeys = new Set(flags.map((flag) => flag.key))
+                          const limitKeys = Object.keys(
+                            getModuleDefaultLimits(module.code) ?? {}
+                          ).filter((key) => !flagKeys.has(key))
                           const tierId = `tenant-${selectedTenantId}-tier-${module.code}`
                           return (
                             <tr key={module.code}>
@@ -424,6 +429,23 @@ export function GrantTenantsPage() {
                                       </div>
                                     )
                                   })}
+                                  {flags.map((flag) => (
+                                    <div key={flag.key} className="grant-tenants__limit-field">
+                                      <CheckButton
+                                        checked={
+                                          (limits[module.code]?.[flag.key] ?? '1') !== '0'
+                                        }
+                                        onChange={(checked: boolean) =>
+                                          setLimit(module.code, flag.key, checked ? '1' : '0')
+                                        }
+                                        disabled={busy}
+                                        size="sm"
+                                        title={`${module.label}: ${flag.label}`}
+                                      >
+                                        {flag.label}
+                                      </CheckButton>
+                                    </div>
+                                  ))}
                                 </div>
                               </td>
                             </tr>

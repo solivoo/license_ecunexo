@@ -364,6 +364,27 @@ const LIMIT_KEY_LABELS: Record<string, string> = {
   max_product_templates: 'Plantillas de producto',
 }
 
+export type TenantModuleFlag = {
+  /** Clave del límite 0/1 dentro del entitlement del módulo. */
+  key: string
+  label: string
+}
+
+/**
+ * Opciones 0/1 que se muestran como interruptores.
+ * En el cliente ocultan su ítem de menú cuando quedan en 0.
+ */
+export const MODULE_FLAGS: Record<string, TenantModuleFlag[]> = {
+  contabilidad: [
+    { key: 'allow_financial_statements_export', label: 'Exportar estados financieros' },
+    { key: 'enable_custom_subaccounts', label: 'Subcuentas personalizadas' },
+  ],
+}
+
+export function getModuleFlags(moduleCode: string): TenantModuleFlag[] {
+  return MODULE_FLAGS[moduleCode] ?? []
+}
+
 export function limitKeyLabel(key: string): string {
   const direct = LIMIT_KEY_LABELS[key]
   if (direct) {

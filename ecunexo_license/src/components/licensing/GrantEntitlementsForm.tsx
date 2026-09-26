@@ -1,5 +1,5 @@
 import { useCallback, useMemo, type ChangeEvent } from 'react'
-import { TextBox, useToast } from 'glubox'
+import { CheckButton, TextBox, useToast } from 'glubox'
 import { EcuLabeledDropDown } from '@/components/form/EcuLabeledDropDown'
 import { ModuleChipList } from '@/components/licensing/ModuleChipList'
 import { SectionCard } from '@/components/ui'
@@ -7,6 +7,7 @@ import {
   MODULES_WITH_LIMITS,
   ensureIdentityModule,
   getModuleDefaultLimits,
+  getModuleFlags,
   limitKeyLabel,
   validateModuleDependencies,
 } from '@/constants/tenantModules'
@@ -72,7 +73,11 @@ export function GrantEntitlementsForm({
       {editableModules.length > 0 ? (
         <SectionCard title="Tier y límites por módulo">
           {editableModules.map((module) => {
-            const limitKeys = Object.keys(getModuleDefaultLimits(module.code) ?? {})
+            const flags = getModuleFlags(module.code)
+            const flagKeys = new Set(flags.map((flag) => flag.key))
+            const limitKeys = Object.keys(getModuleDefaultLimits(module.code) ?? {}).filter(
+              (key) => !flagKeys.has(key)
+            )
             return (
               <div key={module.code} className="module-tier-row module-tier-row--stack">
                 <div className="issue-license-form-grid">
@@ -85,6 +90,23 @@ export function GrantEntitlementsForm({
                     disabled={disabled}
                   />
                 </div>
+                {flags.length > 0 ? (
+                  <div className="issue-license-form-grid">
+                    {flags.map((flag) => (
+                      <CheckButton
+                        key={flag.key}
+                        checked={(limits[module.code]?.[flag.key] ?? '1') !== '0'}
+                        onChange={(checked: boolean) =>
+                          onLimitChange(module.code, flag.key, checked ? '1' : '0')
+                        }
+                        disabled={disabled}
+                        size="sm"
+                      >
+                        {flag.label}
+                      </CheckButton>
+                    ))}
+                  </div>
+                ) : null}
                 {limitKeys.length > 0 ? (
                   <div className="issue-license-form-grid">
                     {limitKeys.map((key) => (
