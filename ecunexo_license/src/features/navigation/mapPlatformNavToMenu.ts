@@ -1,8 +1,21 @@
 import type { MenuConfig, MenuItem, MenuSubItem } from 'glubox'
 import type { PlatformNavItem } from '@/config/platformNav'
 
-function formatLabel(item: PlatformNavItem): string {
-  return item.badge ? `${item.label} · ${item.badge}` : item.label
+/**
+ * Estado de bloqueo para el Sidebar: candado + tooltip, con label limpio.
+ * El motivo ya no se concatena al texto del ítem.
+ */
+function lockProps(
+  item: PlatformNavItem,
+): Pick<MenuItem, 'disabled' | 'locked' | 'disabledReason'> {
+  if (!item.disabled) {
+    return {}
+  }
+  return {
+    disabled: true,
+    locked: true,
+    disabledReason: 'Próximamente',
+  }
 }
 
 function resolvePath(item: PlatformNavItem): string | undefined {
@@ -17,9 +30,10 @@ function toMenuSubItem(item: PlatformNavItem): MenuSubItem {
 
   return {
     id: item.id,
-    label: formatLabel(item),
+    label: item.label,
     path: resolvePath(item),
     children,
+    ...lockProps(item),
   }
 }
 
@@ -28,11 +42,12 @@ function toMenuItem(item: PlatformNavItem): MenuItem {
 
   return {
     id: item.id,
-    label: formatLabel(item),
+    label: item.label,
     icon: item.icon,
     path: children ? undefined : resolvePath(item),
     position: 'top',
     children,
+    ...lockProps(item),
   }
 }
 
