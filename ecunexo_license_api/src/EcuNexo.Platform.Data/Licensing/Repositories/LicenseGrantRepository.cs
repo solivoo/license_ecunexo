@@ -60,6 +60,34 @@ public sealed class LicenseGrantRepository : ILicenseGrantRepository
     public Task<LicenseGrant?> GetByIdForUpdateAsync(Guid id, CancellationToken ct) =>
         _db.LicenseGrants.FirstOrDefaultAsync(g => g.Id == id, ct);
 
+    public async Task<LicenseGrant?> FindActiveSuccessorBySupersededGrantIdAsync(Guid supersededGrantId, CancellationToken ct)
+    {
+        var currentId = supersededGrantId;
+        LicenseGrant? latestActive = null;
+        for (var i = 0; i < 10; i++)
+        {
+            var next = await _db.LicenseGrants.AsNoTracking()
+                .Where(g => g.SupersedesGrantId == currentId)
+                .OrderByDescending(g => g.IssuedAtUtc)
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            if (next is null)
+            {
+                break;
+            }
+
+            if (next.Status == LicenseGrantStatus.Active)
+            {
+                latestActive = next;
+            }
+
+            currentId = next.Id;
+        }
+
+        return latestActive;
+    }
+
     public Task<LicenseGrant?> FindLatestCurrentByCustomerAsync(Guid customerId, CancellationToken ct) =>
         _db.LicenseGrants.AsNoTracking()
             .Where(g =>

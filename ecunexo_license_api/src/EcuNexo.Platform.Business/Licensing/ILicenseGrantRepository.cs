@@ -28,6 +28,9 @@ public interface ILicenseGrantRepository
 
     Task<LicenseGrant?> GetByIdForUpdateAsync(Guid id, CancellationToken ct);
 
+    /// <summary>Busca el grant sucesor activo (reemisión/renovación) que reemplazó a uno revocado/vencido.</summary>
+    Task<LicenseGrant?> FindActiveSuccessorBySupersededGrantIdAsync(Guid supersededGrantId, CancellationToken ct);
+
     Task<LicenseGrant?> FindLatestCurrentByCustomerAsync(Guid customerId, CancellationToken ct);
 
     Task<IReadOnlyList<LicenseGrant>> ListCurrentForUpdateByCustomerAsync(Guid customerId, CancellationToken ct);
