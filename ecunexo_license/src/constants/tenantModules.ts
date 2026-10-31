@@ -27,7 +27,7 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
     code: 'warehousing',
     label: 'Bodegas',
     description: 'Ubicaciones y almacenes.',
-    defaultLimits: { max_warehouse_count: 5 },
+    defaultLimits: { max_warehouses: 5 },
   },
   {
     code: 'facturacion',
@@ -46,16 +46,6 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
     label: 'Identidad y acceso',
     description: 'Usuarios, roles y permisos.',
     defaultLimits: { max_users: 25 },
-  },
-  {
-    code: 'repairs',
-    label: 'Taller y Reparaciones B2B',
-    description: 'Gestión de lotes y equipos en reacondicionamiento.',
-    defaultLimits: {
-      max_active_batches: 50,
-      max_equipments_per_batch: 500,
-    },
-    category: 'Operaciones',
   },
   {
     code: 'customers',
@@ -86,19 +76,6 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
       max_monthly_withholdings: 250,
     },
     category: 'Operaciones',
-  },
-  {
-    code: 'contabilidad',
-    label: 'Contabilidad NIIF, Pre-declaración SRI & Balances SCVS',
-    description: 'Plan general de cuentas oficial SCVS Ecuador, libro diario con validación estricta de partida doble, contabilización automática de compras/liquidaciones, pre-declaración mensual SRI F104/F103 con conciliación SAS y estados financieros consolidados (Balance General y P&G).',
-    defaultLimits: {
-      max_monthly_journal_entries: 500,
-      max_accounts_in_chart: 250,
-      max_chart_accounts: 250,
-      allow_financial_statements_export: 1,
-      enable_custom_subaccounts: 1,
-    },
-    category: 'Contabilidad',
   },
   {
     code: 'catalog',
@@ -243,12 +220,6 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
     category: 'Fiscal / Facturación SRI',
   },
   {
-    code: 'contabilidad',
-    label: 'Contabilidad NIIF, Pre-declaración SRI & Balances SCVS',
-    description: 'Plan de cuentas SCVS, libro diario, pre-declaración SRI y balances consolidados.',
-    category: 'Contabilidad',
-  },
-  {
     code: 'purchases',
     label: 'Compras',
     description: 'Recepción, auditoría y homologación de compras electrónicas XML y retenciones.',
@@ -265,12 +236,6 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
     label: 'E-commerce',
     description: 'Ventas web con vitrina pública de catálogo (precio y disponibilidad), pedidos y pagos.',
     category: 'Comercial',
-  },
-  {
-    code: 'repairs',
-    label: 'Taller y Reparaciones B2B',
-    description: 'Gestión de lotes, actas de recepción y equipos en reacondicionamiento técnico.',
-    category: 'Operaciones',
   },
   {
     code: 'training',
@@ -334,6 +299,7 @@ export function moduleShortLabel(moduleCode: string): string {
 const LIMIT_KEY_LABELS: Record<string, string> = {
   max_sku_count: 'SKU',
   max_variants_per_item: 'Variantes / ítem',
+  max_warehouses: 'Bodegas',
   max_warehouse_count: 'Bodegas',
   max_invoices_per_month: 'Facturas / mes',
   invoice_history_months: 'Historial (meses)',

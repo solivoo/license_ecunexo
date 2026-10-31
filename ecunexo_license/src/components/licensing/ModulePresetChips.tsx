@@ -2,9 +2,9 @@ import { useCallback, useMemo } from 'react'
 import { Button } from 'glubox'
 import { TENANT_MODULE_OPTIONS } from '@/constants/tenantModules'
 
-const CORE_MODULE_CODES = ['identity', 'catalog', 'warehousing', 'inventory'] as const
-const TALLER_MODULE_CODES = ['identity', 'catalog', 'warehousing', 'inventory', 'facturacion', 'repairs'] as const
-const ECOMMERCE_MODULE_CODES = ['identity', 'catalog', 'warehousing', 'inventory', 'facturacion', 'ecommerce'] as const
+const PLAN_A1_MODULE_CODES = ['identity', 'customers', 'catalog', 'facturacion'] as const
+const PLAN_B1_C1_MODULE_CODES = ['identity', 'customers', 'catalog', 'facturacion', 'purchases', 'warehousing', 'inventory'] as const
+const ECOMMERCE_MODULE_CODES = ['identity', 'customers', 'catalog', 'facturacion', 'purchases', 'warehousing', 'inventory', 'ecommerce'] as const
 const ALL_MODULE_CODES = TENANT_MODULE_OPTIONS.map((m) => m.code)
 
 function sameSet(a: readonly string[], b: readonly string[]): boolean {
@@ -24,19 +24,19 @@ export type ModulePresetChipsProps = {
 export function ModulePresetChips({ selectedModules, onApply }: ModulePresetChipsProps) {
 
   const activePreset = useMemo(() => {
-    if (sameSet(selectedModules, CORE_MODULE_CODES)) return 'core'
-    if (sameSet(selectedModules, TALLER_MODULE_CODES)) return 'taller'
+    if (sameSet(selectedModules, PLAN_A1_MODULE_CODES)) return 'plan-a1'
+    if (sameSet(selectedModules, PLAN_B1_C1_MODULE_CODES)) return 'plan-b1-c1'
     if (sameSet(selectedModules, ECOMMERCE_MODULE_CODES)) return 'ecommerce'
     if (sameSet(selectedModules, ALL_MODULE_CODES)) return 'all'
     return null
   }, [selectedModules])
 
-  const applyCore = useCallback(() => {
-    onApply([...CORE_MODULE_CODES])
+  const applyPlanA1 = useCallback(() => {
+    onApply([...PLAN_A1_MODULE_CODES])
   }, [onApply])
 
-  const applyTaller = useCallback(() => {
-    onApply([...TALLER_MODULE_CODES])
+  const applyPlanB1C1 = useCallback(() => {
+    onApply([...PLAN_B1_C1_MODULE_CODES])
   }, [onApply])
 
   const applyEcommerce = useCallback(() => {
@@ -51,35 +51,31 @@ export function ModulePresetChips({ selectedModules, onApply }: ModulePresetChip
     <div className="ecu-module-preset-actions">
       <Button
         type="button"
-        variant={activePreset === 'core' ? 'primary' : 'outline'}
-        
+        variant={activePreset === 'plan-a1' ? 'primary' : 'outline'}
         size="sm"
-        onClick={applyCore}
+        onClick={applyPlanA1}
       >
-        Paquete operativo
+        Plan A1
       </Button>
       <Button
         type="button"
-        variant={activePreset === 'taller' ? 'primary' : 'outline'}
-        
+        variant={activePreset === 'plan-b1-c1' ? 'primary' : 'outline'}
         size="sm"
-        onClick={applyTaller}
+        onClick={applyPlanB1C1}
       >
-        Taller Mixto
+        Plan B1 / C1
       </Button>
       <Button
         type="button"
         variant={activePreset === 'ecommerce' ? 'primary' : 'outline'}
-        
         size="sm"
         onClick={applyEcommerce}
       >
-        E-commerce
+        + E-commerce
       </Button>
       <Button
         type="button"
         variant={activePreset === 'all' ? 'primary' : 'outline'}
-        
         size="sm"
         onClick={applyAll}
       >

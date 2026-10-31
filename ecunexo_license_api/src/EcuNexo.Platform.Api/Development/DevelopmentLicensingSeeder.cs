@@ -57,79 +57,42 @@ public static class DevelopmentLicensingSeeder
     {
         var specs = new (string Code, string Name, string Description, int Tenants, int Users, int Warehouses, string[] Modules, decimal Price, int Sort)[]
         {
-            ("pro-independiente", "Independiente",
-                "Persona natural / profesional. Catálogo de servicios + factura o nota de venta. Sin bodega.",
-                1, 2, 0,
-                [TenantModuleCodes.Identity, TenantModuleCodes.Catalog, TenantModuleCodes.Invoicing],
-                27m, 5),
-            ("local-comercio", "Local",
-                "Tienda de un punto. Catálogo, 1 bodega, recepción, factura y vitrina web.",
-                1, 3, 1,
+            ("plan-a1", "Plan A1",
+                "Identidad, Seguridad RBAC/ABAC, Equipos, Catálogo, Clientes y Facturación Electrónica SRI.",
+                1, 3, 0,
                 [
                     TenantModuleCodes.Identity,
+                    TenantModuleCodes.Customers,
                     TenantModuleCodes.Catalog,
-                    TenantModuleCodes.Inventory,
-                    TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
-                    TenantModuleCodes.Purchases,
-                    TenantModuleCodes.Ecommerce,
                 ],
-                42m, 10),
-            ("taller-mixto", "Taller",
-                "Servicio + repuesto. Taller y reparaciones B2B, dos bodegas, traspaso y factura mixta.",
-                1, 5, 2,
+                29m, 10),
+            ("plan-b1", "Plan B1",
+                "Todo Plan A1 + Inventario (Bodega inicial e ingreso de documentos) y Compras SRI.",
+                1, 10, 1,
                 [
                     TenantModuleCodes.Identity,
+                    TenantModuleCodes.Customers,
                     TenantModuleCodes.Catalog,
-                    TenantModuleCodes.Inventory,
-                    TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
-                    TenantModuleCodes.Repairs,
                     TenantModuleCodes.Purchases,
+                    TenantModuleCodes.Warehousing,
+                    TenantModuleCodes.Inventory,
                 ],
-                59m, 15),
-            ("empresa-pyme", "Empresa",
-                "PyME / sociedad. Completo + equipo (vendedor vs admin) y tienda en línea. 3 bodegas.",
-                1, 10, 3,
+                59m, 20),
+            ("plan-c1", "Plan C1",
+                "Todo Plan B1 + Bodegas multi-ubicación (creación de bodegas y sucursales).",
+                1, 25, 5,
                 [
                     TenantModuleCodes.Identity,
+                    TenantModuleCodes.Customers,
                     TenantModuleCodes.Catalog,
-                    TenantModuleCodes.Inventory,
-                    TenantModuleCodes.Warehousing,
                     TenantModuleCodes.Invoicing,
                     TenantModuleCodes.Purchases,
-                    TenantModuleCodes.Accounting,
-                    TenantModuleCodes.Ecommerce,
-                ],
-                79m, 20),
-            ("cadena-retail", "Cadena",
-                "Varios locales, un RUC. Mismos módulos; más cupo de gente y bodegas.",
-                1, 20, 8,
-                [
-                    TenantModuleCodes.Identity,
-                    TenantModuleCodes.Catalog,
-                    TenantModuleCodes.Inventory,
                     TenantModuleCodes.Warehousing,
-                    TenantModuleCodes.Invoicing,
-                    TenantModuleCodes.Purchases,
-                    TenantModuleCodes.Accounting,
-                    TenantModuleCodes.Ecommerce,
-                ],
-                129m, 30),
-            ("grupo-multi-ruc", "Grupo",
-                "Varios RUC bajo un titular. Mismos módulos por empresa.",
-                5, 25, 10,
-                [
-                    TenantModuleCodes.Identity,
-                    TenantModuleCodes.Catalog,
                     TenantModuleCodes.Inventory,
-                    TenantModuleCodes.Warehousing,
-                    TenantModuleCodes.Invoicing,
-                    TenantModuleCodes.Purchases,
-                    TenantModuleCodes.Accounting,
-                    TenantModuleCodes.Ecommerce,
                 ],
-                199m, 40),
+                99m, 30),
         };
 
         foreach (var spec in specs)
@@ -183,6 +146,12 @@ public static class DevelopmentLicensingSeeder
             "multi-empresa",
             "multi-empresa-plus",
             "enterprise-onprem",
+            "pro-independiente",
+            "local-comercio",
+            "taller-mixto",
+            "empresa-pyme",
+            "cadena-retail",
+            "grupo-multi-ruc",
         ];
         var obsolete = await db.Plans
             .Where(p => retired.Contains(p.Code))
@@ -190,7 +159,25 @@ public static class DevelopmentLicensingSeeder
             .ConfigureAwait(false);
         if (obsolete.Count > 0)
         {
-            db.Plans.RemoveRange(obsolete);
+            var referencedCodes = await db.LicenseGrants
+                .Where(g => retired.Contains(g.PlanCode))
+                .Select(g => g.PlanCode)
+                .Distinct()
+                .ToListAsync(ct)
+                .ConfigureAwait(false);
+            var referencedSet = new HashSet<string>(referencedCodes, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var oldPlan in obsolete)
+            {
+                if (referencedSet.Contains(oldPlan.Code))
+                {
+                    oldPlan.Deactivate();
+                }
+                else
+                {
+                    db.Plans.Remove(oldPlan);
+                }
+            }
         }
 
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
@@ -248,62 +235,53 @@ public static class DevelopmentLicensingSeeder
     private static List<ModuleEntitlement> BuildPlanEntitlements(string planCode, IReadOnlyList<string> modules)
     {
         var planTier = PlanTier(planCode);
+        var maxUsers = planCode switch
+        {
+            "plan-a1" => 3,
+            "plan-b1" => 10,
+            "plan-c1" => 25,
+            _ => 3,
+        };
+        var maxWarehouses = planCode switch
+        {
+            "plan-a1" => 0,
+            "plan-b1" => 1,
+            "plan-c1" => 5,
+            _ => 1,
+        };
+
         var entitlements = new List<ModuleEntitlement>(modules.Count);
         foreach (var m in modules)
         {
             var normalized = m.Trim().ToLowerInvariant();
-            if (normalized == TenantModuleCodes.Repairs)
+            if (normalized == TenantModuleCodes.Warehousing)
             {
                 entitlements.Add(ModuleEntitlement.FromTierWithOverrides(
-                    TenantModuleCodes.Repairs,
-                    ModuleTier.Medium,
+                    TenantModuleCodes.Warehousing,
+                    planTier,
                     new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
                     {
-                        [ModuleTierCatalog.LimitMaxActiveBatches] = 50,
-                        [ModuleTierCatalog.LimitMaxEquipmentsPerBatch] = 500,
+                        [ModuleTierCatalog.LimitMaxWarehouses] = maxWarehouses,
                     }));
-            }
-            else if (normalized == TenantModuleCodes.Purchases)
-            {
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Purchases, planTier));
-            }
-            else if (normalized == TenantModuleCodes.Accounting)
-            {
-                var accountingTier = planCode switch
-                {
-                    "pro-independiente" => ModuleTier.Small,
-                    "local-comercio" => ModuleTier.Small,
-                    "taller-mixto" => ModuleTier.Small,
-                    "empresa-pyme" => ModuleTier.Medium,
-                    "cadena-retail" => ModuleTier.Big,
-                    "grupo-multi-ruc" => ModuleTier.Enterprise,
-                    _ => ModuleTier.Small,
-                };
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Accounting, accountingTier));
-            }
-            else if (normalized == TenantModuleCodes.Invoicing)
-            {
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Invoicing, planTier));
-            }
-            else if (normalized == TenantModuleCodes.Catalog)
-            {
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Catalog, planTier));
-            }
-            else if (normalized == TenantModuleCodes.Inventory)
-            {
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Inventory, planTier));
-            }
-            else if (normalized == TenantModuleCodes.Warehousing)
-            {
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Warehousing, planTier));
-            }
-            else if (normalized == TenantModuleCodes.Ecommerce)
-            {
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Ecommerce, planTier));
             }
             else if (normalized == TenantModuleCodes.Identity)
             {
-                entitlements.Add(ModuleEntitlement.FromTier(TenantModuleCodes.Identity, planTier));
+                entitlements.Add(ModuleEntitlement.FromTierWithOverrides(
+                    TenantModuleCodes.Identity,
+                    planTier,
+                    new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        [ModuleTierCatalog.LimitMaxUsers] = maxUsers,
+                    }));
+            }
+            else if (normalized == TenantModuleCodes.Customers
+                || normalized == TenantModuleCodes.Purchases
+                || normalized == TenantModuleCodes.Invoicing
+                || normalized == TenantModuleCodes.Catalog
+                || normalized == TenantModuleCodes.Inventory
+                || normalized == TenantModuleCodes.Ecommerce)
+            {
+                entitlements.Add(ModuleEntitlement.FromTier(normalized, planTier));
             }
             else
             {
@@ -315,12 +293,9 @@ public static class DevelopmentLicensingSeeder
 
     private static ModuleTier PlanTier(string planCode) => planCode switch
     {
-        "pro-independiente" => ModuleTier.Small,
-        "local-comercio" => ModuleTier.Medium,
-        "taller-mixto" => ModuleTier.Medium,
-        "empresa-pyme" => ModuleTier.Big,
-        "cadena-retail" => ModuleTier.Enterprise,
-        "grupo-multi-ruc" => ModuleTier.Enterprise,
+        "plan-a1" => ModuleTier.Small,
+        "plan-b1" => ModuleTier.Medium,
+        "plan-c1" => ModuleTier.Big,
         _ => ModuleTier.Small,
     };
 }

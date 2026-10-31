@@ -242,7 +242,7 @@
   box-shadow: none;
 }
 
-.ecu-section-page .glb-datagrid__header-cell {
+.ecu-section-page{
   padding: 0.55rem 0.7rem;
   font-size: 0.8125rem;
   font-weight: 700;
