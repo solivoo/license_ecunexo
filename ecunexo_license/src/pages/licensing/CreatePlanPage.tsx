@@ -6,7 +6,6 @@ import {
   DollarSign,
   Info,
   LayoutGrid,
-  SlidersHorizontal,
 } from 'lucide-react'
 import { EcuAlertDialog, PageHeader } from '@/components/ui'
 import { PlanModuleConfigurator } from '@/components/licensing/PlanModuleConfigurator'
@@ -160,12 +159,17 @@ export function CreatePlanPage() {
         }
       }
 
+      const userLimit = editLimits['identity']?.max_users
+      const whLimit = editLimits['warehousing']?.max_warehouses
+      const resolvedMaxUsers = userLimit && Number(userLimit) > 0 ? Number(userLimit) : maxUsers
+      const resolvedMaxWarehouses = whLimit && Number(whLimit) > 0 ? Number(whLimit) : maxWarehouses
+
       const result = await createPlan({
         code: codeTrimmed,
         displayName: displayName.trim(),
         maxTenantsDefault: maxTenants,
-        maxUsersDefault: maxUsers,
-        maxWarehousesDefault: maxWarehouses,
+        maxUsersDefault: resolvedMaxUsers,
+        maxWarehousesDefault: resolvedMaxWarehouses,
         enabledModuleCodesDefault: modules,
         moduleEntitlementsDefault: entitlements.length > 0 ? entitlements : null,
         sortOrder,
@@ -266,7 +270,21 @@ export function CreatePlanPage() {
                 required
                 fullWidth
                 size="md"
-                
+              />
+              <TextBox
+                id="plan-max-tenants"
+                label="Empresas permitidas"
+                labelPosition="outlined"
+                variant="outline"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={999}
+                value={String(maxTenants)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxTenants(Number(e.target.value))}
+                helperText="Tenants máximos por licencia"
+                fullWidth
+                size="md"
               />
               <TextArea
                 id="plan-desc"
@@ -281,75 +299,11 @@ export function CreatePlanPage() {
                 rows={2}
                 resize="vertical"
                 fullWidth
-                
               />
             </div>
           </section>
 
-          {/* Sección 2: Límites base */}
-          <section className="issue-license-subpanel">
-            <h3 className="issue-license-subpanel__title">
-              <SlidersHorizontal size={18} strokeWidth={1.75} aria-hidden />
-              Límites predeterminados
-            </h3>
-
-            <div className="issue-license-form-grid">
-              <TextBox
-                id="plan-max-tenants"
-                label="Empresas"
-                labelPosition="outlined"
-                variant="outline"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={999}
-                value={String(maxTenants)}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxTenants(Number(e.target.value))}
-                helperText="Tenants máximos por licencia"
-                fullWidth
-                size="md"
-                
-              />
-              <TextBox
-                id="plan-max-users"
-                label="Usuarios por empresa"
-                labelPosition="outlined"
-                variant="outline"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={99999}
-                value={String(maxUsers)}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  const val = Number(e.target.value)
-                  setMaxUsers(val)
-                  setLimit('identity', 'max_users', String(val))
-                }}
-                fullWidth
-                size="md"
-              />
-              <TextBox
-                id="plan-max-warehouses"
-                label="Bodegas por empresa"
-                labelPosition="outlined"
-                variant="outline"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={9999}
-                value={String(maxWarehouses)}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  const val = Number(e.target.value)
-                  setMaxWarehouses(val)
-                  setLimit('warehousing', 'max_warehouses', String(val))
-                }}
-                fullWidth
-                size="md"
-              />
-            </div>
-          </section>
-
-          {/* Sección 3: Módulos y límites contextuales */}
+          {/* Sección 2: Módulos y límites contextuales */}
           <section className="issue-license-subpanel">
             <h3 className="issue-license-subpanel__title">
               <LayoutGrid size={18} strokeWidth={1.75} aria-hidden />
@@ -410,16 +364,26 @@ export function CreatePlanPage() {
             </div>
           </section>
 
-          <footer className="issue-license-form-footer">
-            <Button
-              className="ecu-btn issue-license-submit"
-              variant="primary" 
-              size="lg"
-              disabled={busy}
-              onClick={() => formRef.current?.requestSubmit()}
-            >
-              {busy ? 'Creando…' : 'Crear plan'}
-            </Button>
+          <footer className="issue-license-form-footer issue-license-form-footer--plan">
+            <div />
+            <div className="ecu-form-footer-actions">
+              <Button
+                variant="outline"
+                size="md"
+                disabled={busy}
+                onClick={() => navigate('/app/planes')}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="primary" 
+                size="md"
+                disabled={busy}
+                onClick={() => formRef.current?.requestSubmit()}
+              >
+                {busy ? 'Creando…' : 'Crear plan'}
+              </Button>
+            </div>
           </footer>
         </div>
       </form>

@@ -6,7 +6,6 @@ import {
   DollarSign,
   Info,
   LayoutGrid,
-  SlidersHorizontal,
 } from 'lucide-react'
 import { EcuAlertDialog, PageHeader, StatusBadge } from '@/components/ui'
 import { PlanModuleConfigurator } from '@/components/licensing/PlanModuleConfigurator'
@@ -181,12 +180,17 @@ export function PlanDetailPage() {
         return { moduleCode: m.code, tier: 0, limits: limits && Object.keys(limits).length > 0 ? limits : undefined }
       })
 
+      const userLimit = editLimits['identity']?.max_users
+      const whLimit = editLimits['warehousing']?.max_warehouses
+      const resolvedMaxUsers = userLimit && Number(userLimit) > 0 ? Number(userLimit) : editMaxUsers
+      const resolvedMaxWarehouses = whLimit && Number(whLimit) > 0 ? Number(whLimit) : editMaxWarehouses
+
       const updated = await updatePlan(code, {
         displayName: editDisplayName.trim(),
         description: editDescription.trim() || null,
         maxTenantsDefault: editMaxTenants,
-        maxUsersDefault: editMaxUsers,
-        maxWarehousesDefault: editMaxWarehouses,
+        maxUsersDefault: resolvedMaxUsers,
+        maxWarehousesDefault: resolvedMaxWarehouses,
         enabledModuleCodesDefault: editModules.length > 0 ? editModules : undefined,
         moduleEntitlementsDefault: entitlements.length > 0 ? entitlements : null,
         suggestedPriceUsdMonthly: price,
@@ -300,7 +304,24 @@ export function PlanDetailPage() {
                 required
                 fullWidth
                 size="md"
-                
+              />
+              <TextBox
+                id="plan-tenants"
+                label="Empresas permitidas"
+                labelPosition="outlined"
+                variant="outline"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={999}
+                value={String(editMaxTenants)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  setEditMaxTenants(Number(e.target.value))
+                  setDirty(true)
+                }}
+                helperText="Tenants máximos por licencia"
+                fullWidth
+                size="md"
               />
               <TextArea
                 id="plan-desc"
@@ -317,73 +338,6 @@ export function PlanDetailPage() {
                 rows={2}
                 resize="vertical"
                 fullWidth
-                
-              />
-            </div>
-          </section>
-
-          {/* Límites */}
-          <section className="issue-license-subpanel">
-            <h3 className="issue-license-subpanel__title">
-              <SlidersHorizontal size={18} strokeWidth={1.75} aria-hidden />
-              Límites predeterminados
-            </h3>
-            <div className="issue-license-form-grid">
-              <TextBox
-                id="plan-tenants"
-                label="Empresas"
-                labelPosition="outlined"
-                variant="outline"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={999}
-                value={String(editMaxTenants)}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  setEditMaxTenants(Number(e.target.value))
-                  setDirty(true)
-                }}
-                fullWidth
-                size="md"
-                
-              />
-              <TextBox
-                id="plan-users"
-                label="Usuarios"
-                labelPosition="outlined"
-                variant="outline"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={99999}
-                value={String(editMaxUsers)}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  const val = Number(e.target.value)
-                  setEditMaxUsers(val)
-                  setLimit('identity', 'max_users', String(val))
-                  setDirty(true)
-                }}
-                fullWidth
-                size="md"
-              />
-              <TextBox
-                id="plan-wh"
-                label="Bodegas"
-                labelPosition="outlined"
-                variant="outline"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={9999}
-                value={String(editMaxWarehouses)}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  const val = Number(e.target.value)
-                  setEditMaxWarehouses(val)
-                  setLimit('warehousing', 'max_warehouses', String(val))
-                  setDirty(true)
-                }}
-                fullWidth
-                size="md"
               />
             </div>
           </section>
@@ -453,20 +407,21 @@ export function PlanDetailPage() {
             </div>
           </section>
 
-          <footer className="issue-license-form-footer">
-            {dirty ? (
-              <span className="ecu-dirty-hint">Tienes cambios sin guardar</span>
-            ) : null}
+          <footer className="issue-license-form-footer issue-license-form-footer--plan">
+            <div>
+              {dirty ? (
+                <span className="ecu-dirty-hint">Tienes cambios sin guardar</span>
+              ) : null}
+            </div>
             <div className="ecu-form-footer-actions">
               {dirty ? (
-                <Button variant="outline" size="lg" disabled={busy} onClick={handleCancel}>
+                <Button variant="outline" size="md" disabled={busy} onClick={handleCancel}>
                   Cancelar
                 </Button>
               ) : null}
               <Button
-                className="ecu-btn issue-license-submit"
                 variant="primary" 
-                size="lg"
+                size="md"
                 disabled={busy || !dirty}
                 onClick={() => formRef.current?.requestSubmit()}
               >

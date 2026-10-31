@@ -627,6 +627,33 @@
   width: auto;
 }
 
+.issue-license-form-footer--plan {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.issue-license-form-footer--plan .ecu-btn,
+.issue-license-form-footer--plan button {
+  width: auto !important;
+}
+
+.issue-license-form-footer--plan .ecu-form-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  width: auto;
+}
+
+.issue-license-form-footer--plan .ecu-form-footer-actions .ecu-btn,
+.issue-license-form-footer--plan .ecu-form-footer-actions button {
+  width: auto !important;
+  min-width: 8.5rem;
+}
+
 @media (min-width: 720px) and (max-width: 1099.98px) {
   .issue-license-form-footer {
     flex-direction: row;
