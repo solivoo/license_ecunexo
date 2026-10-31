@@ -1727,3 +1727,217 @@ html[data-mode="dark"] .ecu-dirty-hint {
   flex-shrink: 0;
   color: #f59e0b;
 }
+
+/* ===== Plan Module Configurator ===== */
+.ecu-plan-module-configurator {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ecu-plan-module-picker-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px dashed color-mix(in srgb, var(--shell-primary) 35%, var(--shell-border));
+  background: color-mix(in srgb, var(--shell-primary) 4%, var(--shell-surface));
+}
+
+@media (min-width: 640px) {
+  .ecu-plan-module-picker-bar {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+}
+
+.ecu-plan-module-picker-bar__select {
+  flex: 1;
+  min-width: 0;
+}
+
+.ecu-plan-module-picker-bar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.ecu-plan-module-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  color: var(--shell-primary);
+  background: color-mix(in srgb, var(--shell-primary) 10%, var(--shell-surface));
+  border: 1px solid color-mix(in srgb, var(--shell-primary) 25%, transparent);
+}
+
+.ecu-plan-module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.ecu-plan-module-card {
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  border: 1px solid var(--shell-border);
+  background: var(--shell-surface);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ecu-plan-module-card:hover {
+  border-color: color-mix(in srgb, var(--shell-primary) 30%, var(--shell-border));
+}
+
+.ecu-plan-module-card--required {
+  border-color: color-mix(in srgb, var(--shell-primary) 40%, var(--shell-border));
+  background: color-mix(in srgb, var(--shell-primary) 3%, var(--shell-surface));
+}
+
+.ecu-plan-module-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ecu-plan-module-card__title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.ecu-plan-module-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+  color: var(--shell-primary);
+  background: color-mix(in srgb, var(--shell-primary) 12%, transparent);
+}
+
+.ecu-plan-module-card__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--shell-text);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.ecu-plan-module-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.ecu-plan-module-tag--required {
+  color: var(--shell-primary);
+  background: color-mix(in srgb, var(--shell-primary) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--shell-primary) 30%, transparent);
+}
+
+.ecu-plan-module-tag--category {
+  color: var(--shell-muted);
+  background: color-mix(in srgb, var(--shell-text) 6%, transparent);
+  border: 1px solid var(--shell-border);
+}
+
+.ecu-plan-module-card__desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--shell-muted);
+  line-height: 1.4;
+}
+
+.ecu-plan-module-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.ecu-plan-module-card__btn-remove {
+  color: var(--shell-muted);
+  transition: color 0.15s;
+}
+
+.ecu-plan-module-card__btn-remove:hover {
+  color: #ef4444 !important;
+}
+
+.ecu-plan-module-card__deps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.65rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  background: color-mix(in srgb, var(--shell-text) 4%, transparent);
+  border: 1px solid var(--shell-border);
+}
+
+.ecu-plan-module-dep-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--shell-primary);
+}
+
+.ecu-plan-module-dep-used {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--shell-muted);
+}
+
+.ecu-plan-module-card__body {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed var(--shell-border);
+}
+
+.ecu-plan-module-card__limits-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--shell-muted);
+  margin-bottom: 0.75rem;
+}
+
+.ecu-plan-module-card__limits-note {
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--shell-muted);
+}
+
+.ecu-plan-module-card__no-limits {
+  margin: 0.2rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--shell-muted);
+  font-style: italic;
+}
+

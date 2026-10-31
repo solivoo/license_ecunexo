@@ -9,12 +9,10 @@ import {
   SlidersHorizontal,
 } from 'lucide-react'
 import { EcuAlertDialog, PageHeader } from '@/components/ui'
-import { ModuleChipList } from '@/components/licensing/ModuleChipList'
+import { PlanModuleConfigurator } from '@/components/licensing/PlanModuleConfigurator'
 import {
-  MODULES_WITH_LIMITS,
   getModuleDefaultLimits,
   ensureIdentityModule,
-  limitKeyLabel,
   validateModuleDependencies,
 } from '@/constants/tenantModules'
 import {
@@ -107,6 +105,14 @@ export function CreatePlanPage() {
       ...prev,
       [moduleCode]: { ...prev[moduleCode], [limitKey]: value },
     }))
+    if (moduleCode === 'identity' && limitKey === 'max_users') {
+      const parsed = Number(value)
+      if (parsed > 0) setMaxUsers(parsed)
+    }
+    if (moduleCode === 'warehousing' && limitKey === 'max_warehouses') {
+      const parsed = Number(value)
+      if (parsed > 0) setMaxWarehouses(parsed)
+    }
   }, [])
 
   const showError = (message: string) => {
@@ -177,8 +183,6 @@ export function CreatePlanPage() {
       setBusy(false)
     }
   }
-
-  const limitsModules = MODULES_WITH_LIMITS.filter((m) => selectedModules.includes(m.code))
 
   return (
     <>
@@ -316,10 +320,13 @@ export function CreatePlanPage() {
                 min={1}
                 max={99999}
                 value={String(maxUsers)}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxUsers(Number(e.target.value))}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  const val = Number(e.target.value)
+                  setMaxUsers(val)
+                  setLimit('identity', 'max_users', String(val))
+                }}
                 fullWidth
                 size="md"
-                
               />
               <TextBox
                 id="plan-max-warehouses"
@@ -331,68 +338,36 @@ export function CreatePlanPage() {
                 min={1}
                 max={9999}
                 value={String(maxWarehouses)}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxWarehouses(Number(e.target.value))}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  const val = Number(e.target.value)
+                  setMaxWarehouses(val)
+                  setLimit('warehousing', 'max_warehouses', String(val))
+                }}
                 fullWidth
                 size="md"
-                
               />
             </div>
           </section>
 
-          {/* Sección 3: Módulos */}
+          {/* Sección 3: Módulos y límites contextuales */}
           <section className="issue-license-subpanel">
             <h3 className="issue-license-subpanel__title">
               <LayoutGrid size={18} strokeWidth={1.75} aria-hidden />
-              Módulos predeterminados
+              Módulos y límites del plan
             </h3>
-            <ModuleChipList selected={selectedModules} onChange={updateSelectedModules} />
+            <p className="issue-license-subpanel__desc">
+              Selecciona los módulos habilitados. Cada módulo te permite configurar sus límites específicos directamente en su tarjeta.
+            </p>
+            <PlanModuleConfigurator
+              selectedModules={selectedModules}
+              onChangeModules={updateSelectedModules}
+              limits={editLimits}
+              onChangeLimit={setLimit}
+              disabled={busy}
+            />
           </section>
 
-          {/* Sección 4: Límites por módulo */}
-          {limitsModules.length > 0 ? (
-            <section className="issue-license-subpanel">
-              <h3 className="issue-license-subpanel__title">
-                <SlidersHorizontal size={18} strokeWidth={1.75} aria-hidden />
-                Límites por módulo
-              </h3>
-              <p className="issue-license-subpanel__desc">
-                Ajusta los límites de cada módulo. Dejar vacío = ilimitado.
-              </p>
-
-              {limitsModules.map((m) => {
-                const limits = editLimits[m.code]
-                const limitKeys = Object.keys(m.defaultLimits)
-                return (
-                  <div key={m.code} className="module-tier-row module-tier-row--stack">
-                    <span className="module-tier-row__label">{m.label}</span>
-                    {limitKeys.length > 0 && limits ? (
-                      <div className="issue-license-form-grid">
-                        {limitKeys.map((key) => (
-                          <TextBox
-                            key={key}
-                            label={limitKeyLabel(key)}
-                            labelPosition="outlined"
-                            variant="outline"
-                            size="md"
-                            type="number"
-                            inputMode="numeric"
-                            min={-1}
-                            value={limits[key] ?? ''}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setLimit(m.code, key, e.target.value)}
-                            placeholder="ilimitado"
-                            fullWidth
-                            
-                          />
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                )
-              })}
-            </section>
-          ) : null}
-
-          {/* Sección 5: Comercial */}
+          {/* Sección 4: Comercial */}
           <section className="issue-license-subpanel">
             <h3 className="issue-license-subpanel__title">
               <DollarSign size={18} strokeWidth={1.75} aria-hidden />
