@@ -1763,26 +1763,23 @@ html[data-mode="dark"] .ecu-dirty-hint {
 }
 
 .ecu-plan-module-picker-bar {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
   gap: 0.75rem;
-  align-items: stretch;
-  padding: 0.85rem 1rem;
+  padding: 0.75rem 1rem;
   border-radius: 12px;
   border: 1px dashed color-mix(in srgb, var(--shell-primary) 35%, var(--shell-border));
   background: color-mix(in srgb, var(--shell-primary) 4%, var(--shell-surface));
-}
-
-@media (min-width: 640px) {
-  .ecu-plan-module-picker-bar {
-    flex-direction: row;
-    align-items: flex-end;
-  }
+  width: fit-content;
+  max-width: 100%;
 }
 
 .ecu-plan-module-picker-bar__select {
-  flex: 1;
-  min-width: 0;
+  width: 22rem;
+  max-width: 100%;
+  flex: initial;
 }
 
 .ecu-plan-module-picker-bar__btn {
@@ -1791,6 +1788,7 @@ html[data-mode="dark"] .ecu-dirty-hint {
   gap: 0.45rem;
   flex-shrink: 0;
   white-space: nowrap;
+  width: auto !important;
 }
 
 .ecu-plan-module-notice {
