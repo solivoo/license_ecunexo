@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Ban, CheckCircle2, Layers, Plus } from 'lucide-react'
-import { Button, OptionGroup } from 'glubox'
+import { Button, OptionGroup, useToast } from 'glubox'
 import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
 import { EmptyState, GridToolbarRefresh, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
 import { deactivatePlan, listPlans, type PlanListItem } from '@/lib/platformLicensingApi'
@@ -16,11 +16,10 @@ const STATUS_FILTERS = [
 
 export function PlanListPage() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [plans, setPlans] = useState<PlanListItem[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [errorOpen, setErrorOpen] = useState(false)
   const [deactivating, setDeactivating] = useState<string | null>(null)
   const [confirmDeactivate, setConfirmDeactivate] = useState<string | null>(null)
 
@@ -29,14 +28,16 @@ export function PlanListPage() {
     try {
       const data = await listPlans(true)
       setPlans(data)
-      setError(null)
     } catch (err: unknown) {
-      setError(readApiError(err, 'No se pudieron cargar los planes.'))
-      setErrorOpen(true)
+      toast.show({
+        title: 'Error de carga',
+        message: readApiError(err, 'No se pudieron cargar los planes.'),
+        variant: 'error',
+      })
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [toast])
 
   useEffect(() => {
     let cancelled = false
@@ -44,12 +45,14 @@ export function PlanListPage() {
       .then((data) => {
         if (cancelled) return
         setPlans(data)
-        setError(null)
       })
       .catch((err: unknown) => {
         if (cancelled) return
-        setError(readApiError(err, 'No se pudieron cargar los planes.'))
-        setErrorOpen(true)
+        toast.show({
+          title: 'Error de carga',
+          message: readApiError(err, 'No se pudieron cargar los planes.'),
+          variant: 'error',
+        })
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -57,7 +60,7 @@ export function PlanListPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [toast])
 
   const visibleRows = useMemo(() => {
     if (statusFilter === 'active') return plans.filter((p) => p.isActive)
@@ -78,15 +81,23 @@ export function PlanListPage() {
       setConfirmDeactivate(null)
       try {
         await deactivatePlan(code)
+        toast.show({
+          title: 'Plan desactivado',
+          message: `El plan «${code}» fue desactivado.`,
+          variant: 'info',
+        })
         await loadPlans()
       } catch (err: unknown) {
-        setError(readApiError(err, `No se pudo desactivar «${code}».`))
-        setErrorOpen(true)
+        toast.show({
+          title: 'Error al desactivar',
+          message: readApiError(err, `No se pudo desactivar «${code}».`),
+          variant: 'error',
+        })
       } finally {
         setDeactivating(null)
       }
     },
-    [loadPlans],
+    [loadPlans, toast],
   )
 
   return (
@@ -220,16 +231,6 @@ export function PlanListPage() {
         onClose={() => setConfirmDeactivate(null)}
         onConfirm={() => confirmDeactivate && handleDeactivate(confirmDeactivate)}
         confirmLabel="Desactivar"
-      />
-
-      <EcuAlertDialog
-        open={errorOpen}
-        title="Error"
-        message={error ?? 'Error inesperado.'}
-        onClose={() => {
-          setErrorOpen(false)
-          setError(null)
-        }}
       />
     </div>
   )

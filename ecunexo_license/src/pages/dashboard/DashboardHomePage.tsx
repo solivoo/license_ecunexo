@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle2, KeyRound, Layers, ShieldCheck, Users, Zap } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from 'glubox'
+import { Button, useToast } from 'glubox'
 import { EmptyState, PageHeader, QuickActionCard, SectionCard, StatCard, StatusBadge } from '@/components/ui'
 import { listPlans, listLicenses, type PlanListItem } from '@/lib/platformLicensingApi'
 import { readApiError } from '@/lib/readApiError'
@@ -10,13 +10,13 @@ import { selectCanManageOperators, selectOperatorRole } from '@/store/platformAu
 
 export function DashboardHomePage() {
   const navigate = useNavigate()
+  const toast = useToast()
   const role = useAppSelector(selectOperatorRole)
   const canManageOperators = useAppSelector(selectCanManageOperators)
 
   const [metrics, setMetrics] = useState({ activePlans: 0, totalLicenses: 0, activeLicenses: 0 })
   const [recentPlans, setRecentPlans] = useState<PlanListItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -29,11 +29,11 @@ export function DashboardHomePage() {
           activeLicenses: licenses.filter((l) => l.status === 'Active').length,
         })
         setRecentPlans(plans.slice(0, 4))
-        setLoadError(null)
       })
       .catch((err: unknown) => {
         if (cancelled) return
-        setLoadError(readApiError(err, 'Error al cargar métricas. ¿API en 5090?'))
+        const msg = readApiError(err, 'Error al cargar métricas. ¿API en 5090?')
+        toast.show({ title: 'Error de carga', message: msg, variant: 'error' })
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -41,7 +41,7 @@ export function DashboardHomePage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [toast])
 
   return (
     <div className="ecu-dashboard-layout ecu-section-page">
@@ -64,12 +64,6 @@ export function DashboardHomePage() {
           </Button>
         }
       />
-
-      {loadError ? (
-        <p className="platform-shell__alert platform-shell__alert--error" role="alert">
-          {loadError}
-        </p>
-      ) : null}
 
       <div className="ecu-stat-grid">
         <StatCard

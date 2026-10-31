@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState, type ChangeEvent } from 'react'
-import { Button, Select, TextBox } from 'glubox'
+import { Button, Select, TextBox, useToast } from 'glubox'
 import {
   ChevronDown,
   ChevronUp,
@@ -37,9 +37,9 @@ export function PlanModuleConfigurator({
   onChangeLimit,
   disabled = false,
 }: PlanModuleConfiguratorProps) {
+  const toast = useToast()
   const [selectedToAdd, setSelectedToAdd] = useState('')
   const [collapsedCards, setCollapsedCards] = useState<Record<string, boolean>>({})
-  const [depNotice, setDepNotice] = useState<string | null>(null)
   const [confirmRemoveModule, setConfirmRemoveModule] = useState<{
     code: string
     label: string
@@ -93,11 +93,19 @@ export function PlanModuleConfigurator({
       const depLabels = addedDeps
         .map((c) => TENANT_MODULE_OPTIONS.find((m) => m.code === c)?.label ?? c)
         .join(', ')
-      setDepNotice(`Se agregó «${moduleToAdd.label}» y sus dependencias requeridas: ${depLabels}.`)
+      toast.show({
+        title: 'Módulo agregado con dependencias',
+        message: `Se añadió «${moduleToAdd.label}» y se incluyeron automáticamente: ${depLabels}.`,
+        variant: 'info',
+      })
     } else {
-      setDepNotice(null)
+      toast.show({
+        title: 'Módulo agregado',
+        message: `Se añadió «${moduleToAdd.label}» al plan.`,
+        variant: 'success',
+      })
     }
-  }, [selectedToAdd, selectedModules, selectedSet, onChangeModules])
+  }, [selectedToAdd, selectedModules, selectedSet, onChangeModules, toast])
 
   const requestRemoveModule = useCallback(
     (code: string) => {
@@ -120,9 +128,13 @@ export function PlanModuleConfigurator({
       // Quitar módulo directamente
       const next = selectedModules.filter((c) => c.toLowerCase() !== code.toLowerCase())
       onChangeModules(ensureIdentityModule(next))
-      setDepNotice(null)
+      toast.show({
+        title: 'Módulo removido',
+        message: `Se quitó «${label}» del plan.`,
+        variant: 'info',
+      })
     },
-    [selectedModules, selectedSet, onChangeModules]
+    [selectedModules, selectedSet, onChangeModules, toast]
   )
 
   const confirmCascadeRemove = useCallback(() => {
@@ -136,11 +148,13 @@ export function PlanModuleConfigurator({
     const removedLabels = confirmRemoveModule.dependants
       .map((d) => TENANT_MODULE_OPTIONS.find((m) => m.code === d)?.label ?? d)
       .join(', ')
-    setDepNotice(
-      `Se quitó «${confirmRemoveModule.label}» y los dependientes que dependían de él: ${removedLabels}.`
-    )
+    toast.show({
+      title: 'Módulos removidos en cascada',
+      message: `Se quitó «${confirmRemoveModule.label}» y sus dependientes: ${removedLabels}.`,
+      variant: 'warning',
+    })
     setConfirmRemoveModule(null)
-  }, [confirmRemoveModule, selectedModules, onChangeModules])
+  }, [confirmRemoveModule, selectedModules, onChangeModules, toast])
 
   return (
     <div className="ecu-plan-module-configurator">
@@ -176,13 +190,6 @@ export function PlanModuleConfigurator({
           Agregar módulo
         </Button>
       </div>
-
-      {depNotice ? (
-        <div className="ecu-plan-module-notice" role="status">
-          <Link2 size={16} strokeWidth={2} aria-hidden />
-          <span>{depNotice}</span>
-        </div>
-      ) : null}
 
       {/* Lista de tarjetas de módulos activos con sus límites contextuales */}
       <div className="ecu-plan-module-list">

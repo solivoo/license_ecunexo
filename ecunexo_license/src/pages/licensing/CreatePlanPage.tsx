@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, TextArea, TextBox } from 'glubox'
+import { Button, TextArea, TextBox, useToast } from 'glubox'
 import {
-  AlertTriangle,
   DollarSign,
   Info,
   LayoutGrid,
 } from 'lucide-react'
-import { EcuAlertDialog, PageHeader } from '@/components/ui'
+import { PageHeader } from '@/components/ui'
 import { PlanModuleConfigurator } from '@/components/licensing/PlanModuleConfigurator'
 import {
   getModuleDefaultLimits,
@@ -39,13 +38,10 @@ function initLimitsForModules(modules: string[]): Record<string, Record<string, 
 export function CreatePlanPage() {
   const formRef = useRef<HTMLFormElement>(null)
   const navigate = useNavigate()
+  const toast = useToast()
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [errorOpen, setErrorOpen] = useState(false)
-  const [success, setSuccess] = useState<string | null>(null)
 
   const [existingPlans, setExistingPlans] = useState<PlanListItem[]>([])
-  const [loadError, setLoadError] = useState<string | null>(null)
 
   const [code, setCode] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -60,22 +56,6 @@ export function CreatePlanPage() {
   /** Límites editables por módulo. */
   const [editLimits, setEditLimits] = useState<Record<string, Record<string, string>>>(() =>
     initLimitsForModules(['identity'])
-  )
-
-  useEffect(() => {
-    listPlans()
-      .then(setExistingPlans)
-      .catch(() => setLoadError('No se pudieron cargar los planes existentes.'))
-  }, [])
-
-  const codeTaken = useMemo(
-    () => existingPlans.some((p) => p.code.toLowerCase() === code.trim().toLowerCase()),
-    [existingPlans, code]
-  )
-
-  const depWarnings = useMemo(
-    () => validateModuleDependencies(selectedModules),
-    [selectedModules]
   )
 
   const updateSelectedModules = useCallback((codes: string[]) => {
@@ -114,29 +94,51 @@ export function CreatePlanPage() {
     }
   }, [])
 
-  const showError = (message: string) => {
-    setError(message)
-    setErrorOpen(true)
-  }
+  useEffect(() => {
+    listPlans()
+      .then(setExistingPlans)
+      .catch(() => {
+        toast.show({
+          title: 'Error de carga',
+          message: 'No se pudieron cargar los planes existentes.',
+          variant: 'error',
+        })
+      })
+  }, [toast])
+
+  const codeTaken = useMemo(
+    () => existingPlans.some((p) => p.code.toLowerCase() === code.trim().toLowerCase()),
+    [existingPlans, code]
+  )
 
   const onSubmit = async () => {
-    setError(null)
-    setErrorOpen(false)
-    setSuccess(null)
     setBusy(true)
 
     try {
       const codeTrimmed = code.trim().toLowerCase()
-      if (!codeTrimmed) throw new Error('El código es obligatorio.')
-      if (!/^[a-z0-9-]+$/.test(codeTrimmed)) {
-        throw new Error('El código solo permite minúsculas, números y guiones.')
+      if (!codeTrimmed) {
+        toast.show({ title: 'Campo obligatorio', message: 'El código del plan es obligatorio.', variant: 'warning' })
+        return
       }
-      if (!displayName.trim()) throw new Error('El nombre visible es obligatorio.')
-      if (codeTaken) throw new Error('El código ya existe en otro plan.')
+      if (!/^[a-z0-9-]+$/.test(codeTrimmed)) {
+        toast.show({ title: 'Formato inválido', message: 'El código solo permite minúsculas, números y guiones.', variant: 'warning' })
+        return
+      }
+      if (!displayName.trim()) {
+        toast.show({ title: 'Campo obligatorio', message: 'El nombre visible es obligatorio.', variant: 'warning' })
+        return
+      }
+      if (codeTaken) {
+        toast.show({ title: 'Código duplicado', message: 'El código ya existe en otro plan.', variant: 'warning' })
+        return
+      }
 
       const modules = ensureIdentityModule(selectedModules)
       const depErrors = validateModuleDependencies(modules)
-      if (depErrors.length > 0) throw new Error(depErrors.join(' '))
+      if (depErrors.length > 0) {
+        toast.show({ title: 'Dependencias de módulos', message: depErrors.join(' '), variant: 'warning' })
+        return
+      }
 
       const price = suggestedPrice.trim()
         ? parseFloat(suggestedPrice.trim())
@@ -177,52 +179,34 @@ export function CreatePlanPage() {
         description: description.trim() || undefined,
       })
 
-      setSuccess(`Plan «${result.displayName}» creado.`)
-      const fresh = await listPlans()
-      setExistingPlans(fresh)
+      toast.show({
+        title: 'Plan creado',
+        message: `Plan «${result.displayName}» creado exitosamente.`,
+        variant: 'success',
+      })
       navigate(`/app/planes/${encodeURIComponent(result.code)}`)
     } catch (err: unknown) {
-      showError(readApiError(err, 'Error al crear plan.'))
+      toast.show({
+        title: 'No se pudo crear el plan',
+        message: readApiError(err, 'Error al crear plan.'),
+        variant: 'error',
+      })
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <>
-      <div className="ecu-dashboard-layout ecu-section-page">
-        <PageHeader
-          title="Crear plan"
-          subtitle="Define un plan comercial que los operadores elegirán al emitir licencias."
-          actions={
-            <Button variant="outline" onClick={() => navigate('/app/planes')}>
-              ← Catálogo
-            </Button>
-          }
-        />
-
-      {loadError ? (
-        <p className="welcome-onboarding__error" role="alert">
-          {loadError}
-        </p>
-      ) : null}
-
-      {success ? (
-        <p className="ecu-success-message" role="status">
-          {success}
-        </p>
-      ) : null}
-
-      {depWarnings.length > 0 ? (
-        <div className="ecu-validation-warnings" role="alert">
-          <AlertTriangle className="ecu-validation-warnings__icon" size={18} strokeWidth={1.75} aria-hidden />
-          <ul className="ecu-validation-warnings__list">
-            {depWarnings.map((w, i) => (
-              <li key={i}>{w}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+    <div className="ecu-dashboard-layout ecu-section-page">
+      <PageHeader
+        title="Crear plan"
+        subtitle="Define un plan comercial que los operadores elegirán al emitir licencias."
+        actions={
+          <Button variant="outline" onClick={() => navigate('/app/planes')}>
+            ← Catálogo
+          </Button>
+        }
+      />
 
       <form
         ref={formRef}
@@ -387,17 +371,6 @@ export function CreatePlanPage() {
           </footer>
         </div>
       </form>
-      </div>
-
-      <EcuAlertDialog
-        open={errorOpen}
-        title="No se pudo crear el plan"
-        message={error ?? 'Error inesperado.'}
-        onClose={() => {
-          setErrorOpen(false)
-          setError(null)
-        }}
-      />
-    </>
+    </div>
   )
 }

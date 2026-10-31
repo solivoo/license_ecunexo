@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button, CheckButton, Select, TextBox, useToast } from 'glubox'
-import { ArrowLeft, Building2, LayoutGrid, TriangleAlert } from 'lucide-react'
+import { ArrowLeft, Building2, LayoutGrid } from 'lucide-react'
 import { ModulePickerGrid } from '@/components/licensing/ModulePickerGrid'
 import { createGrantEntitlementsDraft, toModuleEntitlements } from '@/lib/grantEntitlements'
 import {
@@ -45,11 +45,9 @@ export function GrantTenantsPage() {
 
   const [tenants, setTenants] = useState<GrantTenantItem[]>([])
   const [listLoading, setListLoading] = useState(true)
-  const [listError, setListError] = useState<string | null>(null)
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null)
   const [detail, setDetail] = useState<GrantTenantEntitlementsView | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
-  const [detailError, setDetailError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [confirmResetOpen, setConfirmResetOpen] = useState(false)
 
@@ -63,14 +61,17 @@ export function GrantTenantsPage() {
     setListLoading(true)
     try {
       const data = await listGrantTenants(grantId)
-      setListError(null)
       setTenants(data)
     } catch (err: unknown) {
-      setListError(readApiError(err, 'No se pudieron cargar las empresas de la licencia.'))
+      toast.show({
+        title: 'Error de carga',
+        message: readApiError(err, 'No se pudieron cargar las empresas de la licencia.'),
+        variant: 'error',
+      })
     } finally {
       setListLoading(false)
     }
-  }, [grantId])
+  }, [grantId, toast])
 
   useEffect(() => {
     if (!grantId) return
@@ -78,12 +79,15 @@ export function GrantTenantsPage() {
     listGrantTenants(grantId)
       .then((data) => {
         if (cancelled) return
-        setListError(null)
         setTenants(data)
       })
       .catch((err: unknown) => {
         if (cancelled) return
-        setListError(readApiError(err, 'No se pudieron cargar las empresas de la licencia.'))
+        toast.show({
+          title: 'Error de carga',
+          message: readApiError(err, 'No se pudieron cargar las empresas de la licencia.'),
+          variant: 'error',
+        })
       })
       .finally(() => {
         if (!cancelled) setListLoading(false)
@@ -91,7 +95,7 @@ export function GrantTenantsPage() {
     return () => {
       cancelled = true
     }
-  }, [grantId])
+  }, [grantId, toast])
 
   const applyView = useCallback((view: GrantTenantEntitlementsView) => {
     setDetail(view)
@@ -108,19 +112,22 @@ export function GrantTenantsPage() {
     async (tenantId: string) => {
       if (!grantId) return
       setDetailLoading(true)
-      setDetailError(null)
       try {
         const view = await getGrantTenantEntitlements(grantId, tenantId)
         applyView(view)
         setReason('')
       } catch (err: unknown) {
         setDetail(null)
-        setDetailError(readApiError(err, 'No se pudieron cargar los accesos de la empresa.'))
+        toast.show({
+          title: 'Error de carga',
+          message: readApiError(err, 'No se pudieron cargar los accesos de la empresa.'),
+          variant: 'error',
+        })
       } finally {
         setDetailLoading(false)
       }
     },
-    [applyView, grantId]
+    [applyView, grantId, toast]
   )
 
   const handleSelectTenant = useCallback(
@@ -167,7 +174,6 @@ export function GrantTenantsPage() {
       await loadTenants()
     } catch (err: unknown) {
       const message = readApiError(err, 'No se pudieron guardar los accesos de la empresa.')
-      setDetailError(message)
       toast.show({ title: 'No se pudo guardar', message, variant: 'error' })
     } finally {
       setBusy(false)
@@ -205,7 +211,6 @@ export function GrantTenantsPage() {
       await loadTenants()
     } catch (err: unknown) {
       const message = readApiError(err, 'No se pudo restablecer el acceso de la empresa.')
-      setDetailError(message)
       toast.show({ title: 'No se pudo restablecer', message, variant: 'error' })
     } finally {
       setBusy(false)
@@ -246,12 +251,6 @@ export function GrantTenantsPage() {
           </>
         }
       />
-
-      {listError ? (
-        <p className="platform-shell__alert platform-shell__alert--error" role="alert">
-          {listError}
-        </p>
-      ) : null}
 
       <div className="grant-tenants__split">
         <aside className="grant-tenants__sidebar" aria-label="Empresas de la licencia">
@@ -342,15 +341,6 @@ export function GrantTenantsPage() {
                   {`Base: ${detail.baseEnabledModuleCodes.length} módulos · v${detail.baseEntitlementsVersion}`}
                 </span>
               </header>
-
-              {detailError ? (
-                <div className="grant-tenants__section">
-                  <div className="ecu-form-error-banner" role="alert">
-                    <TriangleAlert size={16} aria-hidden />
-                    <span>{detailError}</span>
-                  </div>
-                </div>
-              ) : null}
 
               <div className="grant-tenants__section">
                 <h3 className="grant-tenants__section-title">Módulos</h3>
@@ -492,15 +482,6 @@ export function GrantTenantsPage() {
                   </Button>
                 </div>
               </footer>
-            </div>
-          ) : detailError ? (
-            <div className="grant-tenants__editor-card">
-              <div className="grant-tenants__section">
-                <div className="ecu-form-error-banner" role="alert">
-                  <TriangleAlert size={16} aria-hidden />
-                  <span>{detailError}</span>
-                </div>
-              </div>
             </div>
           ) : null}
         </section>

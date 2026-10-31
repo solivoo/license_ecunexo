@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Popup } from 'glubox'
+import { useToast } from 'glubox'
 import { ExistingLicenseDialog } from '@/components/licensing/ExistingLicenseDialog'
 import { IssueLicenseResultDialog } from '@/components/licensing/IssueLicenseResultDialog'
 import { IssueLicenseWizard } from '@/components/licensing/IssueLicenseWizard'
@@ -21,11 +21,10 @@ function customerLabel(customer: LicensingCustomerListItem): string {
 
 export function IssueLicensePage() {
   const location = useLocation()
+  const toast = useToast()
   const form = useIssueLicenseForm()
   const [step, setStep] = useState(0)
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [errorOpen, setErrorOpen] = useState(false)
   const [customerError, setCustomerError] = useState<string | undefined>()
   const [issued, setIssued] = useState<IssueLicenseResult | null>(null)
   const [resultOpen, setResultOpen] = useState(false)
@@ -34,10 +33,15 @@ export function IssueLicensePage() {
   const preset = (location.state as IssueLicenseLocationState | null)?.customer
   const appliedPreset = useRef(false)
 
-  const showError = useCallback((message: string) => {
-    setError(message)
-    setErrorOpen(true)
-  }, [])
+  useEffect(() => {
+    if (form.loadError) {
+      toast.show({
+        title: 'Error de carga',
+        message: form.loadError,
+        variant: 'error',
+      })
+    }
+  }, [form.loadError, toast])
 
   const onAdvanceToPlan = useCallback(() => setStep(1), [])
 
@@ -49,6 +53,17 @@ export function IssueLicensePage() {
       }
     },
     [form.onCustomerSelect, form.ownerEmail, form.setOwnerEmail],
+  )
+
+  const showError = useCallback(
+    (msg: string) => {
+      toast.show({
+        title: 'Error',
+        message: msg,
+        variant: 'error',
+      })
+    },
+    [toast],
   )
 
   const choice = useExistingLicenseChoice(onAdvanceToPlan, onSelectCustomer, showError)
@@ -73,8 +88,6 @@ export function IssueLicensePage() {
   }
 
   const handleSubmit = async () => {
-    setError(null)
-    setErrorOpen(false)
     setCustomerError(undefined)
     setIssued(null)
     setSupersedesGrantId(null)
@@ -94,7 +107,11 @@ export function IssueLicensePage() {
       if (message.includes('cliente comercial')) {
         setCustomerError(message)
       }
-      showError(message)
+      toast.show({
+        title: 'No se pudo emitir la licencia',
+        message,
+        variant: 'error',
+      })
     } finally {
       setBusy(false)
     }
@@ -108,12 +125,6 @@ export function IssueLicensePage() {
 
   return (
     <>
-      {form.loadError ? (
-        <p className="welcome-onboarding__error" role="alert">
-          {form.loadError}
-        </p>
-      ) : null}
-
       {!form.plansReady ? (
         <p className="login-page__muted">Cargando planes…</p>
       ) : (
@@ -152,30 +163,6 @@ export function IssueLicensePage() {
           choice.onCreateAdditional()
         }}
       />
-
-      <Popup
-        open={errorOpen}
-        onClose={() => {
-          setErrorOpen(false)
-          setError(null)
-        }}
-        title="No se pudo emitir la licencia"
-        width="min(92vw, 28rem)"
-        
-        actions={[
-          {
-            id: 'close',
-            label: 'Entendido',
-            variant: 'primary',
-            onClick: () => {
-              setErrorOpen(false)
-              setError(null)
-            },
-          },
-        ]}
-      >
-        <p className="issue-license-error-popup">{error ?? 'Error al emitir licencia.'}</p>
-      </Popup>
 
       {issued ? (
         <IssueLicenseResultDialog

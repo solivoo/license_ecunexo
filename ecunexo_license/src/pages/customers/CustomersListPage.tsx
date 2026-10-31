@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, CheckCircle2, KeyRound, Plus, Users } from 'lucide-react'
-import { Button, OptionGroup } from 'glubox'
+import { Button, OptionGroup, useToast } from 'glubox'
 import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
 import { EmptyState, GridToolbarRefresh, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
 import {
@@ -21,39 +21,37 @@ const STATUS_FILTERS = [
 
 export function CustomersListPage() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [rows, setRows] = useState<LicensingCustomerListItem[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<LicensingCustomerListItem | null>(null)
   const [actionBusyId, setActionBusyId] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [errorOpen, setErrorOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
       const data = await listLicensingCustomers()
-      setLoadError(null)
       setRows(data)
     } catch (err) {
-      setLoadError(readApiError(err, 'No se pudo cargar clientes.'))
+      const msg = readApiError(err, 'No se pudo cargar clientes.')
+      toast.show({ title: 'Error de carga', message: msg, variant: 'error' })
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [toast])
 
   useEffect(() => {
     let cancelled = false
     listLicensingCustomers()
       .then((data) => {
         if (cancelled) return
-        setLoadError(null)
         setRows(data)
       })
       .catch((err) => {
         if (cancelled) return
-        setLoadError(readApiError(err, 'No se pudo cargar clientes.'))
+        const msg = readApiError(err, 'No se pudo cargar clientes.')
+        toast.show({ title: 'Error de carga', message: msg, variant: 'error' })
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -61,7 +59,7 @@ export function CustomersListPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [toast])
 
   const visibleRows = useMemo(() => {
     if (statusFilter === 'all') return rows
@@ -82,14 +80,19 @@ export function CustomersListPage() {
     setConfirmDelete(null)
     try {
       await deactivateLicensingCustomer(confirmDelete.id)
+      toast.show({
+        title: 'Cliente eliminado',
+        message: 'El cliente fue desactivado correctamente.',
+        variant: 'success',
+      })
       await load()
     } catch (err: unknown) {
-      setError(readApiError(err, 'No se pudo eliminar el cliente.'))
-      setErrorOpen(true)
+      const msg = readApiError(err, 'No se pudo eliminar el cliente.')
+      toast.show({ title: 'No se pudo eliminar', message: msg, variant: 'error' })
     } finally {
       setActionBusyId(null)
     }
-  }, [confirmDelete, load])
+  }, [confirmDelete, load, toast])
 
   const deletePrompt = confirmDelete ? customerDeletePrompt(confirmDelete) : null
 
@@ -117,12 +120,6 @@ export function CustomersListPage() {
           </>
         }
       />
-
-      {loadError ? (
-        <p className="platform-shell__alert platform-shell__alert--error" role="alert">
-          {loadError}
-        </p>
-      ) : null}
 
       <div className="ecu-stat-grid">
         <StatCard
@@ -240,15 +237,6 @@ export function CustomersListPage() {
         onClose={() => setConfirmDelete(null)}
         onConfirm={() => void handleDelete()}
         confirmLabel={deletePrompt?.confirmLabel ?? 'Sí, eliminar'}
-      />
-      <EcuAlertDialog
-        open={errorOpen}
-        title="No se pudo eliminar"
-        message={error ?? 'Error inesperado.'}
-        onClose={() => {
-          setErrorOpen(false)
-          setError(null)
-        }}
       />
     </div>
   )

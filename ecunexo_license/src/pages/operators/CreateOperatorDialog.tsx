@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react'
-import { Popup, Select, TextBox } from 'glubox'
+import { Popup, Select, TextBox, useToast } from 'glubox'
 import { getAssignableOperatorRoles } from '@/constants/operatorRoles'
 import type { CreateOperatorInput } from '@/lib/platformLicensingApi'
 import { readApiError } from '@/lib/readApiError'
@@ -19,11 +19,11 @@ export function CreateOperatorDialog({
   onClose,
   onCreate,
 }: CreateOperatorDialogProps) {
+  const toast = useToast()
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState('1')
-  const [error, setError] = useState<string | null>(null)
 
   const roleOptions = useMemo(() => getAssignableOperatorRoles(managerRole), [managerRole])
   const selectOptions = useMemo(
@@ -36,7 +36,6 @@ export function CreateOperatorDialog({
     setName('')
     setPassword('')
     setRole('1')
-    setError(null)
   }, [])
 
   const handleClose = useCallback(() => {
@@ -47,7 +46,6 @@ export function CreateOperatorDialog({
 
   useEffect(() => {
     if (!open) return
-    setError(null)
     setEmail('')
     setName('')
     setPassword('')
@@ -58,20 +56,31 @@ export function CreateOperatorDialog({
   const handleSubmit = useCallback(async () => {
     if (busy) return
 
-    setError(null)
     const trimmedEmail = email.trim()
     const trimmedName = name.trim()
 
     if (!trimmedEmail || !trimmedName) {
-      setError('Indica correo y nombre completo.')
+      toast.show({
+        title: 'Campos requeridos',
+        message: 'Indica correo y nombre completo.',
+        variant: 'warning',
+      })
       return
     }
     if (password.length < 8) {
-      setError('La contraseña inicial debe tener al menos 8 caracteres.')
+      toast.show({
+        title: 'Contraseña débil',
+        message: 'La contraseña inicial debe tener al menos 8 caracteres.',
+        variant: 'warning',
+      })
       return
     }
     if (!roleOptions.some((o) => o.value === role)) {
-      setError('Selecciona un rol válido.')
+      toast.show({
+        title: 'Rol inválido',
+        message: 'Selecciona un rol válido.',
+        variant: 'warning',
+      })
       return
     }
 
@@ -84,9 +93,14 @@ export function CreateOperatorDialog({
       })
       handleClose()
     } catch (err) {
-      setError(readApiError(err, 'No se pudo crear el operador.'))
+      const msg = readApiError(err, 'No se pudo crear el operador.')
+      toast.show({
+        title: 'Error al crear',
+        message: msg,
+        variant: 'error',
+      })
     }
-  }, [busy, email, handleClose, name, onCreate, password, role, roleOptions])
+  }, [busy, email, handleClose, name, onCreate, password, role, roleOptions, toast])
 
   return (
     <Popup
@@ -114,12 +128,6 @@ export function CreateOperatorDialog({
         }}
         noValidate
       >
-        {error ? (
-          <p className="platform-shell__alert platform-shell__alert--error" role="alert">
-            {error}
-          </p>
-        ) : null}
-
         <TextBox
           id="op-email"
           name="email"

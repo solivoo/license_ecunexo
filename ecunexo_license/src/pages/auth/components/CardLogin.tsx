@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, TextBox } from 'glubox'
+import { Button, TextBox, useToast } from 'glubox'
 import { KeyRound, Mail } from 'lucide-react'
 import { platformLogin } from '@/lib/platformLicensingApi'
 import { readApiError } from '@/lib/readApiError'
@@ -10,13 +10,12 @@ import { setCredentials } from '@/store/platformAuthSlice'
 export function CardLogin() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const toast = useToast()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
   const onSubmit = async () => {
-    setError(null)
     setBusy(true)
     try {
       const result = await platformLogin(email.trim(), password)
@@ -31,7 +30,8 @@ export function CardLogin() {
       )
       void navigate('/app/inicio', { replace: true })
     } catch (err: unknown) {
-      setError(readApiError(err, 'Credenciales inválidas o API no disponible (puerto 5090).'))
+      const msg = readApiError(err, 'Credenciales inválidas o API no disponible (puerto 5090).')
+      toast.show({ title: 'Error de inicio de sesión', message: msg, variant: 'error' })
     } finally {
       setBusy(false)
     }
@@ -46,12 +46,6 @@ export function CardLogin() {
       }}
       noValidate
     >
-      {error ? (
-        <p className="welcome-onboarding__error" role="alert">
-          {error}
-        </p>
-      ) : null}
-
       <TextBox
         id="login-email"
         label="Correo electrónico"

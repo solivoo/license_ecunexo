@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Popup, Select } from 'glubox'
+import { Popup, Select, useToast } from 'glubox'
 import { moduleLabels } from '@/constants/tenantModules'
 import { formatDateTime } from '@/lib/formatDate'
 import {
@@ -32,15 +32,14 @@ export function ExpandLicenseDialog({
   onClose,
   onConfirm,
 }: ExpandLicenseDialogProps) {
+  const toast = useToast()
   const [plans, setPlans] = useState<PlanListItem[]>([])
   const [planCode, setPlanCode] = useState('')
-  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) return
 
     let cancelled = false
-    setLoadError(null)
     const current = license?.planCode ?? ''
     setPlanCode(current)
 
@@ -68,13 +67,14 @@ export function ExpandLicenseDialog({
       })
       .catch((err: unknown) => {
         if (cancelled) return
-        setLoadError(readApiError(err, 'No se pudieron cargar los planes.'))
+        const msg = readApiError(err, 'No se pudieron cargar los planes.')
+        toast.show({ title: 'Error de carga', message: msg, variant: 'error' })
       })
 
     return () => {
       cancelled = true
     }
-  }, [open, license])
+  }, [open, license, toast])
 
   const planOptions = useMemo(() => {
     const currentCode = license?.planCode ?? ''
@@ -136,7 +136,7 @@ export function ExpandLicenseDialog({
           label: busy ? 'Ampliando…' : 'Ampliar',
           variant: 'primary' as const,
           onClick: handleConfirm,
-          disabled: busy || planCode.length === 0 || Boolean(loadError),
+          disabled: busy || planCode.length === 0 || plans.length === 0,
         },
       ]}
     >
@@ -169,12 +169,6 @@ export function ExpandLicenseDialog({
           archivo nuevos con el plan elegido. Luego canjea el archivo en el admin: Organización →
           Plan.
         </p>
-
-        {loadError ? (
-          <p className="platform-shell__alert platform-shell__alert--error" role="alert">
-            {loadError}
-          </p>
-        ) : null}
 
         <Select
           label="Nuevo plan"

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, DateBox, Select, TextArea, TextBox } from 'glubox'
+import { Button, DateBox, Select, TextArea, TextBox, useToast } from 'glubox'
 import {
   Calendar,
   Info,
@@ -8,7 +8,7 @@ import {
   Users,
   UsersRound,
 } from 'lucide-react'
-import { EcuAlertDialog, PageHeader } from '@/components/ui'
+import { PageHeader } from '@/components/ui'
 import {
   scheduleTraining,
   listLicensingCustomers,
@@ -32,11 +32,9 @@ const MODALITY_OPTIONS = [
 
 export function ScheduleTrainingPage() {
   const navigate = useNavigate()
+  const toast = useToast()
   const formRef = useRef<HTMLFormElement>(null)
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [errorOpen, setErrorOpen] = useState(false)
-  const [loadError, setLoadError] = useState<string | null>(null)
 
   const [customers, setCustomers] = useState<LicensingCustomerListItem[]>([])
   const [licenses, setLicenses] = useState<LicenseListItem[]>([])
@@ -59,8 +57,11 @@ export function ScheduleTrainingPage() {
         setCustomers(custs)
         setLicenses(lics)
       })
-      .catch((err: unknown) => { setLoadError(readApiError(err, 'No se pudo cargar clientes ni licencias.')) })
-  }, [])
+      .catch((err: unknown) => {
+        const msg = readApiError(err, 'No se pudo cargar clientes ni licencias.')
+        toast.show({ title: 'Error de carga', message: msg, variant: 'error' })
+      })
+  }, [toast])
 
   const activeLicenses = licenses.filter((l) => l.status === 'Active')
 
@@ -103,8 +104,6 @@ export function ScheduleTrainingPage() {
   }
 
   const onSubmit = useCallback(async () => {
-    setError(null)
-    setErrorOpen(false)
     setBusy(true)
 
     try {
@@ -128,15 +127,19 @@ export function ScheduleTrainingPage() {
         notes: notes.trim() || undefined,
       })
 
+      toast.show({
+        title: 'Capacitación agendada',
+        message: 'La sesión fue programada correctamente.',
+        variant: 'success',
+      })
       navigate('/app/capacitaciones')
     } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message)
-      else setError(readApiError(err, 'Error al agendar capacitación.'))
-      setErrorOpen(true)
+      const msg = err instanceof Error ? err.message : readApiError(err, 'Error al agendar capacitación.')
+      toast.show({ title: 'No se pudo agendar', message: msg, variant: 'error' })
     } finally {
       setBusy(false)
     }
-  }, [customerId, licenseGrantId, topic, kind, modality, durationHours, scheduledDate, scheduledTime, attendeeEmails, notes, navigate])
+  }, [customerId, licenseGrantId, topic, kind, modality, durationHours, scheduledDate, scheduledTime, attendeeEmails, notes, navigate, toast])
 
   return (
     <>
@@ -150,12 +153,6 @@ export function ScheduleTrainingPage() {
             </Button>
           }
         />
-
-      {loadError ? (
-        <p className="platform-shell__alert platform-shell__alert--error" role="alert">
-          {loadError}
-        </p>
-      ) : null}
 
       <form
         ref={formRef}
@@ -390,13 +387,6 @@ export function ScheduleTrainingPage() {
         </div>
       </form>
       </div>
-
-      <EcuAlertDialog
-        open={errorOpen}
-        title="Error"
-        message={error ?? 'Error inesperado.'}
-        onClose={() => { setErrorOpen(false); setError(null) }}
-      />
     </>
   )
 }

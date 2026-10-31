@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, Ban, CheckCircle2, KeyRound, Plus } from 'lucide-react'
-import { Button, OptionGroup, Popup } from 'glubox'
+import { Button, OptionGroup, useToast } from 'glubox'
 import {
   EmptyState,
   GridToolbarRefresh,
@@ -31,11 +31,10 @@ const STATUS_FILTERS = [
 
 export function LicensesListPage() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [rows, setRows] = useState<LicenseListItem[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState<string | null>(null)
-  const [errorOpen, setErrorOpen] = useState(false)
   const [expandRow, setExpandRow] = useState<LicenseListItem | null>(null)
   const [expandOpen, setExpandOpen] = useState(false)
   const [reissueBusy, setReissueBusy] = useState(false)
@@ -43,37 +42,36 @@ export function LicensesListPage() {
   const [reissuedModules, setReissuedModules] = useState<string[]>([])
   const [resultOpen, setResultOpen] = useState(false)
 
-  const showError = useCallback((message: string) => {
-    setLoadError(message)
-    setErrorOpen(true)
-  }, [])
-
   const load = useCallback(async () => {
     setLoading(true)
     try {
       const data = await listLicenses()
-      setLoadError(null)
-      setErrorOpen(false)
       setRows(data)
     } catch (err) {
-      showError(readApiError(err, 'No se pudo cargar licencias emitidas.'))
+      toast.show({
+        title: 'Error de carga',
+        message: readApiError(err, 'No se pudo cargar licencias emitidas.'),
+        variant: 'error',
+      })
     } finally {
       setLoading(false)
     }
-  }, [showError])
+  }, [toast])
 
   useEffect(() => {
     let cancelled = false
     listLicenses()
       .then((data) => {
         if (cancelled) return
-        setLoadError(null)
-        setErrorOpen(false)
         setRows(data)
       })
       .catch((err) => {
         if (cancelled) return
-        showError(readApiError(err, 'No se pudo cargar licencias emitidas.'))
+        toast.show({
+          title: 'Error de carga',
+          message: readApiError(err, 'No se pudo cargar licencias emitidas.'),
+          variant: 'error',
+        })
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -81,7 +79,7 @@ export function LicensesListPage() {
     return () => {
       cancelled = true
     }
-  }, [showError])
+  }, [toast])
 
   const visibleRows = useMemo(() => {
     if (statusFilter === 'all') return rows
@@ -106,8 +104,6 @@ export function LicensesListPage() {
       if (!expandRow) return
 
       setReissueBusy(true)
-      setLoadError(null)
-      setErrorOpen(false)
       try {
         const result = await reissueLicense(expandRow.id, {
           onlineValidationIntervalDays: expandRow.onlineValidationIntervalDays ?? 30,
@@ -120,12 +116,16 @@ export function LicensesListPage() {
         setResultOpen(true)
         await load()
       } catch (err) {
-        showError(readApiError(err, 'No se pudo ampliar la licencia.'))
+        toast.show({
+          title: 'No se pudo ampliar la licencia',
+          message: readApiError(err, 'No se pudo ampliar la licencia.'),
+          variant: 'error',
+        })
       } finally {
         setReissueBusy(false)
       }
     },
-    [expandRow, load, showError],
+    [expandRow, load, toast],
   )
 
   return (
@@ -139,12 +139,6 @@ export function LicensesListPage() {
           </StatusBadge>
         }
       />
-
-      {loadError && !errorOpen ? (
-        <p className="platform-shell__alert platform-shell__alert--error" role="alert">
-          {loadError}
-        </p>
-      ) : null}
 
       <div className="ecu-stat-grid">
         <StatCard
@@ -261,29 +255,6 @@ export function LicensesListPage() {
           />
         )}
       </SectionCard>
-
-      <Popup
-        open={errorOpen}
-        onClose={() => {
-          setErrorOpen(false)
-          setLoadError(null)
-        }}
-        title="Error de licencias"
-        width="min(92vw, 28rem)"
-        actions={[
-          {
-            id: 'close',
-            label: 'Entendido',
-            variant: 'primary',
-            onClick: () => {
-              setErrorOpen(false)
-              setLoadError(null)
-            },
-          },
-        ]}
-      >
-        <p className="issue-license-error-popup">{loadError ?? 'Ocurrió un error.'}</p>
-      </Popup>
 
       <ExpandLicenseDialog
         open={expandOpen}

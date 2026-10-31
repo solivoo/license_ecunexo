@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Ban, CheckCircle2, ShieldCheck, UserPlus } from 'lucide-react'
-import { Button, OptionGroup } from 'glubox'
+import { Button, OptionGroup, useToast } from 'glubox'
 import { EmptyState, GridToolbarRefresh, PageHeader, SectionCard, StatCard, StatusBadge } from '@/components/ui'
 import {
   createOperator,
@@ -22,13 +22,12 @@ const STATUS_FILTERS = [
 ] as const
 
 export function OperatorsListPage() {
+  const toast = useToast()
   const canManage = useAppSelector(selectCanManageOperators)
   const managerRole = useAppSelector(selectOperatorRole)
   const [rows, setRows] = useState<OperatorListItem[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [createBusy, setCreateBusy] = useState(false)
 
@@ -36,14 +35,14 @@ export function OperatorsListPage() {
     if (options?.showLoading) setLoading(true)
     try {
       const data = await listOperators()
-      setLoadError(null)
       setRows(data)
     } catch (err) {
-      setLoadError(readApiError(err, 'No se pudo cargar operadores.'))
+      const msg = readApiError(err, 'No se pudo cargar operadores.')
+      toast.show({ title: 'Error de carga', message: msg, variant: 'error' })
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [toast])
 
   useEffect(() => {
     let cancelled = false
@@ -51,11 +50,11 @@ export function OperatorsListPage() {
       try {
         const data = await listOperators()
         if (cancelled) return
-        setLoadError(null)
         setRows(data)
       } catch (err) {
         if (cancelled) return
-        setLoadError(readApiError(err, 'No se pudo cargar operadores.'))
+        const msg = readApiError(err, 'No se pudo cargar operadores.')
+        toast.show({ title: 'Error de carga', message: msg, variant: 'error' })
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -63,7 +62,7 @@ export function OperatorsListPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [toast])
 
   const visibleRows = useMemo(() => {
     if (statusFilter === 'active') return rows.filter((row) => row.isActive)
@@ -81,18 +80,22 @@ export function OperatorsListPage() {
   const handleCreate = useCallback(
     async (body: CreateOperatorInput) => {
       setCreateBusy(true)
-      setSuccessMessage(null)
       try {
         await createOperator(body)
-        setSuccessMessage(`Operador ${body.email} creado correctamente.`)
+        toast.show({
+          title: 'Operador creado',
+          message: `Operador ${body.email} creado correctamente.`,
+          variant: 'success',
+        })
         await load({ showLoading: true })
       } catch (err: unknown) {
-        setLoadError(readApiError(err, 'No se pudo crear el operador.'))
+        const msg = readApiError(err, 'No se pudo crear el operador.')
+        toast.show({ title: 'No se pudo crear', message: msg, variant: 'error' })
       } finally {
         setCreateBusy(false)
       }
     },
-    [load],
+    [load, toast],
   )
 
   if (!canManage) {
@@ -123,18 +126,6 @@ export function OperatorsListPage() {
           </>
         }
       />
-
-      {successMessage ? (
-        <p className="platform-shell__alert platform-shell__alert--success" role="status">
-          {successMessage}
-        </p>
-      ) : null}
-
-      {loadError ? (
-        <p className="platform-shell__alert platform-shell__alert--error" role="alert">
-          {loadError}
-        </p>
-      ) : null}
 
       <div className="ecu-stat-grid">
         <StatCard

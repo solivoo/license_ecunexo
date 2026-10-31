@@ -1,13 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Button, TextArea, TextBox } from 'glubox'
+import { Button, TextArea, TextBox, useToast } from 'glubox'
 import {
-  AlertTriangle,
   DollarSign,
   Info,
   LayoutGrid,
 } from 'lucide-react'
-import { EcuAlertDialog, PageHeader, StatusBadge } from '@/components/ui'
+import { EcuAlertDialog, EmptyState, PageHeader, StatusBadge } from '@/components/ui'
 import { PlanModuleConfigurator } from '@/components/licensing/PlanModuleConfigurator'
 import {
   MODULES_WITH_LIMITS,
@@ -51,14 +50,12 @@ function limitsFromEntitlements(
 export function PlanDetailPage() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
+  const toast = useToast()
   const formRef = useRef<HTMLFormElement>(null)
 
   const [plan, setPlan] = useState<PlanDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [errorOpen, setErrorOpen] = useState(false)
-  const [success, setSuccess] = useState<string | null>(null)
   const [confirmDeactivate, setConfirmDeactivate] = useState(false)
   const [dirty, setDirty] = useState(false)
 
@@ -89,11 +86,14 @@ export function PlanDetailPage() {
         setEditLimits(limitsFromEntitlements(p.moduleEntitlementsDefault))
       })
       .catch((err: unknown) => {
-        setError(readApiError(err, 'Plan no encontrado.'))
-        setErrorOpen(true)
+        toast.show({
+          title: 'Error al cargar plan',
+          message: readApiError(err, 'Plan no encontrado.'),
+          variant: 'error',
+        })
       })
       .finally(() => setLoading(false))
-  }, [code])
+  }, [code, toast])
 
   const setLimit = useCallback((mod: string, key: string, value: string) => {
     setEditLimits((prev) => ({
@@ -123,7 +123,6 @@ export function PlanDetailPage() {
     setEditSortOrder(plan.sortOrder)
     setEditLimits(limitsFromEntitlements(plan.moduleEntitlementsDefault))
     setDirty(false)
-    setSuccess(null)
   }, [plan])
 
   const updateModules = useCallback((codes: string[]) => {
@@ -148,18 +147,20 @@ export function PlanDetailPage() {
     setDirty(true)
   }, [])
 
-  const depWarnings = useMemo(() => validateModuleDependencies(editModules), [editModules])
-
   const onSubmit = async () => {
     if (!code) return
-    setError(null)
-    setErrorOpen(false)
-    setSuccess(null)
     setBusy(true)
 
     try {
       const depErrors = validateModuleDependencies(editModules)
-      if (depErrors.length > 0) throw new Error(depErrors.join(' '))
+      if (depErrors.length > 0) {
+        toast.show({
+          title: 'Dependencias de módulos',
+          message: depErrors.join(' '),
+          variant: 'warning',
+        })
+        return
+      }
 
       const price = editPrice.trim() ? parseFloat(editPrice.trim()) : null
 
@@ -207,10 +208,17 @@ export function PlanDetailPage() {
           : prev
       )
       setDirty(false)
-      setSuccess('Plan actualizado correctamente.')
+      toast.show({
+        title: 'Plan actualizado',
+        message: 'Los cambios fueron guardados exitosamente.',
+        variant: 'success',
+      })
     } catch (err: unknown) {
-      setError(readApiError(err, 'Error al actualizar plan.'))
-      setErrorOpen(true)
+      toast.show({
+        title: 'Error al actualizar plan',
+        message: readApiError(err, 'Error al actualizar plan.'),
+        variant: 'error',
+      })
     } finally {
       setBusy(false)
     }
@@ -222,17 +230,38 @@ export function PlanDetailPage() {
     try {
       await deactivatePlan(code)
       setPlan((prev) => (prev ? { ...prev, isActive: false } : prev))
-      setSuccess('Plan desactivado.')
+      toast.show({
+        title: 'Plan desactivado',
+        message: `El plan «${plan?.displayName ?? code}» ha sido desactivado.`,
+        variant: 'warning',
+      })
     } catch (err: unknown) {
-      setError(readApiError(err, 'No se pudo desactivar.'))
-      setErrorOpen(true)
+      toast.show({
+        title: 'Error al desactivar',
+        message: readApiError(err, 'No se pudo desactivar.'),
+        variant: 'error',
+      })
     } finally {
       setBusy(false)
     }
   }
 
   if (loading) return <p className="login-page__muted">Cargando plan…</p>
-  if (!plan) return <p className="welcome-onboarding__error">Plan no encontrado.</p>
+  if (!plan) {
+    return (
+      <div className="ecu-dashboard-layout ecu-section-page">
+        <EmptyState
+          title="Plan no encontrado"
+          description="El plan solicitado no existe o no se pudo cargar."
+          action={
+            <Button variant="outline" onClick={() => void navigate('/app/planes')}>
+              Volver a planes
+            </Button>
+          }
+        />
+      </div>
+    )
+  }
 
   return (
     <>
@@ -263,19 +292,6 @@ export function PlanDetailPage() {
             </>
           }
         />
-
-      {success ? (
-        <p className="ecu-success-message" role="status">{success}</p>
-      ) : null}
-
-      {depWarnings.length > 0 ? (
-        <div className="ecu-validation-warnings" role="alert">
-          <AlertTriangle className="ecu-validation-warnings__icon" size={18} strokeWidth={1.75} aria-hidden />
-          <ul className="ecu-validation-warnings__list">
-            {depWarnings.map((w, i) => (<li key={i}>{w}</li>))}
-          </ul>
-        </div>
-      ) : null}
 
       <form
         ref={formRef}
@@ -432,13 +448,6 @@ export function PlanDetailPage() {
         </div>
       </form>
       </div>
-
-      <EcuAlertDialog
-        open={errorOpen}
-        title="Error"
-        message={error ?? 'Error inesperado.'}
-        onClose={() => { setErrorOpen(false); setError(null) }}
-      />
 
       <EcuAlertDialog
         open={confirmDeactivate}

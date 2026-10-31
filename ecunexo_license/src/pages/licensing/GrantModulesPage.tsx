@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button, TextBox, useToast } from 'glubox'
-import { ArrowLeft, Building2, LayoutGrid, SlidersHorizontal, TriangleAlert } from 'lucide-react'
+import { ArrowLeft, Building2, LayoutGrid, SlidersHorizontal } from 'lucide-react'
 import { GrantEntitlementsForm } from '@/components/licensing/GrantEntitlementsForm'
 import { PageHeader, SectionCard, StatusBadge } from '@/components/ui'
 import { createGrantEntitlementsDraft, toModuleEntitlements } from '@/lib/grantEntitlements'
@@ -19,7 +19,6 @@ export function GrantModulesPage() {
 
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [current, setCurrent] = useState<GrantEntitlements | null>(null)
   const [selectedModules, setSelectedModules] = useState<string[]>(['identity'])
   const [tiers, setTiers] = useState<Record<string, string>>({})
@@ -45,7 +44,10 @@ export function GrantModulesPage() {
         if (!cancelled) applySnapshot(snapshot)
       })
       .catch((err: unknown) => {
-        if (!cancelled) setError(readApiError(err, 'No se pudieron cargar los módulos de la licencia.'))
+        if (!cancelled) {
+          const msg = readApiError(err, 'No se pudieron cargar los módulos de la licencia.')
+          toast.show({ title: 'Error de carga', message: msg, variant: 'error' })
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -53,11 +55,28 @@ export function GrantModulesPage() {
     return () => {
       cancelled = true
     }
-  }, [applySnapshot, grantId])
+  }, [applySnapshot, grantId, toast])
 
   const isCloud = current?.deploymentMode === 'CloudShared'
   const isActive = current?.status === 'Active'
   const canEdit = isCloud && isActive
+
+  useEffect(() => {
+    if (loading || !current) return
+    if (!isCloud) {
+      toast.show({
+        title: 'Modo On-premise',
+        message: `Esta licencia es ${current.deploymentMode}. En on-premise los módulos se aplican reemitiendo la licencia.`,
+        variant: 'info',
+      })
+    } else if (!isActive) {
+      toast.show({
+        title: 'Licencia inactiva',
+        message: 'Solo una licencia activa admite cambios de módulos.',
+        variant: 'warning',
+      })
+    }
+  }, [loading, current, isCloud, isActive, toast])
 
   const setTier = useCallback((moduleCode: string, tier: string) => {
     setTiers((prev) => ({ ...prev, [moduleCode]: tier }))
@@ -72,7 +91,6 @@ export function GrantModulesPage() {
 
   const onSubmit = useCallback(async () => {
     if (!grantId || !canEdit) return
-    setError(null)
     setBusy(true)
     try {
       const updated = await updateGrantEntitlements(grantId, {
@@ -89,7 +107,6 @@ export function GrantModulesPage() {
       })
     } catch (err: unknown) {
       const message = readApiError(err, 'No se pudieron guardar los módulos.')
-      setError(message)
       toast.show({ title: 'No se pudo guardar', message, variant: 'error' })
     } finally {
       setBusy(false)
@@ -126,30 +143,6 @@ export function GrantModulesPage() {
           </>
         }
       />
-
-      {!loading && !isCloud ? (
-        <div className="ecu-form-error-banner" role="alert">
-          <TriangleAlert size={16} aria-hidden />
-          <span>
-            Esta licencia es {current?.deploymentMode}. En on-premise los módulos se aplican
-            reemitiendo la licencia.
-          </span>
-        </div>
-      ) : null}
-
-      {!loading && isCloud && !isActive ? (
-        <div className="ecu-form-error-banner" role="alert">
-          <TriangleAlert size={16} aria-hidden />
-          <span>Solo una licencia activa admite cambios de módulos.</span>
-        </div>
-      ) : null}
-
-      {error ? (
-        <div className="ecu-form-error-banner" role="alert">
-          <TriangleAlert size={16} aria-hidden />
-          <span>{error}</span>
-        </div>
-      ) : null}
 
       <GrantEntitlementsForm
         selectedModules={selectedModules}
