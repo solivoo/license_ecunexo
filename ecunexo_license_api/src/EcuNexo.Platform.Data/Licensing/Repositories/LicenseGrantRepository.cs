@@ -228,7 +228,10 @@ public sealed class LicenseGrantRepository : ILicenseGrantRepository
                 grant.Generation,
                 grant.ReissueKind,
                 grant.PreviousPlanCode,
-                grant.PreviousPlanLabel))
+                grant.PreviousPlanLabel,
+                grant.MaxUsers,
+                grant.MaxWarehouses,
+                grant.EnabledModuleCodes))
             .ToListAsync(ct)
             .ConfigureAwait(false);
     }

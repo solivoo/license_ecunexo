@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import type { ReissueLicensePayload } from '@/components/licensing/ExpandLicenseDialog'
 import { findCurrentCustomerLicense } from '@/lib/findCurrentCustomerLicense'
 import {
   listLicenses,
@@ -17,6 +18,7 @@ export type ExistingLicenseChoice = {
   readonly onCustomerIssue: (customer: LicensingCustomerListItem) => Promise<void>
   readonly onCreateAdditional: () => void
   readonly onRenew: () => Promise<IssueLicenseResult | null>
+  readonly onReissueWithOptions: (payload: ReissueLicensePayload) => Promise<IssueLicenseResult | null>
   readonly closeChoice: () => void
   readonly reset: () => void
 }
@@ -83,6 +85,32 @@ export function useExistingLicenseChoice(
     }
   }, [currentLicense, onError])
 
+  const onReissueWithOptions = useCallback(
+    async (payload: ReissueLicensePayload): Promise<IssueLicenseResult | null> => {
+      if (!currentLicense) return null
+      setChoiceBusy(true)
+      try {
+        const result = await reissueLicense(currentLicense.id, {
+          onlineValidationIntervalDays: currentLicense.onlineValidationIntervalDays ?? 30,
+          planCode: payload.planCode,
+          validityDays: payload.validityDays,
+          maxUsersOverride: payload.maxUsersOverride,
+          maxWarehousesOverride: payload.maxWarehousesOverride,
+          maxTenantsOverride: payload.maxTenantsOverride,
+          enabledModuleCodesOverride: payload.enabledModuleCodesOverride,
+        })
+        setChoiceOpen(false)
+        return result
+      } catch (err: unknown) {
+        onError(readApiError(err, 'No se pudo reemitir la licencia.'))
+        return null
+      } finally {
+        setChoiceBusy(false)
+      }
+    },
+    [currentLicense, onError],
+  )
+
   return {
     allowAdditional,
     choiceOpen,
@@ -91,6 +119,7 @@ export function useExistingLicenseChoice(
     onCustomerIssue,
     onCreateAdditional,
     onRenew,
+    onReissueWithOptions,
     closeChoice: () => setChoiceOpen(false),
     reset: () => {
       setAllowAdditional(false)

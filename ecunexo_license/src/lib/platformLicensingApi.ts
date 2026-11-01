@@ -118,6 +118,9 @@ export interface LicenseListItem {
   expiresAtUtc: string
   provisioningSlotsRemaining: number
   maxTenants: number
+  maxUsers?: number
+  maxWarehouses?: number
+  enabledModuleCodes?: string[]
   issuedByOperatorName: string
   supersedesGrantId?: string | null
   onlineValidationIntervalDays?: number
@@ -248,6 +251,11 @@ export async function reissueLicense(
     validityDays?: number
     onlineValidationIntervalDays?: number
     planCode?: string
+    maxUsersOverride?: number
+    maxWarehousesOverride?: number
+    maxTenantsOverride?: number
+    enabledModuleCodesOverride?: string[]
+    moduleEntitlementsOverride?: ModuleEntitlement[]
   } = {}
 ): Promise<ReissueLicenseResult> {
   const { data } = await platformApi.post<ReissueLicenseResult>(

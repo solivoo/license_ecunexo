@@ -17,5 +17,8 @@ public sealed class ReissueLicenseValidator : AbstractValidator<ReissueLicenseCo
         RuleFor(x => x.PlanCode)
             .MaximumLength(64)
             .When(x => !string.IsNullOrWhiteSpace(x.PlanCode));
+        RuleFor(x => x.MaxUsersOverride).GreaterThanOrEqualTo(0).When(x => x.MaxUsersOverride.HasValue);
+        RuleFor(x => x.MaxWarehousesOverride).GreaterThanOrEqualTo(0).When(x => x.MaxWarehousesOverride.HasValue);
+        RuleFor(x => x.MaxTenantsOverride).GreaterThan(0).When(x => x.MaxTenantsOverride.HasValue);
     }
 }

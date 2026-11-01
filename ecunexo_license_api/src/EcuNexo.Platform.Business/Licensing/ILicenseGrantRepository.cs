@@ -80,4 +80,7 @@ public sealed record LicenseGrantListRow(
     int Generation,
     LicenseReissueKind? ReissueKind,
     string? PreviousPlanCode,
-    string? PreviousPlanLabel);
+    string? PreviousPlanLabel,
+    int MaxUsers = 0,
+    int MaxWarehouses = 0,
+    IReadOnlyList<string>? EnabledModuleCodes = null);

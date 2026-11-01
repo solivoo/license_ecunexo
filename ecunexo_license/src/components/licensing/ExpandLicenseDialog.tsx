@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Popup, Select, useToast } from 'glubox'
-import { moduleLabels } from '@/constants/tenantModules'
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react'
+import { NumberBox, Popup, Select, useToast } from 'glubox'
+import { ModulePickerGrid } from '@/components/licensing/ModulePickerGrid'
+import { ensureIdentityModule, moduleLabels } from '@/constants/tenantModules'
 import { formatDateTime } from '@/lib/formatDate'
 import {
   listPlans,
@@ -10,12 +11,21 @@ import {
 import { readApiError } from '@/lib/readApiError'
 import '@/pages/licensing/licensesGrid.css'
 
+export type ReissueLicensePayload = {
+  planCode: string
+  validityDays: number
+  maxUsersOverride: number
+  maxWarehousesOverride: number
+  maxTenantsOverride: number
+  enabledModuleCodesOverride: string[]
+}
+
 export type ExpandLicenseDialogProps = {
   readonly open: boolean
   readonly license: LicenseListItem | null
   readonly busy?: boolean
   readonly onClose: () => void
-  readonly onConfirm: (planCode: string, enabledModules: string[]) => void
+  readonly onConfirm: (payload: ReissueLicensePayload) => void
 }
 
 function statusLabel(status: string): string {
@@ -35,6 +45,11 @@ export function ExpandLicenseDialog({
   const toast = useToast()
   const [plans, setPlans] = useState<PlanListItem[]>([])
   const [planCode, setPlanCode] = useState('')
+  const [maxUsers, setMaxUsers] = useState(5)
+  const [maxWarehouses, setMaxWarehouses] = useState(1)
+  const [maxTenants, setMaxTenants] = useState(1)
+  const [validityDays, setValidityDays] = useState(365)
+  const [selectedModules, setSelectedModules] = useState<string[]>(['identity'])
 
   useEffect(() => {
     if (!open) return
@@ -42,6 +57,13 @@ export function ExpandLicenseDialog({
     let cancelled = false
     const current = license?.planCode ?? ''
     setPlanCode(current)
+    setMaxUsers(license?.maxUsers ?? 5)
+    setMaxWarehouses(license?.maxWarehouses ?? 1)
+    setMaxTenants(license?.maxTenants ?? 1)
+    setValidityDays(365)
+    if (license?.enabledModuleCodes && license.enabledModuleCodes.length > 0) {
+      setSelectedModules(ensureIdentityModule(license.enabledModuleCodes))
+    }
 
     listPlans(true)
       .then((rows) => {
@@ -54,16 +76,31 @@ export function ExpandLicenseDialog({
                 {
                   code: license.planCode,
                   displayName: license.planLabel,
-                  maxTenantsDefault: 0,
-                  maxUsersDefault: 0,
-                  maxWarehousesDefault: 0,
-                  enabledModuleCodesDefault: [],
+                  maxTenantsDefault: license.maxTenants ?? 1,
+                  maxUsersDefault: license.maxUsers ?? 5,
+                  maxWarehousesDefault: license.maxWarehouses ?? 1,
+                  enabledModuleCodesDefault: license.enabledModuleCodes ?? [],
                   isActive: true,
                 },
                 ...rows,
               ]
         setPlans(nextPlans)
         setPlanCode(current)
+        const activePlan = nextPlans.find((p) => p.code === current)
+        if (activePlan) {
+          if (!license?.maxUsers && activePlan.maxUsersDefault) {
+            setMaxUsers(activePlan.maxUsersDefault)
+          }
+          if (!license?.maxWarehouses && activePlan.maxWarehousesDefault) {
+            setMaxWarehouses(activePlan.maxWarehousesDefault)
+          }
+          if (!license?.maxTenants && activePlan.maxTenantsDefault) {
+            setMaxTenants(activePlan.maxTenantsDefault)
+          }
+          if ((!license?.enabledModuleCodes || license.enabledModuleCodes.length === 0) && activePlan.enabledModuleCodesDefault) {
+            setSelectedModules(ensureIdentityModule(activePlan.enabledModuleCodesDefault))
+          }
+        }
       })
       .catch((err: unknown) => {
         if (cancelled) return
@@ -100,11 +137,22 @@ export function ExpandLicenseDialog({
 
   const helperText = selectedPlan
     ? catalogNameDiffers
-      ? `En el catálogo este código es «${selectedPlan.displayName}» e incluye: ${modulesHint}. Ampliar reemite con esos módulos.`
+      ? `En el catálogo este código es «${selectedPlan.displayName}» (${modulesHint}).`
       : planCode === license?.planCode
-        ? 'Plan actual. Ampliar renueva con el catálogo vigente, o elige otro plan.'
-        : `Incluye: ${modulesHint}`
+        ? 'Plan actual. Puedes ajustar cupos o módulos solo para este cliente sin alterar el catálogo.'
+        : `Por defecto incluye: ${modulesHint}`
     : undefined
+
+  const handlePlanChange = useCallback((nextCode: string) => {
+    setPlanCode(nextCode)
+    const target = plans.find((p) => p.code === nextCode)
+    if (target) {
+      setMaxUsers(target.maxUsersDefault)
+      setMaxWarehouses(target.maxWarehousesDefault)
+      setMaxTenants(target.maxTenantsDefault)
+      setSelectedModules(ensureIdentityModule(target.enabledModuleCodesDefault))
+    }
+  }, [plans])
 
   const handleClose = useCallback(() => {
     if (busy) return
@@ -113,16 +161,22 @@ export function ExpandLicenseDialog({
 
   const handleConfirm = useCallback(() => {
     if (busy || planCode.length === 0) return
-    onConfirm(planCode, selectedPlan?.enabledModuleCodesDefault ?? [])
-  }, [busy, onConfirm, planCode, selectedPlan])
+    onConfirm({
+      planCode,
+      validityDays: Math.max(1, validityDays),
+      maxUsersOverride: Math.max(1, maxUsers),
+      maxWarehousesOverride: Math.max(1, maxWarehouses),
+      maxTenantsOverride: Math.max(1, maxTenants),
+      enabledModuleCodesOverride: ensureIdentityModule(selectedModules),
+    })
+  }, [busy, maxTenants, maxUsers, maxWarehouses, onConfirm, planCode, selectedModules, validityDays])
 
   return (
     <Popup
       open={open}
       onClose={handleClose}
-      title="Ampliar licencia"
-      width="min(92vw, 32rem)"
-      
+      title="Renovar o Modificar licencia"
+      width="min(94vw, 42rem)"
       actions={[
         {
           id: 'cancel',
@@ -133,10 +187,10 @@ export function ExpandLicenseDialog({
         },
         {
           id: 'expand',
-          label: busy ? 'Ampliando…' : 'Ampliar',
+          label: busy ? 'Procesando…' : 'Reemitir licencia',
           variant: 'primary' as const,
           onClick: handleConfirm,
-          disabled: busy || planCode.length === 0 || plans.length === 0,
+          disabled: busy || planCode.length === 0 || plans.length === 0 || selectedModules.length === 0,
         },
       ]}
     >
@@ -165,25 +219,111 @@ export function ExpandLicenseDialog({
         ) : null}
 
         <p className="expand-license-dialog__lead">
-          Se revoca la licencia vigente, se mantiene el mismo titular y se genera un código y
-          archivo nuevos con el plan elegido. Luego canjea el archivo en el admin: Organización →
-          Plan.
+          Reemite la licencia con vigencia y cupos actualizados. Se conserva el titular del cliente y
+          los cambios se aplican automáticamente en línea o mediante el archivo descargado.
         </p>
 
         <Select
-          label="Nuevo plan"
+          label="Plan base"
           labelPosition="outlined"
           variant="outline"
           options={planOptions}
           value={planCode}
-          onChange={setPlanCode}
+          onChange={handlePlanChange}
           placeholder="Seleccionar plan…"
           helperText={helperText}
           disabled={busy || plans.length === 0}
           fullWidth
           size="md"
-          
         />
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginTop: '0.75rem' }}>
+          <NumberBox
+            id="reissue-max-users"
+            label="Máx. Usuarios"
+            labelPosition="outlined"
+            variant="outline"
+            min={1}
+            step={1}
+            showSpinButtons
+            value={maxUsers}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxUsers(Math.max(1, Number(e.target.value) || 1))}
+            helperText="Cupo para este cliente."
+            fullWidth
+            size="md"
+          />
+          <NumberBox
+            id="reissue-max-warehouses"
+            label="Máx. Bodegas"
+            labelPosition="outlined"
+            variant="outline"
+            min={1}
+            step={1}
+            showSpinButtons
+            value={maxWarehouses}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxWarehouses(Math.max(1, Number(e.target.value) || 1))}
+            helperText="Bodegas permitidas."
+            fullWidth
+            size="md"
+          />
+          <NumberBox
+            id="reissue-max-tenants"
+            label="Máx. Empresas"
+            labelPosition="outlined"
+            variant="outline"
+            min={1}
+            step={1}
+            showSpinButtons
+            value={maxTenants}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxTenants(Math.max(1, Number(e.target.value) || 1))}
+            helperText="Empresas/tenants."
+            fullWidth
+            size="md"
+          />
+          <NumberBox
+            id="reissue-validity"
+            label="Vigencia (días)"
+            labelPosition="outlined"
+            variant="outline"
+            min={1}
+            step={1}
+            showSpinButtons
+            value={validityDays}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setValidityDays(Math.max(1, Number(e.target.value) || 365))}
+            helperText="365 = 1 año."
+            fullWidth
+            size="md"
+          />
+        </div>
+
+        <div style={{ marginTop: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>Módulos habilitados ({selectedModules.length})</span>
+            {selectedPlan ? (
+              <button
+                type="button"
+                style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--primary, #3b82f6)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  textDecoration: 'underline',
+                }}
+                onClick={() => setSelectedModules(ensureIdentityModule(selectedPlan.enabledModuleCodesDefault))}
+              >
+                Restablecer a plan
+              </button>
+            ) : null}
+          </div>
+          <ModulePickerGrid
+            selected={selectedModules}
+            onChange={setSelectedModules}
+            disabled={busy}
+            idPrefix="reissue"
+          />
+        </div>
       </div>
     </Popup>
   )

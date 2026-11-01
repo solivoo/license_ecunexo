@@ -10,7 +10,7 @@ import {
   StatCard,
   StatusBadge,
 } from '@/components/ui'
-import { ExpandLicenseDialog } from '@/components/licensing/ExpandLicenseDialog'
+import { ExpandLicenseDialog, type ReissueLicensePayload } from '@/components/licensing/ExpandLicenseDialog'
 import { IssueLicenseResultDialog } from '@/components/licensing/IssueLicenseResultDialog'
 import { moduleLabels } from '@/constants/tenantModules'
 import {
@@ -100,25 +100,30 @@ export function LicensesListPage() {
   }, [])
 
   const handleConfirmExpand = useCallback(
-    async (planCode: string, enabledModules: string[]) => {
+    async (payload: ReissueLicensePayload) => {
       if (!expandRow) return
 
       setReissueBusy(true)
       try {
         const result = await reissueLicense(expandRow.id, {
           onlineValidationIntervalDays: expandRow.onlineValidationIntervalDays ?? 30,
-          planCode,
+          planCode: payload.planCode,
+          validityDays: payload.validityDays,
+          maxUsersOverride: payload.maxUsersOverride,
+          maxWarehousesOverride: payload.maxWarehousesOverride,
+          maxTenantsOverride: payload.maxTenantsOverride,
+          enabledModuleCodesOverride: payload.enabledModuleCodesOverride,
         })
         setExpandOpen(false)
         setExpandRow(null)
         setReissued(result)
-        setReissuedModules(enabledModules)
+        setReissuedModules(payload.enabledModuleCodesOverride)
         setResultOpen(true)
         await load()
       } catch (err) {
         toast.show({
-          title: 'No se pudo ampliar la licencia',
-          message: readApiError(err, 'No se pudo ampliar la licencia.'),
+          title: 'No se pudo reemitir la licencia',
+          message: readApiError(err, 'No se pudo reemitir la licencia.'),
           variant: 'error',
         })
       } finally {
@@ -265,7 +270,7 @@ export function LicensesListPage() {
           setExpandOpen(false)
           setExpandRow(null)
         }}
-        onConfirm={(planCode, enabledModules) => void handleConfirmExpand(planCode, enabledModules)}
+        onConfirm={(payload) => void handleConfirmExpand(payload)}
       />
 
       {reissued ? (

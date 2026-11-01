@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useToast } from 'glubox'
 import { ExistingLicenseDialog } from '@/components/licensing/ExistingLicenseDialog'
+import { ExpandLicenseDialog, type ReissueLicensePayload } from '@/components/licensing/ExpandLicenseDialog'
 import { IssueLicenseResultDialog } from '@/components/licensing/IssueLicenseResultDialog'
 import { IssueLicenseWizard } from '@/components/licensing/IssueLicenseWizard'
 import { moduleLabels } from '@/constants/tenantModules'
@@ -28,6 +29,7 @@ export function IssueLicensePage() {
   const [customerError, setCustomerError] = useState<string | undefined>()
   const [issued, setIssued] = useState<IssueLicenseResult | null>(null)
   const [resultOpen, setResultOpen] = useState(false)
+  const [modifyOpen, setModifyOpen] = useState(false)
   const [issuedModules, setIssuedModules] = useState<string[]>([])
   const [supersedesGrantId, setSupersedesGrantId] = useState<string | null>(null)
   const preset = (location.state as IssueLicenseLocationState | null)?.customer
@@ -73,19 +75,6 @@ export function IssueLicensePage() {
     appliedPreset.current = true
     void choice.onCustomerIssue(preset)
   }, [choice.onCustomerIssue, preset])
-
-  const handleRenew = async () => {
-    const result = await choice.onRenew()
-    if (!result) return
-    const currentCode = choice.currentLicense?.planCode
-    const modules =
-      form.plans.find((p) => p.code === currentCode)?.enabledModuleCodesDefault ?? []
-    setIssuedModules(modules)
-    setSupersedesGrantId(result.supersedesGrantId ?? null)
-    setIssued(result)
-    setResultOpen(true)
-    setStep(0)
-  }
 
   const handleSubmit = async () => {
     setCustomerError(undefined)
@@ -154,13 +143,36 @@ export function IssueLicensePage() {
         license={choice.currentLicense}
         busy={choice.choiceBusy}
         onClose={choice.closeChoice}
-        onRenew={() => void handleRenew()}
+        onModifyAndRenew={() => {
+          choice.closeChoice()
+          setModifyOpen(true)
+        }}
         onCreate={() => {
           const owner = choice.currentLicense?.ownerEmail
           if (owner && form.ownerEmail.trim().toLowerCase() === owner.toLowerCase()) {
             form.setOwnerEmail('')
           }
           choice.onCreateAdditional()
+        }}
+      />
+
+      <ExpandLicenseDialog
+        open={modifyOpen}
+        license={choice.currentLicense}
+        busy={choice.choiceBusy}
+        onClose={() => {
+          if (choice.choiceBusy) return
+          setModifyOpen(false)
+        }}
+        onConfirm={async (payload: ReissueLicensePayload) => {
+          const result = await choice.onReissueWithOptions(payload)
+          if (!result) return
+          setModifyOpen(false)
+          setIssuedModules(payload.enabledModuleCodesOverride)
+          setSupersedesGrantId(result.supersedesGrantId ?? null)
+          setIssued(result)
+          setResultOpen(true)
+          setStep(0)
         }}
       />
 

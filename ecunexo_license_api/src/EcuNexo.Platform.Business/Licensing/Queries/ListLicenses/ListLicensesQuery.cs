@@ -25,4 +25,7 @@ public sealed record LicenseListItem(
     int Generation,
     string? ReissueKind,
     string? PreviousPlanCode,
-    string? PreviousPlanLabel);
+    string? PreviousPlanLabel,
+    int MaxUsers = 0,
+    int MaxWarehouses = 0,
+    IReadOnlyList<string>? EnabledModuleCodes = null);

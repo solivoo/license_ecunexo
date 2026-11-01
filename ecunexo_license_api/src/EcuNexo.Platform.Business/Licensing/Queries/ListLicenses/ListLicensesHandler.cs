@@ -32,7 +32,10 @@ public sealed class ListLicensesHandler : IQueryHandler<ListLicensesQuery, ListL
             row.Generation,
             MapReissueKind(row.ReissueKind),
             row.PreviousPlanCode,
-            row.PreviousPlanLabel)).ToList();
+            row.PreviousPlanLabel,
+            row.MaxUsers,
+            row.MaxWarehouses,
+            row.EnabledModuleCodes)).ToList();
 
         return Result.Success(new ListLicensesResponse(items));
     }

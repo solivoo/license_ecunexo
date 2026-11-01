@@ -8,7 +8,7 @@ export type ExistingLicenseDialogProps = {
   readonly license: LicenseListItem | null
   readonly busy?: boolean
   readonly onClose: () => void
-  readonly onRenew: () => void
+  readonly onModifyAndRenew: () => void
   readonly onCreate: () => void
 }
 
@@ -24,7 +24,7 @@ export function ExistingLicenseDialog({
   license,
   busy = false,
   onClose,
-  onRenew,
+  onModifyAndRenew,
   onCreate,
 }: ExistingLicenseDialogProps) {
   const plan = license?.planLabel ?? '—'
@@ -55,10 +55,10 @@ export function ExistingLicenseDialog({
           disabled: busy,
         },
         {
-          id: 'renew',
-          label: busy ? 'Renovando…' : 'Renovar',
+          id: 'modify-renew',
+          label: 'Modificar o Renovar',
           variant: 'primary' as const,
-          onClick: onRenew,
+          onClick: onModifyAndRenew,
           disabled: busy,
         },
       ]}
@@ -68,9 +68,9 @@ export function ExistingLicenseDialog({
         {owner}, vence {expires}).
       </p>
       <p className="issue-license-error-popup">
-        <strong>Renovar</strong> revoca esa licencia, mantiene el mismo titular y genera código y
-        archivo nuevos con el plan actual. Para cambiar de plan, usa el icono Ampliar en Historial
-        de licencias.
+        <strong>Modificar o Renovar</strong> te permite ajustar cupos (usuarios, bodegas), vigencia y
+        módulos específicamente para este cliente sin alterar otros clientes. Se revocará la licencia
+        anterior y se generará una nueva que se sincroniza en línea o por archivo.
       </p>
     </Popup>
   )

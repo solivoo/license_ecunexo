@@ -92,17 +92,34 @@ public sealed class ReissueLicenseHandler : ICommandHandler<ReissueLicenseComman
                     ErrorType.NotFound));
         }
 
-        var depErrors = ModuleDependencyGraph.Validate(plan.EnabledModuleCodesDefault);
+        var samePlan = string.Equals(previous.PlanCode, plan.Code, StringComparison.OrdinalIgnoreCase);
+        var maxUsers = command.MaxUsersOverride ?? (samePlan ? previous.MaxUsers : plan.MaxUsersDefault);
+        var maxWarehouses = command.MaxWarehousesOverride ?? (samePlan ? previous.MaxWarehouses : plan.MaxWarehousesDefault);
+        var maxTenants = command.MaxTenantsOverride ?? (samePlan ? previous.MaxTenants : plan.MaxTenantsDefault);
+
+        var modules = command.EnabledModuleCodesOverride is { Count: > 0 }
+            ? command.EnabledModuleCodesOverride.ToList()
+            : (samePlan && previous.EnabledModuleCodes.Count > 0 ? previous.EnabledModuleCodes.ToList() : plan.EnabledModuleCodesDefault.ToList());
+
+        if (!modules.Contains("identity", StringComparer.OrdinalIgnoreCase))
+        {
+            modules.Add("identity");
+        }
+
+        var depErrors = ModuleDependencyGraph.Validate(modules);
         if (depErrors.Count > 0)
         {
             return Result.Failure<ReissueLicenseResponse>(
                 new Error("license.reissue.module_deps", string.Join(' ', depErrors), ErrorType.Validation));
         }
 
+        var rawEntitlements = command.ModuleEntitlementsOverride
+            ?? (samePlan && previous.ModuleEntitlements is not null ? previous.ModuleEntitlements : ResolveEntitlements(plan));
+
         var entitlements = AlignCupoLimits(
-            ResolveEntitlements(plan),
-            plan.MaxUsersDefault,
-            plan.MaxWarehousesDefault);
+            rawEntitlements,
+            maxUsers,
+            maxWarehouses);
         if (entitlements is not null && entitlements.Count > 0)
         {
             var tierErrors = ModuleDependencyGraph.ValidateTierConsistency(entitlements);
@@ -187,7 +204,6 @@ public sealed class ReissueLicenseHandler : ICommandHandler<ReissueLicenseComman
         }
 
         var newGrantId = _idGenerator.NewId();
-        var samePlan = string.Equals(previous.PlanCode, plan.Code, StringComparison.OrdinalIgnoreCase);
         var reissueKind = samePlan ? LicenseReissueKind.Renew : LicenseReissueKind.Expand;
         var grantCreated = LicenseGrant.Create(
             newGrantId,
@@ -196,10 +212,10 @@ public sealed class ReissueLicenseHandler : ICommandHandler<ReissueLicenseComman
             plan.DisplayName,
             _idGenerator.NewId(),
             issueHash,
-            plan.MaxTenantsDefault,
-            plan.MaxUsersDefault,
-            plan.MaxWarehousesDefault,
-            plan.EnabledModuleCodesDefault,
+            maxTenants,
+            maxUsers,
+            maxWarehouses,
+            modules,
             entitlements,
             expiresAt,
             encrypted,
@@ -208,7 +224,7 @@ public sealed class ReissueLicenseHandler : ICommandHandler<ReissueLicenseComman
             utcNow,
             ownerEmail,
             validationIntervalDays,
-            previous.ValidityDays,
+            validityDays,
             previous.Notes,
             previous.Id,
             previous.TrainingPeriodFromUtc,
@@ -237,10 +253,10 @@ public sealed class ReissueLicenseHandler : ICommandHandler<ReissueLicenseComman
             validationHash,
             expiresAt,
             plan.DisplayName,
-            plan.MaxTenantsDefault,
-            plan.MaxUsersDefault,
-            plan.MaxWarehousesDefault,
-            plan.EnabledModuleCodesDefault,
+            maxTenants,
+            maxUsers,
+            maxWarehouses,
+            modules,
             entitlements,
             MapProvisioning(provisioning),
             previous.Id,
@@ -302,12 +318,16 @@ public sealed class ReissueLicenseHandler : ICommandHandler<ReissueLicenseComman
             plaintextCode,
             signed.Value!,
             expiresAt,
-            plan.MaxTenantsDefault,
+            maxTenants,
             plan.DisplayName,
             validationIntervalDays,
             newGrant.Generation,
             reissueKind.ToString(),
-            previous.PlanLabel));
+            previous.PlanLabel,
+            maxUsers,
+            maxWarehouses,
+            maxTenants,
+            modules));
     }
 
     private static IReadOnlyList<ModuleEntitlement>? ResolveEntitlements(LicensingPlan plan)
