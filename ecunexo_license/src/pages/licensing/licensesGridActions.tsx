@@ -21,21 +21,21 @@ export function LicenseActionsCell(
     <div className="ecu-licenses-grid__actions">
       {canManageModules && props.onManageModules ? (
         <GridIconButton
-          label="Módulos de la licencia"
+          label="Ajuste rápido de módulos en línea (Cloud)"
           icon={LayoutGrid}
           onClick={() => props.onManageModules?.(props)}
         />
       ) : null}
       {canManageTenants && props.onManageTenants ? (
         <GridIconButton
-          label="Empresas y accesos"
+          label="Empresas y accesos por tenant"
           icon={Building2}
           onClick={() => props.onManageTenants?.(props)}
         />
       ) : null}
       {canExpand && props.onExpand ? (
         <GridIconButton
-          label="Ampliar licencia"
+          label="Modificar cupos, módulos o renovar licencia"
           icon={ArrowUpCircle}
           onClick={() => props.onExpand?.(props)}
         />

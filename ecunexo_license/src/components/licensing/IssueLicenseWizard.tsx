@@ -21,15 +21,27 @@ export type IssueLicenseWizardProps = {
 }
 
 const STEPS = [
-  { id: 'cliente', label: 'Cliente' },
-  { id: 'plan', label: 'Plan' },
-  { id: 'emitir', label: 'Emitir' },
+  {
+    id: 'cliente',
+    label: 'Cliente comercial',
+    desc: 'Selección en el directorio',
+  },
+  {
+    id: 'plan',
+    label: 'Plan, cupos y módulos',
+    desc: 'Vigencia y límites a medida',
+  },
+  {
+    id: 'emitir',
+    label: 'Titular y emisión',
+    desc: 'Credenciales y paquete firmado',
+  },
 ] as const
 
 const STEP_LEADS = [
-  'Elige un cliente del directorio. Generar licencia avanza al plan; editar abre el formulario.',
-  'Selecciona el plan y la vigencia de la licencia.',
-  'Completa titular y notas, y emite.',
+  'Selecciona la empresa o cliente comercial para emitir una nueva suscripción o gestionar su licencia vigente.',
+  'Elige un plan comercial como plantilla inicial y personaliza la vigencia, cupos y módulos para este cliente.',
+  'Verifica el alcance de la licencia y define las credenciales del titular que activará la cuenta.',
 ] as const
 
 export function IssueLicenseWizard({
@@ -80,6 +92,12 @@ export function IssueLicenseWizard({
       <ol className="issue-license-steps" aria-label="Pasos para emitir">
         {STEPS.map((item, index) => {
           const state = index === step ? 'active' : index < step ? 'done' : 'todo'
+          const stepHint =
+            index === 0 && form.customerLabel
+              ? form.customerLabel
+              : index === 1 && step > 1 && form.selectedPlan
+                ? `${form.selectedPlan.displayName} · ${form.validityDays} días`
+                : item.desc
           return (
             <li key={item.id} className={`issue-license-steps__item issue-license-steps__item--${state}`}>
               <button
@@ -89,7 +107,10 @@ export function IssueLicenseWizard({
                 onClick={() => onStepChange(index)}
               >
                 <span className="issue-license-steps__num">{index + 1}</span>
-                {item.label}
+                <span className="issue-license-steps__text">
+                  <span className="issue-license-steps__label">{item.label}</span>
+                  <span className="issue-license-steps__desc">{stepHint}</span>
+                </span>
               </button>
             </li>
           )

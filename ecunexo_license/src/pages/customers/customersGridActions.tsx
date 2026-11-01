@@ -23,13 +23,13 @@ export function CustomerActionsCell({
   return (
     <div className="ecu-licenses-grid__actions">
       <GridIconButton
-        label="Generar licencia"
+        label="Seleccionar cliente / Emitir licencia"
         icon={Key}
         disabled={busy || !canIssue}
         onClick={() => onIssueLicense(row)}
       />
       <GridIconButton
-        label="Editar cliente"
+        label="Editar datos del cliente"
         icon={Pencil}
         disabled={busy}
         onClick={() => onEdit(row.id)}

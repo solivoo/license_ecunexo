@@ -162,7 +162,7 @@ export function PlanModuleConfigurator({
       <div className="ecu-plan-module-picker-bar">
         <div className="ecu-plan-module-picker-bar__select">
           <Select
-            label="Agregar módulo al plan"
+            label="Agregar módulo habilitado"
             labelPosition="outlined"
             variant="outline"
             size="md"
@@ -171,8 +171,8 @@ export function PlanModuleConfigurator({
             onChange={setSelectedToAdd}
             placeholder={
               selectOptions.length > 0
-                ? 'Seleccionar módulo a añadir…'
-                : 'Todos los módulos ya están incluidos en el plan'
+                ? 'Seleccionar módulo para habilitar…'
+                : 'Todos los módulos disponibles ya están incluidos'
             }
             disabled={disabled || selectOptions.length === 0}
             fullWidth

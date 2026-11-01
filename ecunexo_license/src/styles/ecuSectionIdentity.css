@@ -27,19 +27,6 @@
   --idt-ok: #0f8a5f;
   --idt-warn: #b45309;
   --idt-danger: #b91c1c;
-
-  /* Tema del DataGrid: superficies planas, reglas internas, sin sombras */
-  --datagrid-header-bg: transparent;
-  --datagrid-header-text: var(--idt-muted);
-  --datagrid-header-border: var(--idt-rule);
-  --datagrid-border: var(--idt-rule);
-  --datagrid-row-bg: transparent;
-  --datagrid-row-alt-bg: transparent;
-  --datagrid-row-text: var(--idt-ink);
-  --datagrid-row-hover-bg: color-mix(in srgb, var(--shell-primary, #3525cd) 5%, transparent);
-  --datagrid-empty-text: var(--idt-muted);
-  --datagrid-shadow: none;
-  --datagrid-radius: 0;
 }
 
 /* --- 2. Portada (PageHeader) --------------------------------------------- */
@@ -70,7 +57,12 @@
   grid-auto-columns: minmax(0, 1fr);
   gap: 0;
   margin-bottom: 0;
-  background: var(--shell-surface, #ffffff);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--shell-primary, #3525cd) 4%, var(--shell-surface, #ffffff)) 0%,
+      var(--shell-surface, #ffffff) 72%
+    );
   border: 1px solid var(--shell-border, #e2e8f0);
   border-radius: 14px;
   overflow: hidden;
@@ -168,7 +160,10 @@
 }
 
 .ecu-section-page .ecu-section-card__subtitle {
-  display: none;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--idt-muted);
+  line-height: 1.4;
 }
 
 /* El cuerpo cede el padding al DataGrid para que todo quede a plomo */
@@ -230,6 +225,7 @@
   margin-bottom: 0;
   padding: 0.7rem 1.15rem;
   border-bottom: 1px solid var(--idt-rule);
+  background: var(--glb-surface, var(--shell-surface, #ffffff));
 }
 
 .ecu-section-page .glb-datagrid__search {
@@ -238,32 +234,32 @@
 
 .ecu-section-page .glb-datagrid__viewport,
 .ecu-section-page .glb-datagrid__surface {
+  background: var(--glb-surface, var(--shell-surface, #ffffff));
   border-radius: 0;
   box-shadow: none;
 }
 
-.ecu-section-page{
-  padding: 0.55rem 0.7rem;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  color: var(--idt-muted);
-  background: transparent;
-  border-bottom: 1px solid var(--idt-rule);
-}
+/* Cabecera: sin overrides — solo estilos nativos de glubox */
 
 .ecu-section-page .glb-datagrid__cell {
   padding: 0.45rem 0.7rem;
   border-bottom: 1px solid var(--idt-rule);
 }
 
-/* Bordes alineados con la barra de mando */
-.ecu-section-page .glb-datagrid__table tr > :first-child {
+.ecu-section-page .glb-datagrid__cell--checkbox {
+  padding-inline: 0.5rem;
+}
+
+.ecu-section-page .glb-datagrid__table tr > :first-child.glb-datagrid__cell--checkbox {
+  padding-left: 0.5rem;
+}
+
+/* Bordes alineados con la barra de mando (solo cuerpo) */
+.ecu-section-page .glb-datagrid__table tr > :first-child.glb-datagrid__cell {
   padding-left: 1.15rem;
 }
 
-.ecu-section-page .glb-datagrid__table tr > :last-child {
+.ecu-section-page .glb-datagrid__table tr > :last-child.glb-datagrid__cell {
   padding-right: 1.15rem;
 }
 
@@ -271,12 +267,12 @@
   background: var(--datagrid-row-hover-bg);
 }
 
-/* La columna fija tapa el scroll: fondo opaco para que no se transparente */
-.ecu-section-page .glb-datagrid__cell--sticky {
+/* Columna fija: fondo opaco solo en el cuerpo (la cabecera sticky sigue el estilo nativo de glubox) */
+.ecu-section-page .glb-datagrid__body .glb-datagrid__cell--sticky {
   background: var(--shell-surface, #ffffff);
 }
 
-.ecu-section-page .glb-datagrid__row:hover .glb-datagrid__cell--sticky {
+.ecu-section-page .glb-datagrid__body .glb-datagrid__row:hover .glb-datagrid__cell--sticky {
   background: color-mix(
     in srgb,
     var(--shell-primary, #3525cd) 5%,
@@ -289,7 +285,7 @@
   border: 0;
   border-top: 1px solid var(--idt-rule);
   border-radius: 0;
-  background: transparent;
+  background: var(--glb-surface, var(--shell-surface, #ffffff));
   padding: 0.55rem 1.15rem;
 }
 

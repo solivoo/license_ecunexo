@@ -252,23 +252,25 @@ export function ExpandLicenseDialog({
             fullWidth
             size="md"
           />
-          <NumberBox
-            id="reissue-max-warehouses"
-            label="Máx. Bodegas"
-            labelPosition="outlined"
-            variant="outline"
-            min={1}
-            step={1}
-            showSpinButtons
-            value={maxWarehouses}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxWarehouses(Math.max(1, Number(e.target.value) || 1))}
-            helperText="Bodegas permitidas."
-            fullWidth
-            size="md"
-          />
+          {selectedModules.includes('warehousing') ? (
+            <NumberBox
+              id="reissue-max-warehouses"
+              label="Máx. Bodegas"
+              labelPosition="outlined"
+              variant="outline"
+              min={1}
+              step={1}
+              showSpinButtons
+              value={maxWarehouses}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxWarehouses(Math.max(1, Number(e.target.value) || 1))}
+              helperText="Bodegas permitidas."
+              fullWidth
+              size="md"
+            />
+          ) : null}
           <NumberBox
             id="reissue-max-tenants"
-            label="Máx. Empresas"
+            label="Empresas permitidas"
             labelPosition="outlined"
             variant="outline"
             min={1}

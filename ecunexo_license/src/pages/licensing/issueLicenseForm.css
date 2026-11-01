@@ -23,55 +23,105 @@
 .issue-license-steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.5rem;
+  gap: 0.75rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+.issue-license-steps__item {
+  min-width: 0;
+}
+
 .issue-license-steps__btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
+  justify-content: flex-start;
+  gap: 0.75rem;
   width: 100%;
-  min-height: 2.6rem;
-  padding: 0.5rem 0.65rem;
+  min-height: 3.4rem;
+  padding: 0.65rem 0.9rem;
   border: 1px solid var(--shell-border);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--shell-surface);
   color: var(--shell-muted);
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
+  text-align: left;
   cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.issue-license-steps__btn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--shell-primary) 42%, var(--shell-border));
+  color: var(--shell-text);
 }
 
 .issue-license-steps__item--active .issue-license-steps__btn {
-  color: var(--shell-primary);
-  border-color: color-mix(in srgb, var(--shell-primary) 45%, var(--shell-border));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--shell-primary) 25%, transparent);
+  color: var(--shell-text);
+  background: color-mix(in srgb, var(--shell-primary) 10%, var(--shell-surface));
+  border-color: color-mix(in srgb, var(--shell-primary) 55%, var(--shell-border));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--shell-primary) 28%, transparent);
 }
 
 .issue-license-steps__item--done .issue-license-steps__btn {
   color: var(--shell-text);
+  border-color: color-mix(in srgb, #10b981 38%, var(--shell-border));
 }
 
 .issue-license-steps__item--todo .issue-license-steps__btn:disabled {
   cursor: default;
-  opacity: 0.7;
+  opacity: 0.68;
 }
 
 .issue-license-steps__num {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  flex-shrink: 0;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--shell-primary) 12%, transparent);
+  background: color-mix(in srgb, var(--shell-primary) 14%, transparent);
   color: inherit;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.issue-license-steps__item--active .issue-license-steps__num {
+  background: var(--shell-primary);
+  color: var(--color-on-primary, #ffffff);
+}
+
+.issue-license-steps__item--done .issue-license-steps__num {
+  background: color-mix(in srgb, #10b981 20%, transparent);
+  color: #34d399;
+}
+
+.issue-license-steps__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.issue-license-steps__label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.issue-license-steps__desc {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--shell-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .issue-license-review {

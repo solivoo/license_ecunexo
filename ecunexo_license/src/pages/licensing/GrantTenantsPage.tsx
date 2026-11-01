@@ -233,8 +233,8 @@ export function GrantTenantsPage() {
   return (
     <div className="ecu-dashboard-layout ecu-section-page grant-tenants">
       <PageHeader
-        title="Empresas y accesos"
-        subtitle="Módulos, tier y límites por empresa."
+        title="Empresas y accesos por tenant"
+        subtitle="Administra las empresas (tenants) registradas bajo esta licencia y personaliza módulos o límites específicos por empresa."
         badge={
           <StatusBadge tone="primary" withDot>
             {listLoading ? 'Cargando' : `${tenants.length} empresa${tenants.length === 1 ? '' : 's'}`}

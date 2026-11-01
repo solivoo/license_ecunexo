@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { EcuAlertDialog } from '@/components/ui/EcuAlertDialog'
+import { EcuAlertDialog, SectionCard } from '@/components/ui'
 import {
   deactivateLicensingCustomer,
   listLicensingCustomers,
@@ -67,17 +67,22 @@ export function IssueLicenseCustomerStep({
       {error ? <p className="customer-picker-field__error" role="alert">{error}</p> : null}
       {loadError ? <p className="customer-picker-field__error" role="alert">{loadError}</p> : null}
 
-      <CustomersGrid
-        rows={rows}
-        loading={loading}
-        actionBusyId={actionBusyId}
-        onEdit={(id) => navigate(`/app/clientes/${id}/editar`)}
-        onDelete={setConfirmDelete}
-        onIssueLicense={onIssueLicense}
-        searchPlaceholder="Buscar por razón social, RUC o correo…"
-        initialPageSize={10}
-        maxHeight={420}
-      />
+      <SectionCard
+        title="Directorio de clientes comerciales"
+        subtitle="Haz clic en el icono de llave en la columna Acciones para seleccionar al cliente y configurar su licencia. Si el cliente ya cuenta con una licencia vigente, podrás elegir entre modificarla/renovarla o emitir una adicional."
+      >
+        <CustomersGrid
+          rows={rows}
+          loading={loading}
+          actionBusyId={actionBusyId}
+          onEdit={(id) => navigate(`/app/clientes/${id}/editar`)}
+          onDelete={setConfirmDelete}
+          onIssueLicense={onIssueLicense}
+          searchPlaceholder="Buscar por razón social, nombre comercial, RUC o correo…"
+          initialPageSize={10}
+          maxHeight={460}
+        />
+      </SectionCard>
 
       <EcuAlertDialog
         open={deletePrompt !== null}

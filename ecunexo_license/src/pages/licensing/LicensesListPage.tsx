@@ -94,7 +94,7 @@ export function LicensesListPage() {
     <div className="ecu-dashboard-layout ecu-section-page">
       <PageHeader
         title="Historial de Licencias"
-        subtitle="Licencias emitidas. Ampliar revoca la anterior y genera un código y archivo con el plan elegido."
+        subtitle="Control de licencias emitidas por cliente. Permite modificar cupos o módulos a medida, renovar vigencias y administrar los accesos de cada empresa."
         badge={
           <StatusBadge tone="primary" withDot>
             Licencias
@@ -147,7 +147,7 @@ export function LicensesListPage() {
 
       <SectionCard
         title="Licencias Emitidas"
-        subtitle="Registro cronológico y trazabilidad criptográfica"
+        subtitle="Cada licencia es independiente por cliente; al modificar cupos, módulos o renovar vigencia se emite un nuevo certificado firmado y se revoca el anterior."
         action={
           <OptionGroup
             id="licenses-status-filter"

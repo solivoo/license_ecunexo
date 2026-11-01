@@ -3,6 +3,7 @@ import {
   ensureIdentityModule,
   getModuleDefaultLimits,
 } from '@/constants/tenantModules'
+import { toModuleEntitlements } from '@/lib/grantEntitlements'
 import { listPlans, type PlanListItem, type LicensingCustomerListItem } from '@/lib/platformLicensingApi'
 
 function formatCustomerLabel(customer: LicensingCustomerListItem): string {
@@ -49,20 +50,33 @@ export function useIssueLicenseForm() {
     setMaxTenants(plan.maxTenantsDefault)
     setMaxUsers(plan.maxUsersDefault)
     setMaxWarehouses(plan.maxWarehousesDefault)
-    setSelectedModules(ensureIdentityModule(plan.enabledModuleCodesDefault))
+    const activeMods = ensureIdentityModule(plan.enabledModuleCodesDefault)
+    setSelectedModules(activeMods)
 
+    const tl: Record<string, Record<string, string>> = {}
+    for (const code of activeMods) {
+      const defaults = getModuleDefaultLimits(code)
+      if (defaults) {
+        tl[code] = Object.fromEntries(
+          Object.entries(defaults).map(([k, v]) => [k, String(v === -1 ? '' : v)])
+        )
+      }
+    }
     if (plan.moduleEntitlementsDefault && plan.moduleEntitlementsDefault.length > 0) {
-      const tl: Record<string, Record<string, string>> = {}
       for (const e of plan.moduleEntitlementsDefault) {
         const defaults = getModuleDefaultLimits(e.moduleCode) ?? {}
         tl[e.moduleCode] = Object.fromEntries(
           Object.entries(e.limits ?? defaults).map(([k, v]) => [k, String(v === -1 ? '' : v)])
         )
       }
-      setEditLimits(tl)
-    } else {
-      setEditLimits({})
     }
+    if (tl['identity'] && plan.maxUsersDefault > 0) {
+      tl['identity'].max_users = String(plan.maxUsersDefault)
+    }
+    if (tl['warehousing'] && plan.maxWarehousesDefault > 0) {
+      tl['warehousing'].max_warehouses = String(plan.maxWarehousesDefault)
+    }
+    setEditLimits(tl)
   }, [])
 
   const updateSelectedModules = useCallback((codes: string[]) => {
@@ -88,12 +102,20 @@ export function useIssueLicenseForm() {
     })
   }, [])
 
-  /** Cambia un límite individual de un módulo. */
+  /** Cambia un límite individual de un módulo y sincroniza cupos globales si aplica. */
   const setLimit = useCallback((moduleCode: string, limitKey: string, value: string) => {
     setEditLimits((prev) => ({
       ...prev,
       [moduleCode]: { ...prev[moduleCode], [limitKey]: value },
     }))
+    if (moduleCode === 'identity' && limitKey === 'max_users') {
+      const n = Number(value)
+      if (n > 0) setMaxUsers(n)
+    }
+    if (moduleCode === 'warehousing' && limitKey === 'max_warehouses') {
+      const n = Number(value)
+      if (n > 0) setMaxWarehouses(n)
+    }
   }, [])
 
   useEffect(() => {
@@ -155,13 +177,11 @@ export function useIssueLicenseForm() {
     }
 
     const modules = ensureIdentityModule(selectedModules)
-
-    /** Preferir entitlements del plan (tiers válidos); si no hay, el backend los resuelve. */
-    const entitlementsFromPlan = selectedPlan?.moduleEntitlementsDefault
-    const moduleEntitlementsOverride =
-      entitlementsFromPlan && entitlementsFromPlan.length > 0
-        ? entitlementsFromPlan.filter((e) => modules.includes(e.moduleCode))
-        : undefined
+    const moduleEntitlementsOverride = toModuleEntitlements(modules, {}, editLimits)
+    const resolvedMaxUsers = Number(editLimits['identity']?.max_users) || maxUsers
+    const resolvedMaxWarehouses = modules.includes('warehousing')
+      ? Number(editLimits['warehousing']?.max_warehouses) || maxWarehouses
+      : 1
 
     const toUtcIso = (dateOnly: string): string | undefined => {
       const t = dateOnly.trim()
@@ -183,8 +203,8 @@ export function useIssueLicenseForm() {
       },
       validityDays,
       maxTenantsOverride: Math.max(1, maxTenants),
-      maxUsersOverride: Math.max(1, maxUsers),
-      maxWarehousesOverride: Math.max(1, maxWarehouses),
+      maxUsersOverride: Math.max(1, resolvedMaxUsers),
+      maxWarehousesOverride: Math.max(1, resolvedMaxWarehouses),
       enabledModuleCodesOverride: modules,
       moduleEntitlementsOverride,
       onlineValidationIntervalDays,
@@ -196,6 +216,7 @@ export function useIssueLicenseForm() {
     }
   }, [
     customerId,
+    editLimits,
     maxTenants,
     maxUsers,
     maxWarehouses,
@@ -210,7 +231,6 @@ export function useIssueLicenseForm() {
     ownerPhone,
     planCode,
     selectedModules,
-    selectedPlan,
     supportPeriodFrom,
     supportPeriodTo,
     trainingPeriodFrom,

@@ -116,8 +116,8 @@ export function GrantModulesPage() {
   return (
     <div className="ecu-dashboard-layout ecu-section-page">
       <PageHeader
-        title="Módulos de la licencia"
-        subtitle="Habilita o deshabilita módulos del cliente cloud. El tenant los sincroniza en su próxima validación online."
+        title="Módulos en línea (Cloud)"
+        subtitle="Activa o desactiva módulos en caliente para licencias CloudShared sin reemitir certificado. El cliente aplica los cambios en su próxima validación online."
         badge={
           <StatusBadge tone={canEdit ? 'primary' : 'warning'}>
             {current ? `${current.deploymentMode} · v${current.entitlementsVersion}` : 'Cargando'}

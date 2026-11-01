@@ -68,9 +68,7 @@ export function ExistingLicenseDialog({
         {owner}, vence {expires}).
       </p>
       <p className="issue-license-error-popup">
-        <strong>Modificar o Renovar</strong> te permite ajustar cupos (usuarios, bodegas), vigencia y
-        módulos específicamente para este cliente sin alterar otros clientes. Se revocará la licencia
-        anterior y se generará una nueva que se sincroniza en línea o por archivo.
+        <strong>Modificar o Renovar</strong> te permite ajustar vigencia, empresas y los módulos o límites específicos para este cliente sin alterar otros clientes. Se revocará la licencia anterior y se generará una nueva que se sincroniza en línea o por archivo.
       </p>
     </Popup>
   )

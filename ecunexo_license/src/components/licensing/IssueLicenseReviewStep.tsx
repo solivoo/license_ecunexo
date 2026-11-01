@@ -13,49 +13,57 @@ function moduleLabel(code: string): string {
 
 export function IssueLicenseReviewStep({ form }: IssueLicenseReviewStepProps) {
   const plan = form.selectedPlan
-  const modules = plan?.enabledModuleCodesDefault ?? form.selectedModules
+  const modules = form.selectedModules
+  const hasWarehousing = modules.includes('warehousing')
+  const userQuota = form.editLimits['identity']?.max_users || String(form.maxUsers)
+  const warehouseQuota = form.editLimits['warehousing']?.max_warehouses || String(form.maxWarehouses)
 
   return (
     <div className="issue-license-panel">
       <section className="issue-license-subpanel">
-        <h3 className="issue-license-subpanel__title">Resumen para emitir</h3>
+        <h3 className="issue-license-subpanel__title">Resumen de la licencia a emitir</h3>
+        <p className="issue-license-subpanel__hint">
+          Confirma las condiciones comerciales y técnicas que quedarán firmadas criptográficamente en el artefacto de este cliente.
+        </p>
         <dl className="issue-license-review issue-license-review--4">
           <div>
-            <dt>Cliente</dt>
+            <dt>Cliente comercial</dt>
             <dd>{form.customerLabel || '—'}</dd>
           </div>
           <div>
-            <dt>Plan</dt>
+            <dt>Plan base</dt>
             <dd>{plan?.displayName ?? '—'}</dd>
           </div>
           <div>
-            <dt>Vigencia</dt>
+            <dt>Vigencia contratada</dt>
             <dd>{form.validityDays} días</dd>
           </div>
           <div>
-            <dt>Validación en línea</dt>
+            <dt>Sincronización en línea</dt>
             <dd>Cada {form.onlineValidationIntervalDays} días</dd>
           </div>
         </dl>
         <div className="ecu-plan-summary-grid ecu-plan-summary-grid--4">
           <div className="ecu-plan-summary-item">
-            <span className="ecu-plan-summary-item__label">Empresas</span>
+            <span className="ecu-plan-summary-item__label">Empresas permitidas</span>
             <span className="ecu-plan-summary-item__value">{form.maxTenants}</span>
           </div>
           <div className="ecu-plan-summary-item">
-            <span className="ecu-plan-summary-item__label">Usuarios</span>
-            <span className="ecu-plan-summary-item__value">{form.maxUsers}</span>
+            <span className="ecu-plan-summary-item__label">Usuarios (Identidad)</span>
+            <span className="ecu-plan-summary-item__value">{userQuota}</span>
           </div>
+          {hasWarehousing ? (
+            <div className="ecu-plan-summary-item">
+              <span className="ecu-plan-summary-item__label">Bodegas habilitadas</span>
+              <span className="ecu-plan-summary-item__value">{warehouseQuota}</span>
+            </div>
+          ) : null}
           <div className="ecu-plan-summary-item">
-            <span className="ecu-plan-summary-item__label">Bodegas</span>
-            <span className="ecu-plan-summary-item__value">{form.maxWarehouses}</span>
-          </div>
-          <div className="ecu-plan-summary-item">
-            <span className="ecu-plan-summary-item__label">Módulos</span>
+            <span className="ecu-plan-summary-item__label">Módulos activos</span>
             <span className="ecu-plan-summary-item__value">{modules.length}</span>
           </div>
         </div>
-        <h4 className="ecu-plan-summary-subtitle">Módulos</h4>
+        <h4 className="ecu-plan-summary-subtitle">Módulos incluidos en esta licencia</h4>
         <ul className="ecu-plan-summary-modules ecu-plan-summary-modules--4">
           {modules.map((code) => (
             <li key={code} className="ecu-plan-summary-module">
@@ -66,9 +74,9 @@ export function IssueLicenseReviewStep({ form }: IssueLicenseReviewStepProps) {
       </section>
 
       <section className="issue-license-subpanel">
-        <h3 className="issue-license-subpanel__title">Titular que activará en Admin</h3>
+        <h3 className="issue-license-subpanel__title">Cuenta del titular (administrador inicial)</h3>
         <p className="issue-license-subpanel__hint">
-          Correo, nombre y contraseña inicial (con confirmación). Las empresas se crean después.
+          Define las credenciales del propietario de la cuenta. Al emitir, obtendrás el código de activación y el archivo firmado para entregarle por correo o carga directa.
         </p>
         <div className="issue-license-field-grid issue-license-field-grid--4">
           <TextBox

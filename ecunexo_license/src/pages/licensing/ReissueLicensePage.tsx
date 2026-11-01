@@ -74,6 +74,12 @@ export function ReissueLicensePage() {
             entitlementsSnapshot.enabledModuleCodes,
             entitlementsSnapshot.moduleEntitlements
           )
+          if ((found.maxUsers ?? 0) > 0 && draft.limits['identity']) {
+            draft.limits['identity'].max_users = String(found.maxUsers)
+          }
+          if ((found.maxWarehouses ?? 0) > 0 && draft.limits['warehousing']) {
+            draft.limits['warehousing'].max_warehouses = String(found.maxWarehouses)
+          }
           setSelectedModules(draft.selectedModules)
           setLimits(draft.limits)
         } else {
@@ -87,6 +93,12 @@ export function ReissueLicensePage() {
               ? found.moduleEntitlements
               : currentPlan?.moduleEntitlementsDefault ?? null
           const draft = createGrantEntitlementsDraft(baseModules, baseEntitlements)
+          if ((found.maxUsers ?? 0) > 0 && draft.limits['identity']) {
+            draft.limits['identity'].max_users = String(found.maxUsers)
+          }
+          if ((found.maxWarehouses ?? 0) > 0 && draft.limits['warehousing']) {
+            draft.limits['warehousing'].max_warehouses = String(found.maxWarehouses)
+          }
           setSelectedModules(draft.selectedModules)
           setLimits(draft.limits)
         }
@@ -199,14 +211,18 @@ export function ReissueLicensePage() {
     setBusy(true)
     try {
       const moduleEntitlementsOverride = toModuleEntitlements(selectedModules, {}, limits)
+      const resolvedMaxUsers = Number(limits['identity']?.max_users) || maxUsers
+      const resolvedMaxWarehouses = selectedModules.includes('warehousing')
+        ? Number(limits['warehousing']?.max_warehouses) || maxWarehouses
+        : 1
 
       const result = await reissueLicense(license.id, {
         planCode,
         validityDays,
         onlineValidationIntervalDays,
-        maxUsersOverride: maxUsers,
-        maxWarehousesOverride: maxWarehouses,
-        maxTenantsOverride: maxTenants,
+        maxUsersOverride: Math.max(1, resolvedMaxUsers),
+        maxWarehousesOverride: Math.max(1, resolvedMaxWarehouses),
+        maxTenantsOverride: Math.max(1, maxTenants),
         enabledModuleCodesOverride: selectedModules,
         moduleEntitlementsOverride,
       })
@@ -317,68 +333,28 @@ export function ReissueLicensePage() {
           <section className="issue-license-subpanel">
             <h3 className="issue-license-subpanel__title">
               <KeyRound size={18} strokeWidth={1.75} aria-hidden />
-              Plan base y cupos para este cliente
+              Plan base, empresas y vigencia
             </h3>
             <p className="issue-license-subpanel__desc">
-              Puedes ajustar el plan base o personalizar directamente los cupos de usuarios y bodegas que tendrá esta empresa.
+              Ajusta el plan base, la vigencia y las empresas permitidas. Las cuotas de usuarios, bodegas, SKUs o comprobantes se configuran en la tarjeta de cada módulo abajo.
             </p>
             <div className="issue-license-form-grid">
-              <div className="issue-license-form-grid__span-full">
-                <Select
-                  label="Plan base"
-                  labelPosition="outlined"
-                  variant="outline"
-                  options={planOptions}
-                  value={planCode}
-                  onChange={handlePlanChange}
-                  placeholder="Seleccionar plan base…"
-                  disabled={busy || plans.length === 0}
-                  fullWidth
-                  size="md"
-                />
-              </div>
-
-              <NumberBox
-                id="reissue-max-users"
-                label="Máx. Usuarios"
+              <Select
+                label="Plan base"
                 labelPosition="outlined"
                 variant="outline"
-                min={1}
-                step={1}
-                showSpinButtons
-                value={maxUsers}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  const val = Math.max(1, Number(e.target.value) || 1)
-                  setMaxUsers(val)
-                  handleLimitChange('identity', 'max_users', String(val))
-                }}
-                helperText="Usuarios activos permitidos para este cliente."
-                fullWidth
-                size="md"
-              />
-
-              <NumberBox
-                id="reissue-max-warehouses"
-                label="Máx. Bodegas"
-                labelPosition="outlined"
-                variant="outline"
-                min={1}
-                step={1}
-                showSpinButtons
-                value={maxWarehouses}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  const val = Math.max(1, Number(e.target.value) || 1)
-                  setMaxWarehouses(val)
-                  handleLimitChange('warehousing', 'max_warehouses', String(val))
-                }}
-                helperText="Bodegas físicas que puede operar."
+                options={planOptions}
+                value={planCode}
+                onChange={handlePlanChange}
+                placeholder="Seleccionar plan base…"
+                disabled={busy || plans.length === 0}
                 fullWidth
                 size="md"
               />
 
               <NumberBox
                 id="reissue-max-tenants"
-                label="Máx. Empresas / Tenants"
+                label="Empresas permitidas"
                 labelPosition="outlined"
                 variant="outline"
                 min={1}
@@ -388,7 +364,7 @@ export function ReissueLicensePage() {
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setMaxTenants(Math.max(1, Number(e.target.value) || 1))
                 }
-                helperText="Empresas asociadas al contrato."
+                helperText="Empresas (tenants) asociadas al contrato."
                 fullWidth
                 size="md"
               />
