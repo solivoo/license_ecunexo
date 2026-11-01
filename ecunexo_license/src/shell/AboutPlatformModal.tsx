@@ -61,7 +61,7 @@ export function AboutPlatformModal({ open, onClose }: AboutPlatformModalProps) {
       <div className="ecu-about-modal">
         <div className="ecu-about-modal__hero">
           <img
-            src="/favicon.svg"
+            src="/favicon.svg?v=3"
             alt="EcuNexo"
             className="ecu-about-modal__logo"
             width={48}

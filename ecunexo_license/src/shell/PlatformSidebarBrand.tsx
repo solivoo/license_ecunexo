@@ -1,26 +1,25 @@
 import type { SidebarBrandProps } from 'glubox'
-import logoDark from '@assets/solo_logo_ecunexo_dark.svg'
-import logoLight from '@assets/solo_logo_ecunexo_light.svg'
-import { useGluComponentTheme } from '@/hooks/useGluComponentTheme'
 
 export function PlatformSidebarBrand({ collapsed }: SidebarBrandProps) {
-  const theme = useGluComponentTheme()
-  const logo = theme === 'dark' ? logoDark : logoLight
-
   if (collapsed) {
     return (
-      <img
-        src={logo}
-        alt="EcuNexo"
-        className="sidebar-brand__logo sidebar-brand__logo--collapsed"
-        decoding="async"
-      />
+      <span className="ecu-wordmark ecu-wordmark--collapsed" aria-label="EcuNexo" title="EcuNexo Licencias">
+        <span className="ecu-wordmark__name" aria-hidden>
+          <strong>
+            EC<span className="ecu-wordmark__x">X</span>
+          </strong>
+        </span>
+      </span>
     )
   }
 
   return (
     <div className="sidebar-brand" title="EcuNexo Licencias">
-      <img src={logo} alt="EcuNexo" className="sidebar-brand__logo" decoding="async" />
+      <span className="ecu-wordmark" aria-label="EcuNexo">
+        <span className="ecu-wordmark__name" aria-hidden>
+          Ecu<strong>Ne<span className="ecu-wordmark__x">x</span>o</strong>
+        </span>
+      </span>
     </div>
   )
 }
