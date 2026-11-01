@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button, TextBox, useToast } from 'glubox'
-import { ArrowLeft, Building2, LayoutGrid, SlidersHorizontal } from 'lucide-react'
+import { ArrowLeft, Building2, KeyRound, LayoutGrid, SlidersHorizontal } from 'lucide-react'
 import { GrantEntitlementsForm } from '@/components/licensing/GrantEntitlementsForm'
 import { PageHeader, SectionCard, StatusBadge } from '@/components/ui'
 import { createGrantEntitlementsDraft, toModuleEntitlements } from '@/lib/grantEntitlements'
@@ -125,6 +125,14 @@ export function GrantModulesPage() {
         }
         actions={
           <>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!grantId}
+              onClick={() => void navigate(`/app/licencias/${grantId}/reemitir`)}
+            >
+              <KeyRound size={16} aria-hidden /> Modificar o Renovar
+            </Button>
             <Button
               type="button"
               variant="outline"

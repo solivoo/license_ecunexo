@@ -6,6 +6,7 @@ import { LoginLayout } from '@/layout/LoginLayout'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { DashboardHomePage } from '@/pages/dashboard/DashboardHomePage'
 import { IssueLicensePage } from '@/pages/licensing/IssueLicensePage'
+import { ReissueLicensePage } from '@/pages/licensing/ReissueLicensePage'
 import { LicensesListPage } from '@/pages/licensing/LicensesListPage'
 import { CustomersListPage } from '@/pages/customers/CustomersListPage'
 import { CustomerEditorPage } from '@/pages/customers/CustomerEditorPage'
@@ -38,6 +39,8 @@ export const routes: RouteObject[] = [
           { path: 'inicio', element: <DashboardHomePage /> },
           { path: 'licencias/nueva', element: <IssueLicensePage /> },
           { path: 'licencias/historial', element: <LicensesListPage /> },
+          { path: 'licencias/:grantId/reemitir', element: <ReissueLicensePage /> },
+          { path: 'licencias/:grantId/modificar', element: <ReissueLicensePage /> },
           { path: 'licencias/:grantId/modulos', element: <GrantModulesPage /> },
           { path: 'licencias/:grantId/empresas', element: <GrantTenantsPage /> },
           { path: 'operadores', element: <OperatorsListPage /> },

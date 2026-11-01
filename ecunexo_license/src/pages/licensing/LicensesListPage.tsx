@@ -10,14 +10,9 @@ import {
   StatCard,
   StatusBadge,
 } from '@/components/ui'
-import { ExpandLicenseDialog, type ReissueLicensePayload } from '@/components/licensing/ExpandLicenseDialog'
-import { IssueLicenseResultDialog } from '@/components/licensing/IssueLicenseResultDialog'
-import { moduleLabels } from '@/constants/tenantModules'
 import {
   listLicenses,
-  reissueLicense,
   type LicenseListItem,
-  type ReissueLicenseResult,
 } from '@/lib/platformLicensingApi'
 import { readApiError } from '@/lib/readApiError'
 import { LicensesGrid } from './LicensesGrid'
@@ -35,12 +30,6 @@ export function LicensesListPage() {
   const [rows, setRows] = useState<LicenseListItem[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading] = useState(true)
-  const [expandRow, setExpandRow] = useState<LicenseListItem | null>(null)
-  const [expandOpen, setExpandOpen] = useState(false)
-  const [reissueBusy, setReissueBusy] = useState(false)
-  const [reissued, setReissued] = useState<ReissueLicenseResult | null>(null)
-  const [reissuedModules, setReissuedModules] = useState<string[]>([])
-  const [resultOpen, setResultOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -94,43 +83,11 @@ export function LicensesListPage() {
     return { total, active, revoked, exhausted }
   }, [rows])
 
-  const handleExpand = useCallback((row: LicenseListItem) => {
-    setExpandRow(row)
-    setExpandOpen(true)
-  }, [])
-
-  const handleConfirmExpand = useCallback(
-    async (payload: ReissueLicensePayload) => {
-      if (!expandRow) return
-
-      setReissueBusy(true)
-      try {
-        const result = await reissueLicense(expandRow.id, {
-          onlineValidationIntervalDays: expandRow.onlineValidationIntervalDays ?? 30,
-          planCode: payload.planCode,
-          validityDays: payload.validityDays,
-          maxUsersOverride: payload.maxUsersOverride,
-          maxWarehousesOverride: payload.maxWarehousesOverride,
-          maxTenantsOverride: payload.maxTenantsOverride,
-          enabledModuleCodesOverride: payload.enabledModuleCodesOverride,
-        })
-        setExpandOpen(false)
-        setExpandRow(null)
-        setReissued(result)
-        setReissuedModules(payload.enabledModuleCodesOverride)
-        setResultOpen(true)
-        await load()
-      } catch (err) {
-        toast.show({
-          title: 'No se pudo reemitir la licencia',
-          message: readApiError(err, 'No se pudo reemitir la licencia.'),
-          variant: 'error',
-        })
-      } finally {
-        setReissueBusy(false)
-      }
+  const handleExpand = useCallback(
+    (row: LicenseListItem) => {
+      navigate(`/app/licencias/${row.id}/reemitir`)
     },
-    [expandRow, load, toast],
+    [navigate],
   )
 
   return (
@@ -201,7 +158,7 @@ export function LicensesListPage() {
             options={STATUS_FILTERS.map((f) => ({ value: f.value, label: f.label }))}
             value={statusFilter}
             onChange={(val) => setStatusFilter(String(val))}
-            disabled={loading || reissueBusy}
+            disabled={loading}
           />
         }
       >
@@ -245,11 +202,11 @@ export function LicensesListPage() {
             onManageTenants={(row) => navigate(`/app/licencias/${row.id}/empresas`)}
             toolbarRight={
               <div className="ecu-grid-toolbar-actions">
-                <GridToolbarRefresh loading={loading || reissueBusy} onRefresh={() => void load()} />
+                <GridToolbarRefresh loading={loading} onRefresh={() => void load()} />
                 <Button
                   type="button"
                   variant="primary"
-                  disabled={loading || reissueBusy}
+                  disabled={loading}
                   onClick={() => void navigate('/app/licencias/nueva')}
                 >
                   <Plus size={16} aria-hidden />
@@ -260,43 +217,6 @@ export function LicensesListPage() {
           />
         )}
       </SectionCard>
-
-      <ExpandLicenseDialog
-        open={expandOpen}
-        license={expandRow}
-        busy={reissueBusy}
-        onClose={() => {
-          if (reissueBusy) return
-          setExpandOpen(false)
-          setExpandRow(null)
-        }}
-        onConfirm={(payload) => void handleConfirmExpand(payload)}
-      />
-
-      {reissued ? (
-        <IssueLicenseResultDialog
-          issued={{
-            licenseId: reissued.licenseId,
-            activationCodePlaintext: reissued.activationCodePlaintext,
-            licenseArtifact: reissued.licenseArtifact,
-            expiresAtUtc: reissued.expiresAtUtc,
-            provisioningSlotsRemaining: reissued.provisioningSlotsRemaining,
-            planLabel: reissued.planLabel,
-          }}
-          enabledModules={reissuedModules}
-          modulesLabel={moduleLabels(reissuedModules) || 'Ver plan emitido'}
-          supersedesGrantId={reissued.supersedesGrantId}
-          generation={reissued.generation}
-          reissueKind={reissued.reissueKind}
-          previousPlanLabel={reissued.previousPlanLabel}
-          open={resultOpen}
-          onClose={() => {
-            setResultOpen(false)
-            setReissued(null)
-            setReissuedModules([])
-          }}
-        />
-      ) : null}
     </div>
   )
 }
