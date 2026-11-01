@@ -1,3 +1,4 @@
+using EcuNexo.Core.Tenancy;
 using EcuNexo.Platform.Core.Licensing;
 
 namespace EcuNexo.Platform.Business.Licensing;
@@ -83,4 +84,5 @@ public sealed record LicenseGrantListRow(
     string? PreviousPlanLabel,
     int MaxUsers = 0,
     int MaxWarehouses = 0,
-    IReadOnlyList<string>? EnabledModuleCodes = null);
+    IReadOnlyList<string>? EnabledModuleCodes = null,
+    IReadOnlyList<ModuleEntitlement>? ModuleEntitlements = null);

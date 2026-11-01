@@ -121,6 +121,7 @@ export interface LicenseListItem {
   maxUsers?: number
   maxWarehouses?: number
   enabledModuleCodes?: string[]
+  moduleEntitlements?: ModuleEntitlement[] | null
   issuedByOperatorName: string
   supersedesGrantId?: string | null
   onlineValidationIntervalDays?: number
@@ -278,7 +279,8 @@ export interface GrantEntitlements {
 
 export async function getGrantEntitlements(grantId: string): Promise<GrantEntitlements> {
   const { data } = await platformApi.get<GrantEntitlements>(
-    `/api/v1/platform/licenses/${grantId}/entitlements`
+    `/api/v1/platform/licenses/${grantId}/entitlements`,
+    { headers: { 'X-Skip-Auth-Redirect': 'true' } }
   )
   return data
 }

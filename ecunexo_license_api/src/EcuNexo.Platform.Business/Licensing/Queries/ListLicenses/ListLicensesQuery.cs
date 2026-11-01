@@ -1,3 +1,4 @@
+using EcuNexo.Core.Tenancy;
 using EcuNexo.Platform.Business.Abstractions;
 
 namespace EcuNexo.Platform.Business.Licensing.Queries.ListLicenses;
@@ -28,4 +29,5 @@ public sealed record LicenseListItem(
     string? PreviousPlanLabel,
     int MaxUsers = 0,
     int MaxWarehouses = 0,
-    IReadOnlyList<string>? EnabledModuleCodes = null);
+    IReadOnlyList<string>? EnabledModuleCodes = null,
+    IReadOnlyList<ModuleEntitlement>? ModuleEntitlements = null);

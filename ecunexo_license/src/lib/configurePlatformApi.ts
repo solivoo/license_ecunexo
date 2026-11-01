@@ -31,7 +31,11 @@ export function configurePlatformApi(store: Store<RootState>): void {
       const method = error.config?.method?.toUpperCase() ?? '?'
       logger.error('API error', { method, url, status, message: error.message })
 
-      if (status === 401) {
+      const skipAuthRedirect =
+        error.config?.headers?.['X-Skip-Auth-Redirect'] === 'true' ||
+        (method === 'GET' && url.includes('/entitlements'))
+
+      if (status === 401 && !skipAuthRedirect) {
         store.dispatch(clearCredentials())
         if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
           window.location.assign('/login')

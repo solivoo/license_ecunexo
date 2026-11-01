@@ -35,7 +35,8 @@ public sealed class ListLicensesHandler : IQueryHandler<ListLicensesQuery, ListL
             row.PreviousPlanLabel,
             row.MaxUsers,
             row.MaxWarehouses,
-            row.EnabledModuleCodes)).ToList();
+            row.EnabledModuleCodes,
+            row.ModuleEntitlements)).ToList();
 
         return Result.Success(new ListLicensesResponse(items));
     }

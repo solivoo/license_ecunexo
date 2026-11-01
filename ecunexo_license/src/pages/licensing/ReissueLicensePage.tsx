@@ -77,10 +77,16 @@ export function ReissueLicensePage() {
           setSelectedModules(draft.selectedModules)
           setLimits(draft.limits)
         } else {
-          const baseModules = found.enabledModuleCodes && found.enabledModuleCodes.length > 0
-            ? found.enabledModuleCodes
-            : ['identity']
-          const draft = createGrantEntitlementsDraft(baseModules, null)
+          const currentPlan = allPlans.find((p) => p.code === found.planCode)
+          const baseModules =
+            found.enabledModuleCodes && found.enabledModuleCodes.length > 0
+              ? found.enabledModuleCodes
+              : currentPlan?.enabledModuleCodesDefault ?? ['identity']
+          const baseEntitlements =
+            found.moduleEntitlements && found.moduleEntitlements.length > 0
+              ? found.moduleEntitlements
+              : currentPlan?.moduleEntitlementsDefault ?? null
+          const draft = createGrantEntitlementsDraft(baseModules, baseEntitlements)
           setSelectedModules(draft.selectedModules)
           setLimits(draft.limits)
         }

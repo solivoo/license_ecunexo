@@ -24,6 +24,13 @@ public sealed class TenantApiKeyEndpointFilter : IEndpointFilter
         EndpointFilterInvocationContext context,
         EndpointFilterDelegate next)
     {
+        // Si la petición proviene de un operador autenticado del panel de licencias (JWT Bearer),
+        // permitir el acceso sin exigir la clave máquina-a-máquina del tenant.
+        if (context.HttpContext.User.Identity?.IsAuthenticated == true)
+        {
+            return await next(context).ConfigureAwait(false);
+        }
+
         var configured = _options.TenantApiKey;
         if (string.IsNullOrWhiteSpace(configured))
         {
