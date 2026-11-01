@@ -1,8 +1,16 @@
 using System.Globalization;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using Asp.Versioning;
 using Asp.Versioning.Builder;
+using EcuNexo.Core.Abstractions;
+using EcuNexo.Core.Licensing;
+using EcuNexo.Core.Tenancy;
 using EcuNexo.Platform.Business.Abstractions;
+using EcuNexo.Platform.Business.Tenancy;
+using EcuNexo.Platform.Core.Licensing;
+using PlatformActivationCodeGenerator = EcuNexo.Platform.Core.Tenancy.ActivationCodeGenerator;
 using EcuNexo.Platform.Business.Licensing.Commands.IssueLicense;
 using EcuNexo.Platform.Business.Licensing.Commands.CreateCustomer;
 using EcuNexo.Platform.Business.Licensing.Commands.ClearGrantTenantOverride;
@@ -66,11 +74,13 @@ public static class PlatformLicensingEndpoints
         group.MapGet("/health", HealthAsync).AllowAnonymous();
         group.MapGet("/public-key", GetPublicKeyAsync).AllowAnonymous();
         group.MapGet("/licenses/{grantId:guid}/status", GetLicenseStatusAsync).AllowAnonymous();
+        group.MapPost("/licenses/cloud-bootstrap", CloudBootstrapLicenseAsync).AllowAnonymous();
 
         var secured = group.MapGroup("").RequireAuthorization();
         secured.MapPost("/licenses", IssueLicenseAsync);
         secured.MapGet("/licenses", ListLicensesAsync);
         secured.MapPost("/licenses/{grantId:guid}/reissue", ReissueLicenseAsync);
+        secured.MapPost("/licenses/{grantId:guid}/offline-resources", GenerateOfflineResourcesAsync);
         secured.MapGet("/customers", ListCustomersAsync);
         secured.MapPost("/customers", CreateCustomerAsync);
         secured.MapGet("/customers/{id:guid}", GetCustomerAsync);
@@ -228,6 +238,183 @@ public static class PlatformLicensingEndpoints
             .AskAsync<GetLicenseStatusQuery, LicenseStatusResponse>(new GetLicenseStatusQuery(grantId), ct)
             .ConfigureAwait(false);
         return result.ToHttpResult();
+    }
+
+    public sealed record CloudBootstrapLicenseRequest(string Email, string Password);
+
+    public sealed record CloudBootstrapLicenseResponse(
+        Guid GrantId,
+        Guid? SupersedesGrantId,
+        string PlanCode,
+        string PlanLabel,
+        int MaxTenants,
+        int MaxUsers,
+        int MaxWarehouses,
+        IReadOnlyList<string> EnabledModuleCodes,
+        IReadOnlyList<ModuleEntitlement>? ModuleEntitlements,
+        DateTimeOffset ExpiresAtUtc,
+        int OnlineValidationIntervalDays,
+        string DeploymentMode,
+        string OwnerEmail,
+        string OwnerName,
+        string? OwnerDepartment,
+        string? OwnerPhone,
+        string? OwnerJobTitle);
+
+    private static async Task<IResult> CloudBootstrapLicenseAsync(
+        CloudBootstrapLicenseRequest body,
+        ILicenseGrantRepository grantRepo,
+        IProvisioningPayloadProtector protector,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(body.Email) || string.IsNullOrWhiteSpace(body.Password))
+        {
+            return Results.Unauthorized();
+        }
+
+        var emailNormalized = body.Email.Trim().ToLowerInvariant();
+        var utcNow = DateTimeOffset.UtcNow;
+        var grant = await grantRepo.GetLatestActiveByOwnerEmailAsync(emailNormalized, utcNow, ct).ConfigureAwait(false);
+        if (grant is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        LicenseProvisioningPayload provisioning;
+        try
+        {
+            provisioning = protector.Decrypt(grant.ProvisioningPayloadEncrypted);
+        }
+        catch (Exception)
+        {
+            return Results.Unauthorized();
+        }
+
+        var expectedBytes = Encoding.UTF8.GetBytes(provisioning.OwnerPassword ?? string.Empty);
+        var providedBytes = Encoding.UTF8.GetBytes(body.Password);
+        var passwordMatches = expectedBytes.Length > 0
+            && expectedBytes.Length == providedBytes.Length
+            && CryptographicOperations.FixedTimeEquals(expectedBytes, providedBytes);
+        if (!passwordMatches)
+        {
+            return Results.Unauthorized();
+        }
+
+        return Results.Ok(new CloudBootstrapLicenseResponse(
+            grant.Id,
+            grant.SupersedesGrantId,
+            grant.PlanCode,
+            grant.PlanLabel,
+            grant.MaxTenants,
+            grant.MaxUsers,
+            grant.MaxWarehouses,
+            grant.EnabledModuleCodes,
+            grant.ModuleEntitlements,
+            grant.ExpiresAtUtc,
+            grant.OnlineValidationIntervalDays,
+            grant.DeploymentMode.ToString(),
+            grant.OwnerEmailNormalized ?? provisioning.OwnerEmail,
+            string.IsNullOrWhiteSpace(provisioning.OwnerName) ? "Titular" : provisioning.OwnerName,
+            provisioning.OwnerDepartment,
+            provisioning.OwnerPhone,
+            provisioning.OwnerJobTitle));
+    }
+
+    private static async Task<IResult> GenerateOfflineResourcesAsync(
+        Guid grantId,
+        ClaimsPrincipal user,
+        ILicenseGrantRepository grantRepo,
+        IProvisioningPayloadProtector protector,
+        IActivationCodePepperProvider issuePepper,
+        ILicenseValidationPepperProvider validationPepper,
+        ILicenseArtifactIssuer artifactIssuer,
+        IIdGenerator idGenerator,
+        ILicensingUnitOfWork unitOfWork,
+        CancellationToken ct)
+    {
+        var operatorId = ResolveOperatorId(user);
+        if (operatorId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (string.IsNullOrWhiteSpace(issuePepper.Pepper) || string.IsNullOrWhiteSpace(validationPepper.ValidationPepper))
+        {
+            return Results.Problem(
+                title: "Peppers de licencia no configurados",
+                statusCode: StatusCodes.Status500InternalServerError);
+        }
+
+        var grant = await grantRepo.GetByIdForUpdateAsync(grantId, ct).ConfigureAwait(false);
+        if (grant is null)
+        {
+            return Results.NotFound(new { error = "Licencia no encontrada." });
+        }
+
+        if (grant.Status == LicenseGrantStatus.Revoked)
+        {
+            return Results.Conflict(new { error = "No se pueden generar recursos offline para una licencia revocada." });
+        }
+
+        LicenseProvisioningPayload provisioning;
+        try
+        {
+            provisioning = protector.Decrypt(grant.ProvisioningPayloadEncrypted);
+        }
+        catch (Exception)
+        {
+            return Results.Problem(
+                title: "No se pudo leer el titular de la licencia",
+                statusCode: StatusCodes.Status500InternalServerError);
+        }
+
+        var plaintextCode = PlatformActivationCodeGenerator.Generate();
+        var normalized = LicenseHashing.NormalizeActivationCode(plaintextCode);
+        var issueHash = LicenseHashing.ComputeIssueHash(normalized, issuePepper.Pepper);
+        var validationHash = LicenseHashing.ComputeValidationHash(normalized, validationPepper.ValidationPepper);
+
+        var rotated = grant.RotateActivationCode(idGenerator.NewId(), issueHash);
+        if (rotated.IsFailure)
+        {
+            return rotated.ToHttpResult();
+        }
+
+        var artifactPayload = new LicenseArtifactPayload(
+            grant.Id,
+            validationHash,
+            grant.ExpiresAtUtc,
+            grant.PlanLabel,
+            grant.MaxTenants,
+            grant.MaxUsers,
+            grant.MaxWarehouses,
+            grant.EnabledModuleCodes,
+            grant.ModuleEntitlements,
+            new LicenseArtifactProvisioning(
+                grant.OwnerEmailNormalized ?? provisioning.OwnerEmail,
+                provisioning.OwnerName,
+                provisioning.OwnerPassword,
+                provisioning.OwnerDepartment,
+                provisioning.OwnerPhone,
+                provisioning.OwnerJobTitle),
+            grant.SupersedesGrantId,
+            grant.OnlineValidationIntervalDays);
+
+        var signed = artifactIssuer.Sign(artifactPayload);
+        if (signed.IsFailure)
+        {
+            return signed.ToHttpResult();
+        }
+
+        await unitOfWork.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        return Results.Ok(new IssueLicenseResponse(
+            grant.Id,
+            plaintextCode,
+            signed.Value!,
+            grant.ExpiresAtUtc,
+            grant.MaxTenants,
+            grant.PlanLabel,
+            "CustomerHosted"));
     }
 
     private static async Task<IResult> ListCustomersAsync(ISender sender, CancellationToken ct)
@@ -877,26 +1064,36 @@ public static class PlatformLicensingEndpoints
         var expiresAt = grant.ExpiresAtUtc.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var deployment = grant.DeploymentMode.ToString();
 
-        var activationCode = !string.IsNullOrWhiteSpace(body.ActivationCodePlaintext)
+        var isCloudShared = grant.DeploymentMode == LicensingDeploymentMode.CloudShared;
+        var activationCode = !isCloudShared && !string.IsNullOrWhiteSpace(body.ActivationCodePlaintext)
             ? body.ActivationCodePlaintext.Trim()
             : null;
 
-        var codeBlockHtml = activationCode != null
+        var codeBlockHtml = isCloudShared
             ? $"""
-                <div style="background: #0f172a; border-radius: 8px; padding: 16px; margin: 16px 0; text-align: center;">
-                    <span style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Código de Activación Comercial</span>
-                    <code style="color: #38bdf8; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 20px; font-weight: 700; letter-spacing: 0.1em;">{activationCode}</code>
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px 16px; margin: 16px 0;">
+                    <strong style="color: #166534; font-size: 13px; display: block; margin-bottom: 4px;">Acceso directo habilitado (Cloud Compartido)</strong>
+                    <p style="color: #15803d; font-size: 13px; margin: 0;">Su suscripción ya está activa en la nube. Inicie sesión directamente con el correo titular <strong>{grant.OwnerEmailNormalized}</strong> y la contraseña asignada (no requiere código ni archivo de activación).</p>
                 </div>
               """
-            : """
-                <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; margin: 16px 0; text-align: center;">
-                    <p style="color: #64748b; font-size: 13px; margin: 0;">Esta entrega corresponde a una suscripción ya registrada o reemitida. Si requiere un nuevo código de activación, puede generarlo en la plataforma.</p>
-                </div>
-              """;
+            : activationCode != null
+                ? $"""
+                    <div style="background: #0f172a; border-radius: 8px; padding: 16px; margin: 16px 0; text-align: center;">
+                        <span style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Código de Activación Comercial</span>
+                        <code style="color: #38bdf8; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 20px; font-weight: 700; letter-spacing: 0.1em;">{activationCode}</code>
+                    </div>
+                  """
+                : """
+                    <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; margin: 16px 0; text-align: center;">
+                        <p style="color: #64748b; font-size: 13px; margin: 0;">Esta entrega corresponde a una suscripción ya registrada o reemitida. Si requiere un nuevo código de activación, puede generarlo en la plataforma.</p>
+                    </div>
+                  """;
 
-        var codeBlockText = activationCode != null
-            ? $"\nCÓDIGO DE ACTIVACIÓN: {activationCode}\n"
-            : string.Empty;
+        var codeBlockText = isCloudShared
+            ? $"\nACCESO DIRECTO (CLOUD COMPARTIDO): Inicie sesión directamente con su correo titular ({grant.OwnerEmailNormalized}) y contraseña.\n"
+            : activationCode != null
+                ? $"\nCÓDIGO DE ACTIVACIÓN: {activationCode}\n"
+                : string.Empty;
 
         var htmlBody = $"""
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 620px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; color: #1e293b;">

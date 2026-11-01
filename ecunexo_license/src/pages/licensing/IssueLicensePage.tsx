@@ -85,7 +85,7 @@ export function IssueLicensePage() {
         ...form.buildIssuePayload(),
         allowAdditionalLicense: choice.allowAdditional,
       }
-      setIssuedModules(form.selectedPlan?.enabledModuleCodesDefault ?? [])
+      setIssuedModules(form.selectedModules)
       const result = await issueLicense(payload)
       setIssued(result)
       setResultOpen(true)
@@ -162,6 +162,7 @@ export function IssueLicensePage() {
           enabledModules={issuedModules}
           modulesLabel={moduleLabels(issuedModules)}
           supersedesGrantId={supersedesGrantId}
+          deploymentMode={issued.deploymentMode ?? form.customerDeploymentMode}
           open={resultOpen}
           onClose={() => {
             setResultOpen(false)

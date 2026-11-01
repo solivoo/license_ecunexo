@@ -25,7 +25,8 @@ public sealed class ListLicensingCustomersHandler
             MapStatus(row.Status),
             row.LicensesIssued,
             row.ActiveLicenses,
-            row.LastLicenseIssuedAtUtc)).ToList();
+            row.LastLicenseIssuedAtUtc,
+            row.DeploymentMode.ToString())).ToList();
 
         return Result.Success(new ListLicensingCustomersResponse(items));
     }

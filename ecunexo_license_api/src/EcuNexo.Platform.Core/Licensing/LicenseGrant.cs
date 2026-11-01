@@ -450,4 +450,29 @@ public sealed class LicenseGrant : AggregateRoot<Guid>
     {
         OwnerEmailNormalized = null;
     }
+
+    public Result<Unit> RotateActivationCode(Guid activationCodeId, string codeHash)
+    {
+        if (Status == LicenseGrantStatus.Revoked)
+        {
+            return Result.Failure<Unit>(
+                new Error(
+                    "grant.rotate.revoked",
+                    "No se puede generar un código para una licencia revocada.",
+                    ErrorType.Conflict));
+        }
+
+        if (activationCodeId == Guid.Empty || string.IsNullOrWhiteSpace(codeHash) || codeHash.Length > CodeHashMaxLength)
+        {
+            return Result.Failure<Unit>(
+                new Error(
+                    "grant.rotate.invalid",
+                    "Los datos del nuevo código de activación no son válidos.",
+                    ErrorType.Validation));
+        }
+
+        ActivationCodeId = activationCodeId;
+        CodeHash = codeHash.Trim();
+        return Unit.Value;
+    }
 }

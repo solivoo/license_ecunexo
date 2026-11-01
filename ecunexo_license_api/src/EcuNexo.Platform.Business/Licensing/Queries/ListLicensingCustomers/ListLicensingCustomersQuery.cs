@@ -15,4 +15,5 @@ public sealed record LicensingCustomerListItem(
     string Status,
     int LicensesIssued,
     int ActiveLicenses,
-    DateTimeOffset? LastLicenseIssuedAtUtc);
+    DateTimeOffset? LastLicenseIssuedAtUtc,
+    string DeploymentMode = "CloudShared");

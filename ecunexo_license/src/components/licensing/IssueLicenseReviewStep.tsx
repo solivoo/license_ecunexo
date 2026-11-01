@@ -17,6 +17,7 @@ export function IssueLicenseReviewStep({ form }: IssueLicenseReviewStepProps) {
   const hasWarehousing = modules.includes('warehousing')
   const userQuota = form.editLimits['identity']?.max_users || String(form.maxUsers)
   const warehouseQuota = form.editLimits['warehousing']?.max_warehouses || String(form.maxWarehouses)
+  const isCloudShared = form.customerDeploymentMode === 'CloudShared'
 
   return (
     <div className="issue-license-panel">
@@ -25,25 +26,23 @@ export function IssueLicenseReviewStep({ form }: IssueLicenseReviewStepProps) {
         <p className="issue-license-subpanel__hint">
           Confirma las condiciones comerciales y técnicas que quedarán firmadas criptográficamente en el artefacto de este cliente.
         </p>
-        <dl className="issue-license-review issue-license-review--4">
-          <div>
-            <dt>Cliente comercial</dt>
-            <dd>{form.customerLabel || '—'}</dd>
-          </div>
-          <div>
-            <dt>Plan base</dt>
-            <dd>{plan?.displayName ?? '—'}</dd>
-          </div>
-          <div>
-            <dt>Vigencia contratada</dt>
-            <dd>{form.validityDays} días</dd>
-          </div>
-          <div>
-            <dt>Sincronización en línea</dt>
-            <dd>Cada {form.onlineValidationIntervalDays} días</dd>
-          </div>
-        </dl>
         <div className="ecu-plan-summary-grid ecu-plan-summary-grid--4">
+          <div className="ecu-plan-summary-item">
+            <span className="ecu-plan-summary-item__label">Cliente comercial</span>
+            <span className="ecu-plan-summary-item__value">{form.customerLabel || '—'}</span>
+          </div>
+          <div className="ecu-plan-summary-item">
+            <span className="ecu-plan-summary-item__label">Plan base</span>
+            <span className="ecu-plan-summary-item__value">{plan?.displayName ?? '—'}</span>
+          </div>
+          <div className="ecu-plan-summary-item">
+            <span className="ecu-plan-summary-item__label">Vigencia contratada</span>
+            <span className="ecu-plan-summary-item__value">{form.validityDays} días</span>
+          </div>
+          <div className="ecu-plan-summary-item">
+            <span className="ecu-plan-summary-item__label">Sincronización en línea</span>
+            <span className="ecu-plan-summary-item__value">Cada {form.onlineValidationIntervalDays} días</span>
+          </div>
           <div className="ecu-plan-summary-item">
             <span className="ecu-plan-summary-item__label">Empresas permitidas</span>
             <span className="ecu-plan-summary-item__value">{form.maxTenants}</span>
@@ -63,20 +62,22 @@ export function IssueLicenseReviewStep({ form }: IssueLicenseReviewStepProps) {
             <span className="ecu-plan-summary-item__value">{modules.length}</span>
           </div>
         </div>
-        <h4 className="ecu-plan-summary-subtitle">Módulos incluidos en esta licencia</h4>
-        <ul className="ecu-plan-summary-modules ecu-plan-summary-modules--4">
+        <h4 className="ecu-plan-summary-subtitle">Módulos incluidos en esta licencia ({modules.length})</h4>
+        <div className="issue-license-modules-chips">
           {modules.map((code) => (
-            <li key={code} className="ecu-plan-summary-module">
-              <span className="ecu-plan-summary-module__name">{moduleLabel(code)}</span>
-            </li>
+            <span key={code} className="issue-license-module-chip">
+              {moduleLabel(code)}
+            </span>
           ))}
-        </ul>
+        </div>
       </section>
 
       <section className="issue-license-subpanel">
         <h3 className="issue-license-subpanel__title">Cuenta del titular (administrador inicial)</h3>
         <p className="issue-license-subpanel__hint">
-          Define las credenciales del propietario de la cuenta. Al emitir, obtendrás el código de activación y el archivo firmado para entregarle por correo o carga directa.
+          {isCloudShared
+            ? 'Define las credenciales del propietario de la cuenta. En Cloud compartido, el titular podrá iniciar sesión directamente con este correo y contraseña.'
+            : 'Define las credenciales del propietario de la cuenta. Al emitir, obtendrás el código de activación y el archivo firmado (.ecunexo-license) para activar su entorno.'}
         </p>
         <div className="issue-license-field-grid issue-license-field-grid--4">
           <TextBox

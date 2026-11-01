@@ -30,4 +30,5 @@ public sealed record IssueLicenseResponse(
     string LicenseArtifact,
     DateTimeOffset ExpiresAtUtc,
     int ProvisioningSlotsRemaining,
-    string PlanLabel);
+    string PlanLabel,
+    string DeploymentMode = "CloudShared");

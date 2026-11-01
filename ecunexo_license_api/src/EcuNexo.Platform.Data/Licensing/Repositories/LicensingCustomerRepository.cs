@@ -50,7 +50,8 @@ public sealed class LicensingCustomerRepository : ILicensingCustomerRepository
                     && (g.Status == LicenseGrantStatus.Active || g.Status == LicenseGrantStatus.Exhausted)),
                 _db.LicenseGrants
                     .Where(g => g.CustomerId == c.Id)
-                    .Max(g => (DateTimeOffset?)g.IssuedAtUtc)))
+                    .Max(g => (DateTimeOffset?)g.IssuedAtUtc),
+                c.DeploymentMode))
             .ToListAsync(ct)
             .ConfigureAwait(false);
     }

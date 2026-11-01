@@ -30,4 +30,5 @@ public sealed record LicensingCustomerListRow(
     LicensingCustomerStatus Status,
     int LicensesIssued,
     int ActiveLicenses,
-    DateTimeOffset? LastLicenseIssuedAtUtc);
+    DateTimeOffset? LastLicenseIssuedAtUtc,
+    LicensingDeploymentMode DeploymentMode = LicensingDeploymentMode.CloudShared);

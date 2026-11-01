@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Button, Popup } from 'glubox'
-import { Check, CheckCircle2, Copy, Mail, Send } from 'lucide-react'
+import { AlertTriangle, Check, CheckCircle2, Cloud, Copy, Mail, Send } from 'lucide-react'
 import {
   buildLicenseFileContent,
   createLicenseFileDownload,
@@ -15,6 +15,7 @@ export type IssueLicenseResultDialogProps = {
   readonly issued: IssueLicenseResult
   readonly enabledModules: string[]
   readonly modulesLabel?: string
+  readonly deploymentMode?: string
   readonly supersedesGrantId?: string | null
   readonly generation?: number
   readonly reissueKind?: string | null
@@ -30,6 +31,7 @@ async function copyText(text: string): Promise<void> {
 export function IssueLicenseResultDialog({
   issued,
   enabledModules,
+  deploymentMode,
   supersedesGrantId,
   generation,
   reissueKind,
@@ -37,6 +39,9 @@ export function IssueLicenseResultDialog({
   open,
   onClose,
 }: IssueLicenseResultDialogProps) {
+  const effectiveDeploymentMode = deploymentMode ?? issued.deploymentMode ?? 'CloudShared'
+  const isCloudShared = effectiveDeploymentMode === 'CloudShared'
+
   const [download, setDownload] = useState<{ url: string; fileName: string } | null>(null)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [codeCopied, setCodeCopied] = useState(false)
@@ -45,6 +50,15 @@ export function IssueLicenseResultDialog({
   const [emailError, setEmailError] = useState<string | null>(null)
   const [customEmail, setCustomEmail] = useState('')
   const [showEmailInput, setShowEmailInput] = useState(false)
+  const [confirmingClose, setConfirmingClose] = useState(false)
+
+  const handleRequestClose = () => {
+    if (isCloudShared || confirmingClose) {
+      onClose()
+      return
+    }
+    setConfirmingClose(true)
+  }
 
   const handleSendEmail = async () => {
     setEmailSending(true)
@@ -79,6 +93,13 @@ export function IssueLicenseResultDialog({
       setEmailError(null)
       setCustomEmail('')
       setShowEmailInput(false)
+      setConfirmingClose(false)
+      return
+    }
+
+    if (isCloudShared) {
+      setDownload(null)
+      setDownloadError(null)
       return
     }
 
@@ -103,12 +124,12 @@ export function IssueLicenseResultDialog({
         URL.revokeObjectURL(objectUrl)
       }
     }
-  }, [open, issued, enabledModules])
+  }, [open, issued, enabledModules, isCloudShared])
 
   return (
     <Popup
       open={open}
-      onClose={onClose}
+      onClose={handleRequestClose}
       title={
         reissueKind === 'Expand'
           ? 'Licencia ampliada'
@@ -119,8 +140,24 @@ export function IssueLicenseResultDialog({
               : 'Licencia emitida'
       }
       width="min(94vw, 52rem)"
-      
-      actions={[{ id: 'close', label: 'Cerrar', variant: 'primary', onClick: onClose }]}
+      actions={
+        confirmingClose
+          ? [
+              {
+                id: 'cancel-close',
+                label: 'Volver a la licencia',
+                variant: 'outline',
+                onClick: () => setConfirmingClose(false),
+              },
+              {
+                id: 'confirm-close',
+                label: 'Confirmar y cerrar',
+                variant: 'primary',
+                onClick: onClose,
+              },
+            ]
+          : [{ id: 'close', label: 'Cerrar', variant: 'primary', onClick: handleRequestClose }]
+      }
     >
       <div className="issue-license-result">
         <dl className="issue-license-review issue-license-review--4 issue-license-result__meta">
@@ -168,76 +205,101 @@ export function IssueLicenseResultDialog({
           </div>
         </dl>
 
-        <div className="issue-license-result__block">
-          <span className="issue-license-result__label" id="issue-license-code-label">
-            Código (una sola vez)
-          </span>
-          <div className="issue-license-result__code-field">
-            <pre
-              className="issue-license-result__code"
-              id="issue-license-activation-code"
-              aria-labelledby="issue-license-code-label"
-            >
-              {issued.activationCodePlaintext}
-            </pre>
-            <button
-              type="button"
-              className="issue-license-result__copy-icon"
-              onClick={() => {
-                void copyText(issued.activationCodePlaintext).then(() => {
-                  setCodeCopied(true)
-                  window.setTimeout(() => setCodeCopied(false), 2000)
-                })
-              }}
-              aria-label={codeCopied ? 'Código copiado' : 'Copiar código'}
-              title={codeCopied ? 'Copiado' : 'Copiar código'}
-            >
-              {codeCopied ? (
-                <Check size={18} strokeWidth={1.75} aria-hidden />
-              ) : (
-                <Copy size={18} strokeWidth={1.75} aria-hidden />
-              )}
-            </button>
+        {isCloudShared ? (
+          <div
+            className="issue-license-result__block"
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 10,
+              padding: '12px 14px',
+              borderRadius: 10,
+              border: '1px solid color-mix(in srgb, #10b981 38%, var(--shell-border))',
+              background: 'color-mix(in srgb, #10b981 10%, var(--shell-surface))',
+              marginBottom: 14,
+            }}
+          >
+            <Cloud size={18} style={{ color: '#10b981', flexShrink: 0, marginTop: 2 }} />
+            <div style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--shell-text)' }}>
+              <strong>Suscripción Cloud Compartido lista para usar</strong>
+              <p style={{ margin: '4px 0 0', color: 'var(--shell-muted)' }}>
+                El titular puede iniciar sesión directamente en el panel administrativo con su correo electrónico y contraseña inicial, sin necesidad de código de activación ni archivo <code>.ecunexo-license</code>.
+              </p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <>
+            <div className="issue-license-result__block">
+              <span className="issue-license-result__label" id="issue-license-code-label">
+                Código (una sola vez)
+              </span>
+              <div className="issue-license-result__code-field">
+                <pre
+                  className="issue-license-result__code"
+                  id="issue-license-activation-code"
+                  aria-labelledby="issue-license-code-label"
+                >
+                  {issued.activationCodePlaintext}
+                </pre>
+                <button
+                  type="button"
+                  className="issue-license-result__copy-icon"
+                  onClick={() => {
+                    void copyText(issued.activationCodePlaintext).then(() => {
+                      setCodeCopied(true)
+                      window.setTimeout(() => setCodeCopied(false), 2000)
+                    })
+                  }}
+                  aria-label={codeCopied ? 'Código copiado' : 'Copiar código'}
+                  title={codeCopied ? 'Copiado' : 'Copiar código'}
+                >
+                  {codeCopied ? (
+                    <Check size={18} strokeWidth={1.75} aria-hidden />
+                  ) : (
+                    <Copy size={18} strokeWidth={1.75} aria-hidden />
+                  )}
+                </button>
+              </div>
+            </div>
 
-        <div className="issue-license-result__block">
-          <span className="issue-license-result__label">Archivo de licencia</span>
-          <p className="issue-license-result__hint">
-            Entrega al cliente el código y el archivo <code>.ecunexo-license</code> por canales separados.
-          </p>
-          {downloadError ? (
-            <p className="issue-license-result__download-error" role="alert">
-              {downloadError}
-            </p>
-          ) : null}
-          <div className="issue-license-result__actions">
-            {download ? (
-              <a
-                className="issue-license-result__download-link"
-                href={download.url}
-                download={download.fileName}
-              >
-                Descargar .ecunexo-license
-              </a>
-            ) : null}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              
-              onClick={() =>
-                void copyText(
-                  typeof issued.licenseArtifact === 'string'
-                    ? issued.licenseArtifact
-                    : JSON.stringify(issued.licenseArtifact)
-                )
-              }
-            >
-              Copiar artefacto (JSON)
-            </Button>
-          </div>
-        </div>
+            <div className="issue-license-result__block" style={{ marginTop: 12 }}>
+              <span className="issue-license-result__label">Archivo de licencia</span>
+              <p className="issue-license-result__hint">
+                Entrega al cliente el código y el archivo <code>.ecunexo-license</code> por canales separados.
+              </p>
+              {downloadError ? (
+                <p className="issue-license-result__download-error" role="alert">
+                  {downloadError}
+                </p>
+              ) : null}
+              <div className="issue-license-result__actions">
+                {download ? (
+                  <a
+                    className="issue-license-result__download-link"
+                    href={download.url}
+                    download={download.fileName}
+                  >
+                    Descargar .ecunexo-license
+                  </a>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    void copyText(
+                      typeof issued.licenseArtifact === 'string'
+                        ? issued.licenseArtifact
+                        : JSON.stringify(issued.licenseArtifact)
+                    )
+                  }
+                >
+                  Copiar artefacto (JSON)
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
 
         <div className="issue-license-result__block" style={{ marginTop: 16 }}>
           <span className="issue-license-result__label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -245,7 +307,13 @@ export function IssueLicenseResultDialog({
             Entrega al Correo del Cliente
           </span>
           <p className="issue-license-result__hint">
-            Envía directamente la suscripción, código de activación e instructivo con el archivo adjunto <code>.ecunexo-license</code> al correo del cliente.
+            {isCloudShared ? (
+              'Envía por correo la confirmación de la suscripción y las instrucciones de acceso directo al titular.'
+            ) : (
+              <>
+                Envía directamente la suscripción, código de activación e instructivo con el archivo adjunto <code>.ecunexo-license</code> al correo del cliente.
+              </>
+            )}
           </p>
           {emailSuccess && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#166534', background: '#dcfce7', padding: '8px 12px', borderRadius: 6, fontSize: 13, marginBottom: 8 }}>
@@ -298,6 +366,35 @@ export function IssueLicenseResultDialog({
             ) : null}
           </div>
         </div>
+
+        {confirmingClose ? (
+          <div
+            role="alert"
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 10,
+              marginTop: 16,
+              padding: '12px 14px',
+              borderRadius: 10,
+              border: '1px solid color-mix(in srgb, #f59e0b 45%, var(--shell-border))',
+              background: 'color-mix(in srgb, #f59e0b 12%, var(--shell-surface))',
+              color: 'var(--shell-text)',
+              fontSize: 13,
+              lineHeight: 1.45,
+            }}
+          >
+            <AlertTriangle size={18} style={{ color: '#f59e0b', flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <strong>¿Confirmas que deseas salir?</strong>
+              <p style={{ margin: '4px 0 0', color: 'var(--shell-muted)' }}>
+                Asegúrate de haber copiado el código de activación y descargado el archivo{' '}
+                <code>.ecunexo-license</code> (o enviado por correo). Pulsa{' '}
+                <strong>Confirmar y cerrar</strong> para salir.
+              </p>
+            </div>
+          </div>
+        ) : null}
       </div>
     </Popup>
   )

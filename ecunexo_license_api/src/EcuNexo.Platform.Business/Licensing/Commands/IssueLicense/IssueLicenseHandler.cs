@@ -168,6 +168,10 @@ public sealed class IssueLicenseHandler : ICommandHandler<IssueLicenseCommand, I
                 new Error("license.payload.encrypt_failed", "No se pudo cifrar el payload.", ErrorType.Unexpected));
         }
 
+        var effectiveDeploymentMode = command.DeploymentMode != LicensingDeploymentMode.CloudShared
+            ? command.DeploymentMode
+            : customer.DeploymentMode;
+
         var grantId = _idGenerator.NewId();
         var activationCodeId = _idGenerator.NewId();
         var grantCreated = LicenseGrant.Create(
@@ -185,7 +189,7 @@ public sealed class IssueLicenseHandler : ICommandHandler<IssueLicenseCommand, I
             expiresAt,
             encrypted,
             command.IssuedByOperatorId,
-            command.DeploymentMode,
+            effectiveDeploymentMode,
             utcNow,
             ownerEmailNormalized,
             validationIntervalDays,
@@ -231,7 +235,8 @@ public sealed class IssueLicenseHandler : ICommandHandler<IssueLicenseCommand, I
             signed.Value!,
             expiresAt,
             maxTenants,
-            plan.DisplayName));
+            plan.DisplayName,
+            effectiveDeploymentMode.ToString()));
     }
 
     /// <summary>

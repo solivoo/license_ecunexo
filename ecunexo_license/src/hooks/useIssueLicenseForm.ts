@@ -17,6 +17,7 @@ export function useIssueLicenseForm() {
   const [planCode, setPlanCode] = useState('')
   const [customerId, setCustomerId] = useState('')
   const [customerLabel, setCustomerLabel] = useState('')
+  const [customerDeploymentMode, setCustomerDeploymentMode] = useState<string>('CloudShared')
   const [validityDays, setValidityDays] = useState(365)
   const [maxTenants, setMaxTenants] = useState(1)
   const [maxUsers, setMaxUsers] = useState(5)
@@ -144,6 +145,7 @@ export function useIssueLicenseForm() {
   const onCustomerSelect = useCallback((customer: LicensingCustomerListItem) => {
     setCustomerId(customer.id)
     setCustomerLabel(formatCustomerLabel(customer))
+    setCustomerDeploymentMode(customer.deploymentMode ?? 'CloudShared')
   }, [])
 
   const onPlanChange = useCallback(
@@ -189,10 +191,17 @@ export function useIssueLicenseForm() {
       return new Date(`${t}T00:00:00.000Z`).toISOString()
     }
 
+    const deploymentModeNum =
+      customerDeploymentMode === 'CustomerHosted'
+        ? 1
+        : customerDeploymentMode === 'HybridEdge'
+          ? 2
+          : 0
+
     return {
       customerId,
       planCode,
-      deploymentMode: 0,
+      deploymentMode: deploymentModeNum,
       provisioning: {
         ownerEmail: email,
         ownerName: name,
@@ -215,6 +224,7 @@ export function useIssueLicenseForm() {
       supportPeriodToUtc: toUtcIso(supportPeriodTo),
     }
   }, [
+    customerDeploymentMode,
     customerId,
     editLimits,
     maxTenants,
@@ -241,6 +251,7 @@ export function useIssueLicenseForm() {
   const resetIssuance = useCallback(() => {
     setCustomerId('')
     setCustomerLabel('')
+    setCustomerDeploymentMode('CloudShared')
     setOwnerEmail('')
     setOwnerName('')
     setOwnerPassword('')
@@ -273,6 +284,7 @@ export function useIssueLicenseForm() {
     selectedPlan,
     customerId,
     customerLabel,
+    customerDeploymentMode,
     onCustomerSelect,
     validityDays,
     setValidityDays,

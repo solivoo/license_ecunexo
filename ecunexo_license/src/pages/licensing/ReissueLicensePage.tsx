@@ -463,6 +463,7 @@ export function ReissueLicensePage() {
           generation={reissued.generation}
           reissueKind={reissued.reissueKind}
           previousPlanLabel={reissued.previousPlanLabel}
+          deploymentMode={license?.deploymentMode}
           open={resultOpen}
           onClose={() => {
             setResultOpen(false)

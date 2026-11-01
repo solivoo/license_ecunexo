@@ -10,8 +10,12 @@ import {
   StatCard,
   StatusBadge,
 } from '@/components/ui'
+import { IssueLicenseResultDialog } from '@/components/licensing/IssueLicenseResultDialog'
+import { moduleLabels } from '@/constants/tenantModules'
 import {
+  generateOfflineLicenseResources,
   listLicenses,
+  type IssueLicenseResult,
   type LicenseListItem,
 } from '@/lib/platformLicensingApi'
 import { readApiError } from '@/lib/readApiError'
@@ -30,6 +34,11 @@ export function LicensesListPage() {
   const [rows, setRows] = useState<LicenseListItem[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading] = useState(true)
+  const [offlineResult, setOfflineResult] = useState<{
+    issued: IssueLicenseResult
+    modules: string[]
+    deploymentMode: string
+  } | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -88,6 +97,27 @@ export function LicensesListPage() {
       navigate(`/app/licencias/${row.id}/reemitir`)
     },
     [navigate],
+  )
+
+  const handleGenerateOfflineResources = useCallback(
+    async (row: LicenseListItem) => {
+      try {
+        const issued = await generateOfflineLicenseResources(row.id)
+        const modules = row.enabledModuleCodes ?? ['identity']
+        setOfflineResult({
+          issued,
+          modules,
+          deploymentMode: issued.deploymentMode ?? row.deploymentMode ?? 'CustomerHosted',
+        })
+      } catch (err) {
+        toast.show({
+          title: 'No se pudo generar recursos offline',
+          message: readApiError(err, 'Error al generar el código de activación y archivo.'),
+          variant: 'error',
+        })
+      }
+    },
+    [toast],
   )
 
   return (
@@ -200,6 +230,7 @@ export function LicensesListPage() {
             onExpand={handleExpand}
             onManageModules={(row) => navigate(`/app/licencias/${row.id}/modulos`)}
             onManageTenants={(row) => navigate(`/app/licencias/${row.id}/empresas`)}
+            onGenerateOfflineResources={(row) => void handleGenerateOfflineResources(row)}
             toolbarRight={
               <div className="ecu-grid-toolbar-actions">
                 <GridToolbarRefresh loading={loading} onRefresh={() => void load()} />
@@ -217,6 +248,17 @@ export function LicensesListPage() {
           />
         )}
       </SectionCard>
+
+      {offlineResult ? (
+        <IssueLicenseResultDialog
+          open={Boolean(offlineResult)}
+          issued={offlineResult.issued}
+          enabledModules={offlineResult.modules}
+          modulesLabel={moduleLabels(offlineResult.modules)}
+          deploymentMode={offlineResult.deploymentMode}
+          onClose={() => setOfflineResult(null)}
+        />
+      ) : null}
     </div>
   )
 }

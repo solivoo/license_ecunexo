@@ -99,6 +99,7 @@ export interface IssueLicenseResult {
   expiresAtUtc: string
   provisioningSlotsRemaining: number
   planLabel: string
+  deploymentMode?: string
   supersedesGrantId?: string | null
   generation?: number
   reissueKind?: string | null
@@ -129,6 +130,7 @@ export interface LicenseListItem {
   reissueKind?: string | null
   previousPlanCode?: string | null
   previousPlanLabel?: string | null
+  deploymentMode?: string
 }
 
 export interface LicensingCustomerListItem {
@@ -141,6 +143,7 @@ export interface LicensingCustomerListItem {
   licensesIssued: number
   activeLicenses: number
   lastLicenseIssuedAtUtc: string | null
+  deploymentMode?: string
 }
 
 export interface PlanListItem {
@@ -244,6 +247,16 @@ export async function issueLicense(body: IssueLicenseInput): Promise<IssueLicens
 export async function listLicenses(): Promise<LicenseListItem[]> {
   const { data } = await platformApi.get<unknown>('/api/v1/platform/licenses')
   return asRowList<LicenseListItem>(data)
+}
+
+export async function generateOfflineLicenseResources(
+  grantId: string
+): Promise<IssueLicenseResult> {
+  const { data } = await platformApi.post<IssueLicenseResult>(
+    `/api/v1/platform/licenses/${grantId}/offline-resources`,
+    {}
+  )
+  return data
 }
 
 export async function reissueLicense(

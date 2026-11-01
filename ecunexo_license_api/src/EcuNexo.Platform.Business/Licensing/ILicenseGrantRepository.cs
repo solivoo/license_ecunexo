@@ -25,6 +25,11 @@ public interface ILicenseGrantRepository
 
     Task<LicenseGrant?> GetActiveByCodeHashForUpdateAsync(string codeHash, DateTimeOffset utcNow, CancellationToken ct);
 
+    Task<LicenseGrant?> GetLatestActiveByOwnerEmailAsync(
+        string ownerEmailNormalized,
+        DateTimeOffset utcNow,
+        CancellationToken ct);
+
     Task<LicenseGrant?> GetByIdAsync(Guid id, CancellationToken ct);
 
     Task<LicenseGrant?> GetByIdForUpdateAsync(Guid id, CancellationToken ct);
@@ -85,4 +90,5 @@ public sealed record LicenseGrantListRow(
     int MaxUsers = 0,
     int MaxWarehouses = 0,
     IReadOnlyList<string>? EnabledModuleCodes = null,
-    IReadOnlyList<ModuleEntitlement>? ModuleEntitlements = null);
+    IReadOnlyList<ModuleEntitlement>? ModuleEntitlements = null,
+    LicensingDeploymentMode DeploymentMode = LicensingDeploymentMode.CloudShared);

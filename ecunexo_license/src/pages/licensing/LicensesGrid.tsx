@@ -17,6 +17,7 @@ export type LicensesGridProps = {
   readonly onExpand?: (row: LicenseListItem) => void
   readonly onManageModules?: (row: LicenseListItem) => void
   readonly onManageTenants?: (row: LicenseListItem) => void
+  readonly onGenerateOfflineResources?: (row: LicenseListItem) => void
   readonly toolbarRight?: ReactNode
 }
 
@@ -30,6 +31,7 @@ export function LicensesGrid({
   onExpand,
   onManageModules,
   onManageTenants,
+  onGenerateOfflineResources,
   toolbarRight,
 }: LicensesGridProps) {
   const { paging, pageSizeOptions, onPageChange, onPageSizeChange } = useGluDataGridPaging()
@@ -101,7 +103,7 @@ export function LicensesGrid({
       {
         key: 'supersedesGrantId',
         header: 'Acciones',
-        width: 120,
+        width: 155,
         align: 'center',
         sortable: false,
         sticky: 'right',
@@ -111,11 +113,12 @@ export function LicensesGrid({
             onExpand={onExpand}
             onManageModules={onManageModules}
             onManageTenants={onManageTenants}
+            onGenerateOfflineResources={onGenerateOfflineResources}
           />
         ),
       },
     ]
-  }, [onExpand, onManageModules, onManageTenants])
+  }, [onExpand, onGenerateOfflineResources, onManageModules, onManageTenants])
 
   const dataSource = useMemo(
     () => (Array.isArray(rows) ? rows : []) as LicenseGridRow[],

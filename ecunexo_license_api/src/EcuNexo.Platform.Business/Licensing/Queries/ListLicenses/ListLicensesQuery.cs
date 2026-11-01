@@ -30,4 +30,5 @@ public sealed record LicenseListItem(
     int MaxUsers = 0,
     int MaxWarehouses = 0,
     IReadOnlyList<string>? EnabledModuleCodes = null,
-    IReadOnlyList<ModuleEntitlement>? ModuleEntitlements = null);
+    IReadOnlyList<ModuleEntitlement>? ModuleEntitlements = null,
+    string DeploymentMode = "CloudShared");

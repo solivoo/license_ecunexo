@@ -54,6 +54,21 @@ public sealed class LicenseGrantRepository : ILicenseGrantRepository
                 && g.ExpiresAtUtc > utcNow)
             .FirstOrDefaultAsync(ct);
 
+    public Task<LicenseGrant?> GetLatestActiveByOwnerEmailAsync(
+        string ownerEmailNormalized,
+        DateTimeOffset utcNow,
+        CancellationToken ct)
+    {
+        var normalized = ownerEmailNormalized.Trim().ToLowerInvariant();
+        return _db.LicenseGrants.AsNoTracking()
+            .Where(g =>
+                g.OwnerEmailNormalized == normalized
+                && (g.Status == LicenseGrantStatus.Active || g.Status == LicenseGrantStatus.Exhausted)
+                && g.ExpiresAtUtc > utcNow)
+            .OrderByDescending(g => g.IssuedAtUtc)
+            .FirstOrDefaultAsync(ct);
+    }
+
     public Task<LicenseGrant?> GetByIdAsync(Guid id, CancellationToken ct) =>
         _db.LicenseGrants.AsNoTracking().FirstOrDefaultAsync(g => g.Id == id, ct);
 
@@ -232,7 +247,10 @@ public sealed class LicenseGrantRepository : ILicenseGrantRepository
                 grant.MaxUsers,
                 grant.MaxWarehouses,
                 grant.EnabledModuleCodes,
-                grant.ModuleEntitlements))
+                grant.ModuleEntitlements,
+                grant.DeploymentMode != LicensingDeploymentMode.CloudShared
+                    ? grant.DeploymentMode
+                    : customer.DeploymentMode))
             .ToListAsync(ct)
             .ConfigureAwait(false);
     }
