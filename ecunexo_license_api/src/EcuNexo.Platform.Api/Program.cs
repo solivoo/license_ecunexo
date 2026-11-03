@@ -33,6 +33,7 @@ builder.Services.AddApiVersioning(options =>
     });
 
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddPlatformJwt(builder.Configuration);
 
@@ -94,6 +95,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors("PlatformSpa");
+app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 

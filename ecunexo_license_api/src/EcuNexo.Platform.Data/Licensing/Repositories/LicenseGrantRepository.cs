@@ -92,7 +92,7 @@ public sealed class LicenseGrantRepository : ILicenseGrantRepository
                 break;
             }
 
-            if (next.Status == LicenseGrantStatus.Active)
+            if (next.Status is LicenseGrantStatus.Active or LicenseGrantStatus.Exhausted)
             {
                 latestActive = next;
             }

@@ -46,7 +46,7 @@ public sealed class UpdateGrantTenantEntitlementsHandler
                 new Error("license.tenant.entitlements.not_found", "Licencia no encontrada.", ErrorType.NotFound));
         }
 
-        if (grant.Status != LicenseGrantStatus.Active)
+        if (grant.Status is not (LicenseGrantStatus.Active or LicenseGrantStatus.Exhausted))
         {
             return Result.Failure<GrantTenantEntitlementsResponse>(
                 new Error(

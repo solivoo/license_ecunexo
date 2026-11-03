@@ -87,7 +87,7 @@ public sealed class LicenseGrant : AggregateRoot<Guid>
         Guid operatorId,
         DateTimeOffset utcNow)
     {
-        if (Status != LicenseGrantStatus.Active)
+        if (Status is not (LicenseGrantStatus.Active or LicenseGrantStatus.Exhausted))
         {
             return Result.Failure<Unit>(
                 new Error(

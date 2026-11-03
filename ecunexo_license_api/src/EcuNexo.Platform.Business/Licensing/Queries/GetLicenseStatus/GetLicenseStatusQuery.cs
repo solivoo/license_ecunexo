@@ -52,13 +52,15 @@ public sealed class GetLicenseStatusHandler : IQueryHandler<GetLicenseStatusQuer
 
         var utcNow = DateTimeOffset.UtcNow;
         var status = grant.Status.ToString();
-        var allowed = grant.Status == LicenseGrantStatus.Active && utcNow < grant.ExpiresAtUtc;
+        var allowed = grant.Status is LicenseGrantStatus.Active or LicenseGrantStatus.Exhausted && utcNow < grant.ExpiresAtUtc;
 
         LicenseGrant? successor = null;
         if (grant.Status == LicenseGrantStatus.Revoked || !allowed)
         {
             successor = await _grants.FindActiveSuccessorBySupersededGrantIdAsync(grant.Id, ct).ConfigureAwait(false);
-            if (successor is not null && successor.Status == LicenseGrantStatus.Active && utcNow < successor.ExpiresAtUtc)
+            if (successor is not null
+                && successor.Status is LicenseGrantStatus.Active or LicenseGrantStatus.Exhausted
+                && utcNow < successor.ExpiresAtUtc)
             {
                 allowed = true;
             }
