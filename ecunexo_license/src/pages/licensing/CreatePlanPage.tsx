@@ -164,7 +164,11 @@ export function CreatePlanPage() {
       const userLimit = editLimits['identity']?.max_users
       const whLimit = editLimits['warehousing']?.max_warehouses
       const resolvedMaxUsers = userLimit && Number(userLimit) > 0 ? Number(userLimit) : maxUsers
-      const resolvedMaxWarehouses = whLimit && Number(whLimit) > 0 ? Number(whLimit) : maxWarehouses
+      const resolvedMaxWarehouses = modules.includes('warehousing')
+        ? whLimit && Number(whLimit) > 0
+          ? Number(whLimit)
+          : Math.max(1, maxWarehouses)
+        : 0
 
       const result = await createPlan({
         code: codeTrimmed,

@@ -27,7 +27,7 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
     code: 'warehousing',
     label: 'Bodegas',
     description: 'Ubicaciones y almacenes.',
-    defaultLimits: { max_warehouses: 5 },
+    defaultLimits: { max_warehouses: 1 },
   },
   {
     code: 'facturacion',

@@ -182,8 +182,8 @@ export function useIssueLicenseForm() {
     const moduleEntitlementsOverride = toModuleEntitlements(modules, {}, editLimits)
     const resolvedMaxUsers = Number(editLimits['identity']?.max_users) || maxUsers
     const resolvedMaxWarehouses = modules.includes('warehousing')
-      ? Number(editLimits['warehousing']?.max_warehouses) || maxWarehouses
-      : 1
+      ? Number(editLimits['warehousing']?.max_warehouses) || maxWarehouses || 1
+      : 0
 
     const toUtcIso = (dateOnly: string): string | undefined => {
       const t = dateOnly.trim()
@@ -213,7 +213,7 @@ export function useIssueLicenseForm() {
       validityDays,
       maxTenantsOverride: Math.max(1, maxTenants),
       maxUsersOverride: Math.max(1, resolvedMaxUsers),
-      maxWarehousesOverride: Math.max(1, resolvedMaxWarehouses),
+      maxWarehousesOverride: modules.includes('warehousing') ? Math.max(1, resolvedMaxWarehouses) : 0,
       enabledModuleCodesOverride: modules,
       moduleEntitlementsOverride,
       onlineValidationIntervalDays,

@@ -34,7 +34,9 @@ function formatDate(iso: string | null | undefined): string {
 }
 
 function limitsFromEntitlements(
-  entitlements: { moduleCode: string; limits?: Record<string, number> }[] | null | undefined
+  entitlements: { moduleCode: string; limits?: Record<string, number> }[] | null | undefined,
+  maxUsersDefault?: number,
+  maxWarehousesDefault?: number
 ): Record<string, Record<string, string>> {
   const tl: Record<string, Record<string, string>> = {}
   if (!entitlements) return tl
@@ -43,6 +45,16 @@ function limitsFromEntitlements(
     tl[e.moduleCode] = Object.fromEntries(
       Object.entries(e.limits ?? defaults).map(([k, v]) => [k, String(v === -1 ? '' : v)])
     )
+    if (e.moduleCode === 'identity' && e.limits?.max_users === undefined && maxUsersDefault !== undefined) {
+      tl[e.moduleCode].max_users = String(maxUsersDefault)
+    }
+    if (
+      e.moduleCode === 'warehousing' &&
+      e.limits?.max_warehouses === undefined &&
+      maxWarehousesDefault !== undefined
+    ) {
+      tl[e.moduleCode].max_warehouses = String(maxWarehousesDefault)
+    }
   }
   return tl
 }
@@ -83,7 +95,13 @@ export function PlanDetailPage() {
         setEditModules(ensureIdentityModule(p.enabledModuleCodesDefault))
         setEditPrice(p.suggestedPriceUsdMonthly != null ? String(p.suggestedPriceUsdMonthly) : '')
         setEditSortOrder(p.sortOrder)
-        setEditLimits(limitsFromEntitlements(p.moduleEntitlementsDefault))
+        setEditLimits(
+          limitsFromEntitlements(
+            p.moduleEntitlementsDefault,
+            p.maxUsersDefault,
+            p.maxWarehousesDefault
+          )
+        )
       })
       .catch((err: unknown) => {
         toast.show({
@@ -121,7 +139,13 @@ export function PlanDetailPage() {
     setEditModules(ensureIdentityModule(plan.enabledModuleCodesDefault))
     setEditPrice(plan.suggestedPriceUsdMonthly != null ? String(plan.suggestedPriceUsdMonthly) : '')
     setEditSortOrder(plan.sortOrder)
-    setEditLimits(limitsFromEntitlements(plan.moduleEntitlementsDefault))
+    setEditLimits(
+      limitsFromEntitlements(
+        plan.moduleEntitlementsDefault,
+        plan.maxUsersDefault,
+        plan.maxWarehousesDefault
+      )
+    )
     setDirty(false)
   }, [plan])
 
@@ -184,7 +208,11 @@ export function PlanDetailPage() {
       const userLimit = editLimits['identity']?.max_users
       const whLimit = editLimits['warehousing']?.max_warehouses
       const resolvedMaxUsers = userLimit && Number(userLimit) > 0 ? Number(userLimit) : editMaxUsers
-      const resolvedMaxWarehouses = whLimit && Number(whLimit) > 0 ? Number(whLimit) : editMaxWarehouses
+      const resolvedMaxWarehouses = editModules.includes('warehousing')
+        ? whLimit && Number(whLimit) > 0
+          ? Number(whLimit)
+          : Math.max(1, editMaxWarehouses)
+        : 0
 
       const updated = await updatePlan(code, {
         displayName: editDisplayName.trim(),
