@@ -64,8 +64,11 @@ export function ReissueLicensePage() {
         setLicense(found)
         setPlans(allPlans)
         setPlanCode(found.planCode)
+        const hasWarehousingInitial = (found.enabledModuleCodes ?? []).includes('warehousing')
         setMaxUsers((found.maxUsers ?? 0) > 0 ? found.maxUsers! : 5)
-        setMaxWarehouses((found.maxWarehouses ?? 0) > 0 ? found.maxWarehouses! : 1)
+        setMaxWarehouses(
+          hasWarehousingInitial ? ((found.maxWarehouses ?? 0) > 0 ? found.maxWarehouses! : 1) : 0
+        )
         setMaxTenants(found.maxTenants > 0 ? found.maxTenants : 1)
         setOnlineValidationIntervalDays(found.onlineValidationIntervalDays || 30)
 
@@ -134,25 +137,26 @@ export function ReissueLicensePage() {
       setPlanCode(newCode)
       const selected = plans.find((p) => p.code === newCode)
       if (selected) {
-        setMaxUsers(selected.maxUsersDefault)
-        setMaxWarehouses(selected.maxWarehousesDefault)
+        const draft = createGrantEntitlementsDraft(
+          selected.enabledModuleCodesDefault,
+          selected.moduleEntitlementsDefault
+        )
+        const hasWarehousing = draft.selectedModules.includes('warehousing')
+        const nextMaxUsers = selected.maxUsersDefault > 0 ? selected.maxUsersDefault : 1
+        const nextMaxWarehouses = hasWarehousing ? Math.max(1, selected.maxWarehousesDefault) : 0
+
+        if (draft.limits['identity']) {
+          draft.limits['identity'].max_users = String(nextMaxUsers)
+        }
+        if (hasWarehousing && draft.limits['warehousing']) {
+          draft.limits['warehousing'].max_warehouses = String(nextMaxWarehouses)
+        }
+
+        setMaxUsers(nextMaxUsers)
+        setMaxWarehouses(nextMaxWarehouses)
         setMaxTenants(selected.maxTenantsDefault)
-        const newMods = ensureIdentityModule(selected.enabledModuleCodesDefault)
-        setSelectedModules(newMods)
-        setLimits((prev) => {
-          const next = { ...prev }
-          for (const m of newMods) {
-            if (!next[m]) {
-              const def = getModuleDefaultLimits(m)
-              if (def) {
-                next[m] = Object.fromEntries(
-                  Object.entries(def).map(([k, v]) => [k, String(v === -1 ? '' : v)])
-                )
-              }
-            }
-          }
-          return next
-        })
+        setSelectedModules(draft.selectedModules)
+        setLimits(draft.limits)
       }
     },
     [plans]
@@ -161,6 +165,11 @@ export function ReissueLicensePage() {
   const updateSelectedModules = useCallback((codes: string[]) => {
     const normalized = ensureIdentityModule(codes)
     setSelectedModules(normalized)
+    if (!normalized.includes('warehousing')) {
+      setMaxWarehouses(0)
+    } else {
+      setMaxWarehouses((prev) => (prev > 0 ? prev : 1))
+    }
     setLimits((prev) => {
       const next = { ...prev }
       for (const code of normalized) {
@@ -211,17 +220,18 @@ export function ReissueLicensePage() {
     setBusy(true)
     try {
       const moduleEntitlementsOverride = toModuleEntitlements(selectedModules, {}, limits)
-      const resolvedMaxUsers = Number(limits['identity']?.max_users) || maxUsers
-      const resolvedMaxWarehouses = selectedModules.includes('warehousing')
-        ? Number(limits['warehousing']?.max_warehouses) || maxWarehouses
-        : 1
+      const resolvedMaxUsers = Math.max(1, Number(limits['identity']?.max_users) || maxUsers || 1)
+      const hasWarehousing = selectedModules.includes('warehousing')
+      const resolvedMaxWarehouses = hasWarehousing
+        ? Math.max(1, Number(limits['warehousing']?.max_warehouses) || maxWarehouses || 1)
+        : 0
 
       const result = await reissueLicense(license.id, {
         planCode,
         validityDays,
         onlineValidationIntervalDays,
-        maxUsersOverride: Math.max(1, resolvedMaxUsers),
-        maxWarehousesOverride: Math.max(1, resolvedMaxWarehouses),
+        maxUsersOverride: resolvedMaxUsers,
+        maxWarehousesOverride: resolvedMaxWarehouses,
         maxTenantsOverride: Math.max(1, maxTenants),
         enabledModuleCodesOverride: selectedModules,
         moduleEntitlementsOverride,

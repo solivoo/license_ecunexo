@@ -93,10 +93,6 @@ public sealed class ReissueLicenseHandler : ICommandHandler<ReissueLicenseComman
         }
 
         var samePlan = string.Equals(previous.PlanCode, plan.Code, StringComparison.OrdinalIgnoreCase);
-        var maxUsers = command.MaxUsersOverride ?? (samePlan ? previous.MaxUsers : plan.MaxUsersDefault);
-        var maxWarehouses = command.MaxWarehousesOverride ?? (samePlan ? previous.MaxWarehouses : plan.MaxWarehousesDefault);
-        var maxTenants = command.MaxTenantsOverride ?? (samePlan ? previous.MaxTenants : plan.MaxTenantsDefault);
-
         var modules = command.EnabledModuleCodesOverride is { Count: > 0 }
             ? command.EnabledModuleCodesOverride.ToList()
             : (samePlan && previous.EnabledModuleCodes.Count > 0 ? previous.EnabledModuleCodes.ToList() : plan.EnabledModuleCodesDefault.ToList());
@@ -113,11 +109,19 @@ public sealed class ReissueLicenseHandler : ICommandHandler<ReissueLicenseComman
                 new Error("license.reissue.module_deps", string.Join(' ', depErrors), ErrorType.Validation));
         }
 
+        var hasWarehousing = modules.Contains(TenantModuleCodes.Warehousing, StringComparer.OrdinalIgnoreCase);
+        var maxUsers = command.MaxUsersOverride ?? (samePlan ? previous.MaxUsers : plan.MaxUsersDefault);
+        var maxWarehouses = hasWarehousing
+            ? (command.MaxWarehousesOverride ?? (samePlan ? previous.MaxWarehouses : plan.MaxWarehousesDefault))
+            : 0;
+        var maxTenants = command.MaxTenantsOverride ?? (samePlan ? previous.MaxTenants : plan.MaxTenantsDefault);
+
         var rawEntitlements = command.ModuleEntitlementsOverride
             ?? (samePlan && previous.ModuleEntitlements is not null ? previous.ModuleEntitlements : ResolveEntitlements(plan));
 
         var entitlements = AlignCupoLimits(
             rawEntitlements,
+            modules,
             maxUsers,
             maxWarehouses);
         if (entitlements is not null && entitlements.Count > 0)
@@ -342,16 +346,31 @@ public sealed class ReissueLicenseHandler : ICommandHandler<ReissueLicenseComman
 
     private static IReadOnlyList<ModuleEntitlement>? AlignCupoLimits(
         IReadOnlyList<ModuleEntitlement>? entitlements,
+        IReadOnlyList<string> modules,
         int maxUsers,
         int maxWarehouses)
     {
-        if (entitlements is null || entitlements.Count == 0)
+        var baseList = entitlements is { Count: > 0 }
+            ? entitlements
+                .Where(e => modules.Contains(e.ModuleCode, StringComparer.OrdinalIgnoreCase))
+                .ToList()
+            : [];
+
+        var missingModules = modules
+            .Where(m => !baseList.Any(e => string.Equals(e.ModuleCode, m, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+        if (missingModules.Count > 0)
+        {
+            baseList.AddRange(ModuleTierCatalog.FromModuleCodesWithTier(missingModules));
+        }
+
+        if (baseList.Count == 0)
         {
             return entitlements;
         }
 
-        var aligned = new List<ModuleEntitlement>(entitlements.Count);
-        foreach (var entitlement in entitlements)
+        var aligned = new List<ModuleEntitlement>(baseList.Count);
+        foreach (var entitlement in baseList)
         {
             if (string.Equals(entitlement.ModuleCode, TenantModuleCodes.Warehousing, StringComparison.OrdinalIgnoreCase))
             {

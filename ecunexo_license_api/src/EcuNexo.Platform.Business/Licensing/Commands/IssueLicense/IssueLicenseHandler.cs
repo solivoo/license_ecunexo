@@ -115,10 +115,13 @@ public sealed class IssueLicenseHandler : ICommandHandler<IssueLicenseCommand, I
                     ErrorType.Conflict));
         }
 
+        var modules = command.EnabledModuleCodesOverride ?? plan.EnabledModuleCodesDefault;
+        var hasWarehousing = modules.Contains(TenantModuleCodes.Warehousing, StringComparer.OrdinalIgnoreCase);
         var maxTenants = command.MaxTenantsOverride ?? plan.MaxTenantsDefault;
         var maxUsers = command.MaxUsersOverride ?? plan.MaxUsersDefault;
-        var maxWarehouses = command.MaxWarehousesOverride ?? plan.MaxWarehousesDefault;
-        var modules = command.EnabledModuleCodesOverride ?? plan.EnabledModuleCodesDefault;
+        var maxWarehouses = hasWarehousing
+            ? (command.MaxWarehousesOverride ?? plan.MaxWarehousesDefault)
+            : 0;
 
         // Resolver ModuleEntitlements: sobrescritos del operador > defaults del plan > catálogo de tiers
         var entitlements = AlignCupoLimits(

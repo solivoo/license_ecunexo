@@ -161,13 +161,15 @@ export function ExpandLicenseDialog({
 
   const handleConfirm = useCallback(() => {
     if (busy || planCode.length === 0) return
+    const normalizedModules = ensureIdentityModule(selectedModules)
+    const hasWarehousing = normalizedModules.includes('warehousing')
     onConfirm({
       planCode,
       validityDays: Math.max(1, validityDays),
       maxUsersOverride: Math.max(1, maxUsers),
-      maxWarehousesOverride: Math.max(1, maxWarehouses),
+      maxWarehousesOverride: hasWarehousing ? Math.max(1, maxWarehouses) : 0,
       maxTenantsOverride: Math.max(1, maxTenants),
-      enabledModuleCodesOverride: ensureIdentityModule(selectedModules),
+      enabledModuleCodesOverride: normalizedModules,
     })
   }, [busy, maxTenants, maxUsers, maxWarehouses, onConfirm, planCode, selectedModules, validityDays])
 

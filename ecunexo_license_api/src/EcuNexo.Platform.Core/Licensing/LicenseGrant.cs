@@ -147,6 +147,31 @@ public sealed class LicenseGrant : AggregateRoot<Guid>
 
         EnabledModuleCodes = modules;
         ModuleEntitlements = aligned is { Count: > 0 } ? aligned : null;
+        if (!modules.Contains(TenantModuleCodes.Warehousing, StringComparer.OrdinalIgnoreCase))
+        {
+            MaxWarehouses = 0;
+        }
+        else
+        {
+            var warehousingEnt = aligned?.FirstOrDefault(
+                e => string.Equals(e.ModuleCode, TenantModuleCodes.Warehousing, StringComparison.OrdinalIgnoreCase));
+            if (warehousingEnt?.Limits is not null
+                && warehousingEnt.Limits.TryGetValue(ModuleTierCatalog.LimitMaxWarehouses, out var wLimit)
+                && wLimit >= 0)
+            {
+                MaxWarehouses = wLimit;
+            }
+        }
+
+        var identityEnt = aligned?.FirstOrDefault(
+            e => string.Equals(e.ModuleCode, TenantModuleCodes.Identity, StringComparison.OrdinalIgnoreCase));
+        if (identityEnt?.Limits is not null
+            && identityEnt.Limits.TryGetValue(ModuleTierCatalog.LimitMaxUsers, out var uLimit)
+            && uLimit >= 0)
+        {
+            MaxUsers = uLimit;
+        }
+
         EntitlementsVersion++;
         EntitlementsUpdatedAtUtc = utcNow;
         EntitlementsUpdatedByOperatorId = operatorId;
