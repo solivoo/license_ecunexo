@@ -43,7 +43,7 @@ function limitsFromEntitlements(
   for (const e of entitlements) {
     const defaults = getModuleDefaultLimits(e.moduleCode) ?? {}
     tl[e.moduleCode] = Object.fromEntries(
-      Object.entries(e.limits ?? defaults).map(([k, v]) => [k, String(v === -1 ? '' : v)])
+      Object.entries({ ...defaults, ...(e.limits ?? {}) }).map(([k, v]) => [k, String(v === -1 ? '' : v)])
     )
     if (e.moduleCode === 'identity' && e.limits?.max_users === undefined && maxUsersDefault !== undefined) {
       tl[e.moduleCode].max_users = String(maxUsersDefault)

@@ -93,6 +93,7 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
     defaultLimits: {
       max_active_variants: 1000,
       max_product_templates: 50,
+      enable_advanced_pricing: 1,
     },
     category: 'Comercial',
   },
@@ -344,6 +345,7 @@ const LIMIT_KEY_LABELS: Record<string, string> = {
   max_active_variants: 'Variantes activas',
   max_variants: 'Variantes máximas',
   max_product_templates: 'Plantillas de producto',
+  enable_advanced_pricing: 'Gestión avanzada de precios',
 }
 
 export type TenantModuleFlag = {
@@ -357,6 +359,9 @@ export type TenantModuleFlag = {
  * En el cliente ocultan su ítem de menú cuando quedan en 0.
  */
 export const MODULE_FLAGS: Record<string, TenantModuleFlag[]> = {
+  catalog: [
+    { key: 'enable_advanced_pricing', label: 'Gestión avanzada de precios (listas, escalas y promociones)' },
+  ],
   contabilidad: [
     { key: 'allow_financial_statements_export', label: 'Exportar estados financieros' },
     { key: 'enable_custom_subaccounts', label: 'Subcuentas personalizadas' },

@@ -34,8 +34,9 @@ export function createGrantEntitlementsDraft(
   const limits: Record<string, Record<string, string>> = {}
   for (const entitlement of moduleEntitlements ?? []) {
     tiers[entitlement.moduleCode] = normalizeTierValue(entitlement.tier)
+    const defaults = getModuleDefaultLimits(entitlement.moduleCode) ?? {}
     limits[entitlement.moduleCode] = Object.fromEntries(
-      Object.entries(entitlement.limits ?? {}).map(([key, value]) => [key, String(value)])
+      Object.entries({ ...defaults, ...(entitlement.limits ?? {}) }).map(([key, value]) => [key, String(value)])
     )
   }
   for (const module of selectedModules) {
