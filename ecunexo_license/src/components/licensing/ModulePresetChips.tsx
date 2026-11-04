@@ -4,7 +4,7 @@ import { TENANT_MODULE_OPTIONS } from '@/constants/tenantModules'
 
 const PLAN_A1_MODULE_CODES = ['identity', 'customers', 'catalog', 'facturacion'] as const
 const PLAN_B1_C1_MODULE_CODES = ['identity', 'customers', 'catalog', 'facturacion', 'purchases', 'warehousing', 'inventory'] as const
-const ECOMMERCE_MODULE_CODES = ['identity', 'customers', 'catalog', 'facturacion', 'purchases', 'warehousing', 'inventory', 'ecommerce'] as const
+const ECOMMERCE_MODULE_CODES = ['identity', 'customers', 'catalog', 'facturacion', 'purchases', 'warehousing', 'inventory', 'orders', 'ecommerce'] as const
 const ALL_MODULE_CODES = TENANT_MODULE_OPTIONS.map((m) => m.code)
 
 function sameSet(a: readonly string[], b: readonly string[]): boolean {

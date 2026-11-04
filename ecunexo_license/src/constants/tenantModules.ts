@@ -57,6 +57,15 @@ export const MODULES_WITH_LIMITS: TenantModuleWithLimits[] = [
     category: 'Comercial',
   },
   {
+    code: 'orders',
+    label: 'Pedidos y Órdenes de Venta',
+    description: 'Recepción, gestión, seguimiento y vinculación a facturación SRI de pedidos de clientes y tienda.',
+    defaultLimits: {
+      max_orders_per_month: 1000,
+    },
+    category: 'Comercial',
+  },
+  {
     code: 'ecommerce',
     label: 'E-commerce',
     description: 'Ventas web, vitrina pública de catálogo, sincronización de pedidos y pagos.',
@@ -128,7 +137,8 @@ export const MODULE_DEPENDENCIES: Record<string, readonly string[]> = {
   facturacion: ['catalog'],
   repairs: ['identity'],
   customers: ['identity'],
-  ecommerce: ['catalog', 'warehousing', 'inventory'],
+  orders: ['catalog'],
+  ecommerce: ['catalog', 'orders'],
   purchases: ['identity'],
   contabilidad: ['identity'],
 }
@@ -232,6 +242,12 @@ export const TENANT_MODULE_OPTIONS: TenantModuleOption[] = [
     category: 'Comercial',
   },
   {
+    code: 'orders',
+    label: 'Pedidos y Órdenes de Venta',
+    description: 'Recepción, gestión y despacho de pedidos de venta (con catálogo o inventario) y vínculo con Facturación SRI.',
+    category: 'Comercial',
+  },
+  {
     code: 'ecommerce',
     label: 'E-commerce',
     description: 'Ventas web con vitrina pública de catálogo (precio y disponibilidad), pedidos y pagos.',
@@ -281,6 +297,7 @@ const MODULE_SHORT_LABELS: Record<string, string> = {
   contabilidad: 'Contabilidad',
   purchases: 'Compras',
   customers: 'Clientes',
+  orders: 'Pedidos',
   ecommerce: 'E-commerce',
   repairs: 'Taller',
   training: 'Capacitación',
