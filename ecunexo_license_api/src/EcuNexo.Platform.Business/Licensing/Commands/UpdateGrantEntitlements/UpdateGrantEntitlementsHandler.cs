@@ -75,8 +75,57 @@ public sealed class UpdateGrantEntitlementsHandler
             return Result.Failure<GrantEntitlementsResponse>(change.Error!);
         }
 
+        // Propagar módulos agregados o retirados de la licencia a las empresas con override
+        var addedModules = grant.EnabledModuleCodes
+            .Except(previousModules, StringComparer.OrdinalIgnoreCase)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var activeGrantModules = grant.EnabledModuleCodes
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var tenants = await _grants.ListTenantsForUpdateAsync(grant.Id, ct).ConfigureAwait(false);
+        foreach (var tenant in tenants.Where(t => t.HasOverride))
+        {
+            var mergedModules = tenant.EnabledModuleCodes
+                .Where(m => activeGrantModules.Contains(m))
+                .ToList();
+            foreach (var added in addedModules)
+            {
+                if (!mergedModules.Contains(added, StringComparer.OrdinalIgnoreCase))
+                {
+                    mergedModules.Add(added);
+                }
+            }
+
+            var mergedEntitlements = tenant.ModuleEntitlements?
+                .Where(e => mergedModules.Contains(e.ModuleCode, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+            if (grant.ModuleEntitlements is { Count: > 0 })
+            {
+                mergedEntitlements ??= [];
+                foreach (var grantEnt in grant.ModuleEntitlements)
+                {
+                    if (addedModules.Contains(grantEnt.ModuleCode)
+                        && !mergedEntitlements.Any(e => string.Equals(e.ModuleCode, grantEnt.ModuleCode, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        mergedEntitlements.Add(grantEnt);
+                    }
+                }
+            }
+
+            _ = tenant.SetOverride(mergedModules, mergedEntitlements, command.IssuedByOperatorId, utcNow);
+        }
+
         await _grants.AddEntitlementChangeAsync(change.Value!, ct).ConfigureAwait(false);
         await _unitOfWork.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        var overrides = tenants
+            .Where(t => t.HasOverride)
+            .Select(t => new GrantTenantOverrideItem(
+                t.TenantId,
+                t.TenantName,
+                t.EnabledModuleCodes,
+                t.ModuleEntitlements,
+                t.OverrideVersion))
+            .ToList();
 
         return Result.Success(new GrantEntitlementsResponse(
             grant.Id,
@@ -86,6 +135,7 @@ public sealed class UpdateGrantEntitlementsHandler
             grant.EnabledModuleCodes,
             grant.ModuleEntitlements,
             grant.EntitlementsUpdatedAtUtc,
-            AppliedToTenant: false));
+            AppliedToTenant: false,
+            TenantOverrides: overrides.Count > 0 ? overrides : null));
     }
 }

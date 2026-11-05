@@ -31,6 +31,15 @@ public sealed class LicenseGrantRepository : ILicenseGrantRepository
             .ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<LicenseGrantTenant>> ListTenantsForUpdateAsync(Guid grantId, CancellationToken ct)
+    {
+        return await _db.LicenseGrantTenants
+            .Where(t => t.GrantId == grantId)
+            .OrderBy(t => t.TenantName)
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+    }
+
     public Task<LicenseGrantTenant?> GetTenantForUpdateAsync(Guid grantId, Guid tenantId, CancellationToken ct) =>
         _db.LicenseGrantTenants.FirstOrDefaultAsync(
             t => t.GrantId == grantId && t.TenantId == tenantId,

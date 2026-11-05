@@ -11,6 +11,8 @@ public interface ILicenseGrantRepository
 
     Task<IReadOnlyList<LicenseGrantTenant>> ListTenantsAsync(Guid grantId, CancellationToken ct);
 
+    Task<IReadOnlyList<LicenseGrantTenant>> ListTenantsForUpdateAsync(Guid grantId, CancellationToken ct);
+
     Task<LicenseGrantTenant?> GetTenantForUpdateAsync(Guid grantId, Guid tenantId, CancellationToken ct);
 
     Task AddTenantAsync(LicenseGrantTenant tenant, CancellationToken ct);
